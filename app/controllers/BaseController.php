@@ -221,8 +221,38 @@ class BaseController
      */
     protected function isAjaxRequest() 
     {
-        return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        // بررسی header های مختلف برای تشخیص AJAX
+        
+        // 1. استاندارد XMLHttpRequest header
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            return true;
+        }
+        
+        // 2. بررسی Accept header برای JSON
+        if (isset($_SERVER['HTTP_ACCEPT']) && 
+            strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+            return true;
+        }
+        
+        // 3. بررسی CSRF header (که فقط توسط JavaScript ارسال می‌شود)
+        if (isset($_SERVER['HTTP_X_CSRF_TOKEN'])) {
+            return true;
+        }
+        
+        // 4. بررسی Content-Type برای JSON
+        if (isset($_SERVER['CONTENT_TYPE']) && 
+            strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false) {
+            return true;
+        }
+        
+        // 5. درخواست‌های fetch API معمولاً sec-fetch-dest دارند
+        if (isset($_SERVER['HTTP_SEC_FETCH_DEST']) && 
+            $_SERVER['HTTP_SEC_FETCH_DEST'] === 'empty') {
+            return true;
+        }
+        
+        return false;
     }
 
     /**

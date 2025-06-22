@@ -23,7 +23,8 @@ class PaymentRequest extends Database
     
     public function __construct() 
     {
-        $this->db = getDB();
+        parent::__construct(); // فراخوانی constructor پدر
+        $this->db = $this->connection; // استفاده از connection از کلاس پدر
     }
 
     /**
@@ -89,6 +90,16 @@ class PaymentRequest extends Database
     }
 
     /**
+     * ثابت برای سازگاری با کدهای قدیمی
+     */
+    const REQUEST_PRIORITIES = [
+        'low' => 'کم',
+        'normal' => 'معمولی',
+        'high' => 'بالا',
+        'urgent' => 'فوری'
+    ];
+
+    /**
      * بانک‌های ایرانی
      */
     const IRANIAN_BANKS = [
@@ -115,15 +126,23 @@ class PaymentRequest extends Database
      */
     public function createRequest($data) 
     {
+        writeLog("🚀 PaymentRequest::createRequest() called", 'INFO');
+        writeLog("📥 Input data: " . json_encode($data), 'INFO');
+        
         try {
             // اعتبارسنجی داده‌های ورودی
+            writeLog("🔍 Starting validation...", 'INFO');
             $validation = $this->validateRequestData($data);
             if ($validation !== true) {
+                writeLog("❌ Validation failed: " . json_encode($validation), 'ERROR');
                 return ['success' => false, 'errors' => $validation];
             }
+            writeLog("✅ Validation passed", 'INFO');
 
             // تولید شماره مرجع یکتا
+            writeLog("🔢 Generating reference number...", 'INFO');
             $data['reference_number'] = $this->generateReferenceNumber();
+            writeLog("📋 Reference number generated: " . $data['reference_number'], 'INFO');
 
             // تنظیم مقادیر پیش‌فرض
             $data['status'] = $data['status'] ?? self::STATUS_PENDING;
@@ -141,39 +160,54 @@ class PaymentRequest extends Database
                 }
             }
 
+            writeLog("📋 Final data before DB insert: " . json_encode($data), 'INFO');
+
             // شروع تراکنش
+            writeLog("🔄 Starting transaction...", 'INFO');
             $this->beginTransaction();
 
             try {
                 // ایجاد درخواست
+                writeLog("💾 Calling create() method...", 'INFO');
                 $requestId = $this->create($data);
+                writeLog("📤 create() returned: " . ($requestId ?: 'false'), 'INFO');
                 
                 if (!$requestId) {
-                    throw new Exception('خطا در ایجاد درخواست');
+                    throw new Exception('خطا در ایجاد درخواست - create() returned false');
                 }
 
                 // ثبت در تاریخچه گردش کار
-                $this->addWorkflowHistory($requestId, $data['requester_id'], 'created', null, self::STATUS_PENDING, 'درخواست ایجاد شد');
+                writeLog("📊 Adding workflow history...", 'INFO');
+                $historyResult = $this->addWorkflowHistory($requestId, $data['requester_id'], 'created', null, self::STATUS_PENDING, 'درخواست ایجاد شد');
+                writeLog("📊 Workflow history result: " . ($historyResult ? 'success' : 'failed'), 'INFO');
 
                 // تایید تراکنش
+                writeLog("✅ Committing transaction...", 'INFO');
                 $this->commit();
+                writeLog("✅ Transaction committed successfully", 'INFO');
 
                 writeLog("درخواست حواله جدید ایجاد شد: {$data['reference_number']} توسط کاربر: {$data['requester_id']}", 'INFO');
                 
-                return [
+                $result = [
                     'success' => true, 
                     'request_id' => $requestId,
                     'reference_number' => $data['reference_number']
                 ];
+                
+                writeLog("🎉 createRequest() finished successfully: " . json_encode($result), 'INFO');
+                return $result;
 
             } catch (Exception $e) {
+                writeLog("💥 Exception in transaction: " . $e->getMessage(), 'ERROR');
                 $this->rollback();
+                writeLog("🔙 Transaction rolled back", 'INFO');
                 throw $e;
             }
 
         } catch (Exception $e) {
-            writeLog("خطا در ایجاد درخواست حواله: " . $e->getMessage(), 'ERROR');
-            return ['success' => false, 'errors' => ['خطای سیستمی رخ داده است']];
+            writeLog("💥 Exception in createRequest(): " . $e->getMessage(), 'ERROR');
+            writeLog("📍 Exception location: " . $e->getFile() . ':' . $e->getLine(), 'ERROR');
+            return ['success' => false, 'errors' => ['خطای سیستمی رخ داده است: ' . $e->getMessage()]];
         }
     }
 
@@ -501,19 +535,25 @@ class PaymentRequest extends Database
      */
     private function generateReferenceNumber() 
     {
-        $prefix = 'REQ';
-        $date = jdate('ymd');
-        $random = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
-        
-        do {
-            $referenceNumber = $prefix . $date . $random;
-            $exists = $this->first('reference_number', $referenceNumber);
-            if ($exists) {
-                $random = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
-            }
-        } while ($exists);
+        try {
+            $prefix = 'REQ';
+            $date = date('ymd'); // استفاده از date به جای jdate
+            $random = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            
+            do {
+                $referenceNumber = $prefix . $date . $random;
+                $exists = $this->first('reference_number', $referenceNumber);
+                if ($exists) {
+                    $random = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+                }
+            } while ($exists);
 
-        return $referenceNumber;
+            return $referenceNumber;
+        } catch (Exception $e) {
+            writeLog("خطا در تولید شماره مرجع: " . $e->getMessage(), 'ERROR');
+            // fallback به شماره ساده
+            return 'REQ' . time() . mt_rand(100, 999);
+        }
     }
 
     /**
@@ -523,51 +563,42 @@ class PaymentRequest extends Database
     {
         $errors = [];
 
-        // بررسی عنوان
+        // ✅ بررسی عنوان - فقط این فیلد اجباری است
         if (empty($data['title'])) {
             $errors[] = 'عنوان درخواست الزامی است';
-        } elseif (mb_strlen($data['title'], 'UTF-8') < 5) {
-            $errors[] = 'عنوان درخواست باید حداقل ۵ کاراکتر باشد';
+        } elseif (mb_strlen($data['title'], 'UTF-8') < 3) {
+            $errors[] = 'عنوان درخواست باید حداقل ۳ کاراکتر باشد';
         } elseif (mb_strlen($data['title'], 'UTF-8') > 255) {
             $errors[] = 'عنوان درخواست نباید بیش از ۲۵۵ کاراکتر باشد';
         }
 
-        // بررسی مبلغ
-        if (empty($data['amount'])) {
-            $errors[] = 'مبلغ الزامی است';
-        } elseif (!is_numeric($data['amount'])) {
-            $errors[] = 'مبلغ باید عددی باشد';
-        } elseif ($data['amount'] <= 0) {
-            $errors[] = 'مبلغ باید مثبت باشد';
-        } elseif ($data['amount'] > 999999999999) {
-            $errors[] = 'مبلغ بیش از حد مجاز است';
+        // ⚠️ بررسی مبلغ - فقط در صورت وارد کردن
+        if (!empty($data['amount'])) {
+            if (!is_numeric($data['amount'])) {
+                $errors[] = 'مبلغ باید عددی باشد';
+            } elseif ($data['amount'] <= 0) {
+                $errors[] = 'مبلغ باید مثبت باشد';
+            } elseif ($data['amount'] > 999999999999) {
+                $errors[] = 'مبلغ بیش از حد مجاز است';
+            }
         }
 
-        // بررسی شماره حساب
-        if (empty($data['account_number'])) {
-            $errors[] = 'شماره حساب الزامی است';
-        } elseif (!$this->validateAccountNumber($data['account_number'])) {
+        // ⚠️ بررسی شماره حساب - فقط در صورت وارد کردن
+        if (!empty($data['account_number']) && !$this->validateAccountNumber($data['account_number'])) {
             $errors[] = 'فرمت شماره حساب صحیح نیست';
         }
 
-        // بررسی نام صاحب حساب
-        if (empty($data['account_holder'])) {
-            $errors[] = 'نام صاحب حساب الزامی است';
-        } elseif (mb_strlen($data['account_holder'], 'UTF-8') < 2) {
+        // ⚠️ بررسی نام صاحب حساب - فقط در صورت وارد کردن
+        if (!empty($data['account_holder']) && mb_strlen($data['account_holder'], 'UTF-8') < 2) {
             $errors[] = 'نام صاحب حساب باید حداقل ۲ کاراکتر باشد';
         }
 
-        // بررسی نام بانک
-        if (empty($data['bank_name'])) {
-            $errors[] = 'نام بانک الزامی است';
-        }
-
-        // بررسی IBAN (اختیاری)
+        // ⚠️ بررسی IBAN - فقط در صورت وارد کردن
         if (!empty($data['iban']) && !$this->validateIBAN($data['iban'])) {
             $errors[] = 'فرمت IBAN صحیح نیست';
         }
 
-        // بررسی تاریخ سررسید
+        // ⚠️ بررسی تاریخ سررسید - فقط در صورت وارد کردن
         if (!empty($data['due_date']) && !$this->validateDate($data['due_date'])) {
             $errors[] = 'فرمت تاریخ سررسید صحیح نیست';
         }
@@ -652,8 +683,10 @@ class PaymentRequest extends Database
     private function enrichRequestData($request) 
     {
         try {
-            // تبدیل تگ‌ها از JSON
-            $request['tags'] = json_decode($request['tags'], true) ?: [];
+            // تبدیل تگ‌ها از JSON - بررسی null بودن
+            $request['tags'] = (!empty($request['tags']) && $request['tags'] !== null) 
+                ? json_decode($request['tags'], true) ?: [] 
+                : [];
 
             // اضافه کردن لیبل‌ها
             $request['status_label'] = $this->getStatusLabel($request['status']);
@@ -664,9 +697,9 @@ class PaymentRequest extends Database
             $request['amount_formatted'] = number_format($request['amount']);
 
             // فرمت کردن تاریخ‌ها
-            $request['created_at_jalali'] = jdate('Y/m/d H:i', strtotime($request['created_at']));
+            $request['created_at_jalali'] = date('Y/m/d H:i', strtotime($request['created_at']));
             if ($request['due_date']) {
-                $request['due_date_jalali'] = jdate('Y/m/d', strtotime($request['due_date']));
+                $request['due_date_jalali'] = date('Y/m/d', strtotime($request['due_date']));
             }
 
             // اضافه کردن اطلاعات درخواست‌کننده
@@ -714,7 +747,7 @@ class PaymentRequest extends Database
 
             // فرمت کردن تاریخ‌ها
             foreach ($history as &$item) {
-                $item['created_at_jalali'] = jdate('Y/m/d H:i', strtotime($item['created_at']));
+                $item['created_at_jalali'] = date('Y/m/d H:i', strtotime($item['created_at']));
             }
 
             return $history;

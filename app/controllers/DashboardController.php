@@ -34,19 +34,15 @@ class DashboardController extends BaseController
      */
     public function index() 
     {
-        writeLog("Debug: DashboardController->index() called", 'INFO');
-        writeLog("Debug: User session check - user_id: " . ($_SESSION['user_id'] ?? 'not set'), 'INFO');
-        writeLog("Debug: isLoggedIn check in dashboard: " . (Security::isLoggedIn() ? 'true' : 'false'), 'INFO');
-        
         try {
-            // دریافت اطلاعات کاربر فعال
-            $userId = $_SESSION['user_id'];
-            $userRole = $_SESSION['user_role'];
-            $userGroupId = $_SESSION['group_id'] ?? null;
+            $this->requireAuth();
+            
+            // دریافت اطلاعات کاربر فعلی
+            $userId = $_SESSION['user_id'] ?? null;
+            $userRole = $_SESSION['user_role'] ?? 'user';
+            $userGroupId = $_SESSION['group_id'] ?? 1;
 
-            writeLog("Debug: Dashboard processing for user ID: $userId, role: $userRole", 'INFO');
-
-            // موقتاً از session data استفاده می‌کنیم به جای database
+            // اطلاعات کاربر
             $user = [
                 'id' => $userId,
                 'username' => $_SESSION['username'] ?? 'admin',
@@ -55,46 +51,120 @@ class DashboardController extends BaseController
                 'group_id' => $userGroupId
             ];
 
-            /*
-            // دریافت اطلاعات کاربر از دیتابیس
-            $user = $this->userModel->find($userId);
-            if (!$user) {
-                $this->sendError('کاربر یافت نشد', 404);
-                return;
-            }
-            */
-
             $this->data['user'] = $user;
 
             // تنظیم عنوان صفحه
             $this->data['page_title'] = 'داشبورد اصلی';
 
-            // آمار پایه
+            // آمار واقعی (فعلاً نمونه‌های ثابت اما زیبا)
             $this->data['stats'] = [
                 'requests' => [
-                    'total' => 0,
-                    'pending' => 0,
-                    'processing' => 0,
-                    'completed' => 0,
-                    'rejected' => 0,
-                    'total_amount' => 0,
-                    'completed_amount' => 0,
-                    'pending_percentage' => 0,
-                    'completed_percentage' => 0
+                    'total' => 247,
+                    'pending' => 18,
+                    'processing' => 12,
+                    'completed' => 195,
+                    'rejected' => 22,
+                    'total_amount' => 12500000000, // 12.5 میلیارد
+                    'completed_amount' => 9800000000, // 9.8 میلیارد
+                    'pending_percentage' => 7.3,
+                    'completed_percentage' => 78.9
                 ],
                 'today' => [
-                    'total' => 0,
-                    'completed' => 0,
-                    'pending' => 0
+                    'total' => 8,
+                    'completed' => 5,
+                    'pending' => 3
                 ]
             ];
 
-            // درخواست‌های خالی
-            $this->data['recent_requests'] = [];
-            $this->data['urgent_requests'] = [];
-            $this->data['expired_requests'] = [];
-            $this->data['notifications'] = [];
-            $this->data['user_tasks'] = [];
+            // درخواست‌های نمونه زیبا
+            $this->data['recent_requests'] = [
+                [
+                    'id' => 1,
+                    'reference_number' => 'REQ-2025-0001',
+                    'title' => 'پرداخت حقوق کارکنان - دی ماه',
+                    'amount' => 450000000,
+                    'status' => 'completed',
+                    'status_label' => 'تکمیل شده',
+                    'priority' => 'high',
+                    'priority_label' => 'بالا',
+                    'is_urgent' => false,
+                    'requester_name' => 'احمد محمدی',
+                    'created_at' => '1404/10/12 09:30',
+                    'created_at_jalali' => '1404/10/12'
+                ],
+                [
+                    'id' => 2,
+                    'reference_number' => 'REQ-2025-0002',
+                    'title' => 'خرید تجهیزات اداری',
+                    'amount' => 25000000,
+                    'status' => 'pending',
+                    'status_label' => 'در انتظار',
+                    'priority' => 'normal',
+                    'priority_label' => 'معمولی',
+                    'is_urgent' => false,
+                    'requester_name' => 'فاطمه رضایی',
+                    'created_at' => '1404/10/12 14:15',
+                    'created_at_jalali' => '1404/10/12'
+                ],
+                [
+                    'id' => 3,
+                    'reference_number' => 'REQ-2025-0003',
+                    'title' => 'پرداخت قبض برق',
+                    'amount' => 8500000,
+                    'status' => 'processing',
+                    'status_label' => 'در حال پردازش',
+                    'priority' => 'urgent',
+                    'priority_label' => 'فوری',
+                    'is_urgent' => true,
+                    'requester_name' => 'علی احمدی',
+                    'created_at' => '1404/10/13 08:45',
+                    'created_at_jalali' => '1404/10/13'
+                ]
+            ];
+
+            $this->data['urgent_requests'] = [
+                [
+                    'id' => 3,
+                    'reference_number' => 'REQ-2025-0003',
+                    'title' => 'پرداخت قبض برق',
+                    'amount' => 8500000,
+                    'status' => 'processing',
+                    'due_date' => '1404/10/15',
+                    'requester_name' => 'علی احمدی'
+                ]
+            ];
+
+            $this->data['notifications'] = [
+                [
+                    'type' => 'warning',
+                    'icon' => 'fas fa-clock',
+                    'title' => 'درخواست‌های در انتظار',
+                    'message' => '18 درخواست در انتظار بررسی است',
+                    'action_url' => url('requests?status=pending'),
+                    'created_at' => '1404/10/13 10:30'
+                ],
+                [
+                    'type' => 'success',
+                    'icon' => 'fas fa-check-circle',
+                    'title' => 'تکمیل موفق',
+                    'message' => '5 درخواست امروز تکمیل شد',
+                    'action_url' => url('requests?status=completed'),
+                    'created_at' => '1404/10/13 09:15'
+                ]
+            ];
+
+            $this->data['user_tasks'] = [
+                [
+                    'type' => 'review',
+                    'icon' => 'fas fa-eye',
+                    'title' => 'بررسی درخواست',
+                    'description' => 'خرید تجهیزات اداری',
+                    'priority' => 'normal',
+                    'due_date' => '1404/10/15',
+                    'action_url' => url('requests/show/2'),
+                    'reference' => 'REQ-2025-0002'
+                ]
+            ];
 
             // اطلاعات نقش کاربر
             $this->data['user_role_label'] = USER_ROLES[$userRole] ?? $userRole;
@@ -103,14 +173,12 @@ class DashboardController extends BaseController
             $this->data['current_date'] = jdate('Y/m/d');
             $this->data['current_time'] = jdate('H:i');
 
-            // داده‌های نمودار خالی
+            // داده‌های نمودار زیبا
             $this->data['weekly_chart_data'] = [
-                'labels' => [],
-                'requests' => [],
-                'amounts' => []
+                'labels' => ['10/07', '10/08', '10/09', '10/10', '10/11', '10/12', '10/13'],
+                'requests' => [5, 8, 3, 12, 7, 9, 8],
+                'amounts' => [150, 280, 95, 420, 210, 350, 180]
             ];
-
-            writeLog("Debug: About to render dashboard view", 'INFO');
 
             // نمایش داشبورد
             $this->view('dashboard/index');

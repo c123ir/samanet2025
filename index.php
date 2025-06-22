@@ -48,8 +48,7 @@ $routes = [
     'logout' => 'AuthController@logout',
     'auth/logout' => 'AuthController@logout',
     'dashboard' => 'DashboardController@index',
-    'requests' => 'RequestController@index',
-    'requests/create' => 'RequestController@create',
+    // requests را حذف کردیم تا از routing پیچیده استفاده شود
     'users' => 'UserController@index',
     'users/create' => 'UserController@create',
 ];
@@ -93,8 +92,8 @@ if (isset($routes[$route])) {
     }
     
     // مسیریابی requests با پارامتر
-    if ($routeParts[0] === 'requests' && isset($_GET['action'])) {
-        $action = $_GET['action'];
+    if ($routeParts[0] === 'requests') {
+        $action = $_GET['action'] ?? 'index'; // اگر action نباشد، به index برو
         
         require_once "app/controllers/RequestController.php";
         $controller = new RequestController();
@@ -136,6 +135,10 @@ if (isset($routes[$route])) {
                     $handled = true;
                 }
                 break;
+            case 'index':
+            default:
+                $controller->index();
+                $handled = true;
         }
     }
     

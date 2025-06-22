@@ -61,8 +61,8 @@
     
     /* اندازه‌ها */
     --navbar-height: 80px;
-    --sidebar-width: 280px;
-    --container-padding: 2rem;
+    --sidebar-width: 240px;  /* کاهش از 280px به 240px */
+    --container-padding: 1.5rem;  /* کاهش از 2rem به 1.5rem */
 }
 
 /* ========================================

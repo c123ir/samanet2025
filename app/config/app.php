@@ -71,8 +71,8 @@ define('REQUEST_STATUS', [
 // اولویت‌های درخواست
 define('REQUEST_PRIORITIES', [
     'low' => 'کم',
-    'normal' => 'عادی', 
-    'high' => 'زیاد',
+    'normal' => 'معمولی', 
+    'high' => 'بالا',
     'urgent' => 'فوری'
 ]);
 

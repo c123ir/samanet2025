@@ -50,18 +50,44 @@ class RequestController extends BaseController
             ];
 
             // دریافت درخواست‌های گروه
-            $requests = $this->paymentRequestModel->getGroupRequests($groupId, $filters);
+            try {
+                $requests_data = $this->paymentRequestModel->getGroupRequests($groupId, $filters);
+            } catch (Exception $e) {
+                writeLog("Warning: Could not fetch requests: " . $e->getMessage(), 'WARNING');
+                // داده‌های نمونه در صورت خطا
+                $requests_data = [
+                    'data' => [],
+                    'total' => 0,
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'from' => 0,
+                    'to' => 0
+                ];
+            }
             
             // دریافت آمار
-            $stats = $this->paymentRequestModel->getRequestStats($groupId);
+            try {
+                $stats = $this->paymentRequestModel->getRequestStats($groupId);
+            } catch (Exception $e) {
+                writeLog("Warning: Could not fetch stats: " . $e->getMessage(), 'WARNING');
+                // آمار نمونه در صورت خطا
+                $stats = [
+                    'total' => 0,
+                    'pending' => 0,
+                    'processing' => 0,
+                    'completed' => 0,
+                    'rejected' => 0
+                ];
+            }
 
             $this->render('requests/list', [
                 'title' => 'مدیریت درخواست‌ها',
-                'requests' => $requests,
+                'requests_data' => $requests_data,
                 'stats' => $stats,
                 'filters' => $filters,
                 'statuses' => PaymentRequest::getStatuses(),
-                'priorities' => PaymentRequest::getPriorities()
+                'priorities' => PaymentRequest::getPriorities(),
+                'csrf_token' => $this->getCSRFToken()
             ]);
 
         } catch (Exception $e) {
@@ -89,7 +115,8 @@ class RequestController extends BaseController
                 'banks' => $banks,
                 'categories' => $categories,
                 'priorities' => $priorities,
-                'user' => $user
+                'user' => $user,
+                'flash' => $this->getFlash()
             ]);
 
         } catch (Exception $e) {
@@ -102,11 +129,20 @@ class RequestController extends BaseController
      */
     public function store()
     {
+        writeLog("🚀 RequestController::store() called", 'INFO');
+        writeLog("📥 Raw POST data: " . json_encode($_POST), 'INFO');
+        writeLog("📥 Raw GET data: " . json_encode($_GET), 'INFO');
+        writeLog("🌐 Request method: " . $_SERVER['REQUEST_METHOD'], 'INFO');
+        
         try {
             $this->requireAuth();
+            writeLog("✅ Auth check passed", 'INFO');
+            
             $this->validateCsrfToken();
+            writeLog("✅ CSRF validation passed", 'INFO');
 
             $user = $this->getCurrentUser();
+            writeLog("👤 Current user: " . json_encode($user), 'INFO');
             
             // دریافت داده‌های POST
             $data = [
@@ -127,18 +163,54 @@ class RequestController extends BaseController
                 'is_urgent' => $this->input('is_urgent') ? 1 : 0
             ];
 
-            // ایجاد درخواست
-            $result = $this->paymentRequestModel->createRequest($data);
+            writeLog("📋 Processed data for DB: " . json_encode($data), 'INFO');
 
-            if ($result['success']) {
-                $this->setFlashMessage('success', 'درخواست حواله با موفقیت ایجاد شد');
-                $this->redirect('?route=requests&action=show&id=' . $result['request_id']);
+            // ایجاد درخواست
+            writeLog("🔄 Calling paymentRequestModel->createRequest()", 'INFO');
+            $result = $this->paymentRequestModel->createRequest($data);
+            writeLog("📤 createRequest result: " . json_encode($result), 'INFO');
+
+            // بررسی نوع درخواست (AJAX یا عادی)
+            if ($this->isAjaxRequest()) {
+                // پاسخ JSON برای AJAX
+                header('Content-Type: application/json; charset=utf-8');
+                
+                if ($result['success']) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'درخواست حواله با موفقیت ایجاد شد',
+                        'redirect_url' => 'index.php?route=requests&action=show&id=' . $result['request_id'],
+                        'request_id' => $result['request_id']
+                    ]);
+                    writeLog("✅ Success! JSON response sent", 'INFO');
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => implode('<br>', $result['errors']),
+                        'errors' => $result['errors']
+                    ]);
+                    writeLog("❌ Creation failed. JSON error response sent", 'ERROR');
+                }
+                exit;
             } else {
-                $this->setFlashMessage('error', implode('<br>', $result['errors']));
-                $this->redirect('?route=requests&action=create');
+                // پاسخ عادی برای فرم‌های غیر AJAX
+                if ($result['success']) {
+                    $this->setFlashMessage('success', 'درخواست حواله با موفقیت ایجاد شد');
+                    $redirectUrl = 'index.php?route=requests&action=show&id=' . $result['request_id'];
+                    writeLog("✅ Success! Redirecting to: " . $redirectUrl, 'INFO');
+                    $this->redirect($redirectUrl);
+                } else {
+                    $errorMessage = implode('<br>', $result['errors']);
+                    $this->setFlashMessage('error', $errorMessage);
+                    writeLog("❌ Creation failed. Errors: " . $errorMessage, 'ERROR');
+                    writeLog("🔙 Redirecting back to create form", 'INFO');
+                    $this->redirect('index.php?route=requests&action=create');
+                }
             }
 
         } catch (Exception $e) {
+            writeLog("💥 Exception in store(): " . $e->getMessage(), 'ERROR');
+            writeLog("📍 Exception location: " . $e->getFile() . ':' . $e->getLine(), 'ERROR');
             $this->handleError($e, 'خطا در ایجاد درخواست');
         }
     }
@@ -209,7 +281,7 @@ class RequestController extends BaseController
                 $this->setFlashMessage('error', implode('<br>', $result['errors']));
             }
 
-            $this->redirect('?route=requests&action=show&id=' . $requestId);
+            $this->redirect('index.php?route=requests&action=show&id=' . $requestId);
 
         } catch (Exception $e) {
             $this->handleError($e, 'خطا در تایید درخواست');
@@ -241,7 +313,7 @@ class RequestController extends BaseController
                 $this->setFlashMessage('error', implode('<br>', $result['errors']));
             }
 
-            $this->redirect('?route=requests&action=show&id=' . $requestId);
+            $this->redirect('index.php?route=requests&action=show&id=' . $requestId);
 
         } catch (Exception $e) {
             $this->handleError($e, 'خطا در رد درخواست');
@@ -269,7 +341,7 @@ class RequestController extends BaseController
                 $this->setFlashMessage('error', implode('<br>', $result['errors']));
             }
 
-            $this->redirect('?route=requests&action=show&id=' . $requestId);
+            $this->redirect('index.php?route=requests&action=show&id=' . $requestId);
 
         } catch (Exception $e) {
             $this->handleError($e, 'خطا در تکمیل درخواست');

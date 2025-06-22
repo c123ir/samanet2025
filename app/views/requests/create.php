@@ -57,7 +57,7 @@ if ($flash) {
                 <div class="card-body p-4">
                     <form id="requestForm" method="POST" action="?route=requests&action=store" class="needs-validation" novalidate>
                         <!-- CSRF Token -->
-                        <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+                        <input type="hidden" name="_token" value="<?= $csrf_token ?>">
 
                         <!-- اطلاعات اصلی درخواست -->
                         <div class="form-section mb-5">
@@ -109,20 +109,17 @@ if ($flash) {
 
                                 <!-- مبلغ -->
                                 <div class="col-md-6">
-                                    <label for="amount" class="form-label required">مبلغ (ریال)</label>
+                                    <label for="amount" class="form-label">مبلغ (ریال)</label>
                                     <div class="input-group">
                                         <input type="text" 
                                                class="form-control number-input" 
                                                id="amount" 
                                                name="amount" 
                                                placeholder="۱۰۰۰۰۰۰"
-                                               data-persian-convert="true"
-                                               required>
+                                               data-persian-convert="true">
                                         <span class="input-group-text">ریال</span>
                                     </div>
-                                    <div class="invalid-feedback">
-                                        لطفاً مبلغ درخواست را وارد کنید
-                                    </div>
+                                    <div class="form-text">اختیاری - مبلغ درخواست</div>
                                     <div class="amount-words text-muted small mt-1"></div>
                                 </div>
 
@@ -176,48 +173,39 @@ if ($flash) {
                             <div class="row g-3">
                                 <!-- نام صاحب حساب -->
                                 <div class="col-md-6">
-                                    <label for="account_holder" class="form-label required">نام صاحب حساب</label>
+                                    <label for="account_holder" class="form-label">نام صاحب حساب</label>
                                     <input type="text" 
                                            class="form-control" 
                                            id="account_holder" 
                                            name="account_holder" 
                                            placeholder="نام و نام خانوادگی صاحب حساب"
-                                           required
                                            maxlength="100">
-                                    <div class="invalid-feedback">
-                                        لطفاً نام صاحب حساب را وارد کنید
-                                    </div>
+                                    <div class="form-text">اختیاری - نام صاحب حساب</div>
                                 </div>
 
                                 <!-- بانک -->
                                 <div class="col-md-6">
-                                    <label for="bank_name" class="form-label required">بانک</label>
-                                    <select class="form-select" id="bank_name" name="bank_name" required>
+                                    <label for="bank_name" class="form-label">بانک</label>
+                                    <select class="form-select" id="bank_name" name="bank_name">
                                         <option value="">انتخاب بانک...</option>
                                         <?php foreach ($banks as $value => $label): ?>
                                             <option value="<?= $value ?>"><?= $label ?></option>
                                         <?php endforeach; ?>
                                     </select>
-                                    <div class="invalid-feedback">
-                                        لطفاً بانک را انتخاب کنید
-                                    </div>
+                                    <div class="form-text">اختیاری - نام بانک</div>
                                 </div>
 
                                 <!-- شماره حساب -->
                                 <div class="col-md-6">
-                                    <label for="account_number" class="form-label required">شماره حساب</label>
+                                    <label for="account_number" class="form-label">شماره حساب</label>
                                     <input type="text" 
                                            class="form-control number-input" 
                                            id="account_number" 
                                            name="account_number" 
                                            placeholder="۱۲۳۴۵۶۷۸۹۰۱۲۳۴۵۶"
                                            data-persian-convert="true"
-                                           required
                                            maxlength="20">
-                                    <div class="invalid-feedback">
-                                        لطفاً شماره حساب را وارد کنید
-                                    </div>
-                                    <div class="form-text">شماره حساب بدون خط تیره</div>
+                                    <div class="form-text">اختیاری - شماره حساب بدون خط تیره</div>
                                 </div>
 
                                 <!-- شماره کارت -->
@@ -368,27 +356,42 @@ document.addEventListener('DOMContentLoaded', function() {
     // اعتبارسنجی فرم
     form.addEventListener('submit', function(e) {
         e.preventDefault();
+        console.log('🚀 Form submit event triggered');
         
         if (!form.checkValidity()) {
             e.stopPropagation();
             form.classList.add('was-validated');
+            console.log('❌ Form validation failed');
             
             // فوکوس روی اولین فیلد خطا
             const firstInvalid = form.querySelector(':invalid');
             if (firstInvalid) {
+                console.log('🎯 Focus on invalid field:', firstInvalid.name);
                 firstInvalid.focus();
                 firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             return;
         }
         
+        console.log('✅ Form validation passed');
+        
+        // جمع‌آوری تمام داده‌های فرم برای logging
+        const formData = new FormData(form);
+        const formObject = {};
+        for (let [key, value] of formData.entries()) {
+            formObject[key] = value;
+        }
+        console.log('📋 Form data to be submitted:', formObject);
+        
         // نمایش loading
         const submitBtn = document.getElementById('submitBtn');
         const originalText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>در حال ثبت...';
         submitBtn.disabled = true;
+        console.log('⏳ Submit button set to loading state');
         
         // ارسال فرم
+        console.log('📤 Submitting form to:', form.action);
         form.submit();
     });
     

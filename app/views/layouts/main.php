@@ -909,7 +909,7 @@
                     <?php if (Security::isLoggedIn()): ?>
                         <div class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <img src="<?= asset('img/default-avatar.png') ?>" alt="<?= htmlspecialchars($user['full_name'] ?? 'کاربر') ?>" class="rounded-circle me-2" width="32" height="32">
+                                <img src="<?= asset('img/default-avatar.svg') ?>" alt="<?= htmlspecialchars($user['full_name'] ?? 'کاربر') ?>" class="rounded-circle me-2" width="32" height="32">
                                 <span><?= htmlspecialchars($user['full_name'] ?? 'کاربر') ?></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
@@ -1048,6 +1048,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?= asset('js/theme-system.js') ?>"></script>
     <script src="<?= asset('js/app.js') ?>"></script>
+    
+    <!-- Debug Helper (فقط در development) -->
+    <?php if (APP_ENV === 'development'): ?>
+    <script src="<?= asset('js/debug_helper.js') ?>"></script>
+    <?php endif; ?>
     
     <!-- Additional JavaScript -->
     <?php if (isset($additional_js)): ?>

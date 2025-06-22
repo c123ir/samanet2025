@@ -24,6 +24,11 @@ $requests_data = $requests ?? ['data' => [], 'total' => 0, 'current_page' => 1];
 $filters = $filters ?? [];
 ?>
 
+<script>
+document.body.classList.add('requests-page');
+console.log('📄 Added requests-page class to body');
+</script>
+
 <div class="content-wrapper">
     <!-- Header Section -->
     <div class="page-header mb-4">
@@ -57,49 +62,41 @@ $filters = $filters ?? [];
 
     <!-- آمار درخواست‌ها -->
     <div class="stats-section mb-4">
-        <div class="row g-3">
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card stat-card-primary">
-                    <div class="stat-icon">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number"><?= number_format($stats['total'] ?? 0) ?></h3>
-                        <p class="stat-label">کل درخواست‌ها</p>
-                    </div>
+        <div class="stats-grid" style="display: grid !important; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important; gap: 1rem !important;">
+            <div class="stat-card stat-card-primary">
+                <div class="stat-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number"><?= number_format($stats['total'] ?? 0) ?></h3>
+                    <p class="stat-label">کل درخواست‌ها</p>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card stat-card-warning">
-                    <div class="stat-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number"><?= number_format($stats['pending'] ?? 0) ?></h3>
-                        <p class="stat-label">در انتظار</p>
-                    </div>
+            <div class="stat-card stat-card-warning">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number"><?= number_format($stats['pending'] ?? 0) ?></h3>
+                    <p class="stat-label">در انتظار</p>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card stat-card-info">
-                    <div class="stat-icon">
-                        <i class="fas fa-cog"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number"><?= number_format($stats['processing'] ?? 0) ?></h3>
-                        <p class="stat-label">در حال پردازش</p>
-                    </div>
+            <div class="stat-card stat-card-info">
+                <div class="stat-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number"><?= number_format($stats['processing'] ?? 0) ?></h3>
+                    <p class="stat-label">در حال پردازش</p>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6">
-                <div class="stat-card stat-card-success">
-                    <div class="stat-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3 class="stat-number"><?= number_format($stats['completed'] ?? 0) ?></h3>
-                        <p class="stat-label">تکمیل شده</p>
-                    </div>
+            <div class="stat-card stat-card-success">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number"><?= number_format($stats['completed'] ?? 0) ?></h3>
+                    <p class="stat-label">تکمیل شده</p>
                 </div>
             </div>
         </div>
@@ -109,82 +106,86 @@ $filters = $filters ?? [];
     <div class="filters-section mb-4">
         <div class="flat-card">
             <div class="card-body p-3">
-                <form id="filtersForm" method="GET" class="row g-3 align-items-end">
+                <form id="filtersForm" method="GET" class="filters-form">
                     <input type="hidden" name="route" value="requests">
                     
-                    <!-- جستجو -->
-                    <div class="col-md-4">
-                        <label for="search" class="form-label">جستجو</label>
-                        <div class="input-group">
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="search" 
-                                   name="search" 
-                                   value="<?= htmlspecialchars($filters['search'] ?? '') ?>"
-                                   placeholder="جستجو در عنوان، توضیحات، شماره مرجع...">
-                            <button class="btn btn-outline-secondary" type="button" id="clearSearch">
-                                <i class="fas fa-times"></i>
-                            </button>
+                    <div class="row g-3">
+                        <!-- جستجو -->
+                        <div class="col-12">
+                            <label for="search" class="form-label">جستجو</label>
+                            <div class="input-group">
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="search" 
+                                       name="search" 
+                                       value="<?= htmlspecialchars($filters['search'] ?? '') ?>"
+                                       placeholder="جستجو در عنوان، توضیحات، شماره مرجع...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- وضعیت -->
-                    <div class="col-md-2">
-                        <label for="status" class="form-label">وضعیت</label>
-                        <select class="form-select" id="status" name="status">
-                            <option value="">همه وضعیت‌ها</option>
-                            <?php foreach ($statuses as $value => $label): ?>
-                                <option value="<?= $value ?>" <?= ($filters['status'] ?? '') === $value ? 'selected' : '' ?>>
-                                    <?= $label ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                        <!-- فیلترهای دوم -->
+                        <div class="col-6 col-md-3">
+                            <label for="status" class="form-label">وضعیت</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">همه وضعیت‌ها</option>
+                                <?php foreach ($statuses as $value => $label): ?>
+                                    <option value="<?= $value ?>" <?= ($filters['status'] ?? '') === $value ? 'selected' : '' ?>>
+                                        <?= $label ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <!-- اولویت -->
-                    <div class="col-md-2">
-                        <label for="priority" class="form-label">اولویت</label>
-                        <select class="form-select" id="priority" name="priority">
-                            <option value="">همه اولویت‌ها</option>
-                            <?php foreach ($priorities as $value => $label): ?>
-                                <option value="<?= $value ?>" <?= ($filters['priority'] ?? '') === $value ? 'selected' : '' ?>>
-                                    <?= $label ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                        <!-- اولویت -->
+                        <div class="col-6 col-md-3">
+                            <label for="priority" class="form-label">اولویت</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="">همه اولویت‌ها</option>
+                                <?php foreach ($priorities as $value => $label): ?>
+                                    <option value="<?= $value ?>" <?= ($filters['priority'] ?? '') === $value ? 'selected' : '' ?>>
+                                        <?= $label ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <!-- تاریخ از -->
-                    <div class="col-md-2">
-                        <label for="date_from" class="form-label">از تاریخ</label>
-                        <input type="date" 
-                               class="form-control" 
-                               id="date_from" 
-                               name="date_from" 
-                               value="<?= $filters['date_from'] ?? '' ?>">
-                    </div>
+                        <!-- تاریخ از -->
+                        <div class="col-6 col-md-3">
+                            <label for="date_from" class="form-label">از تاریخ</label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="date_from" 
+                                   name="date_from" 
+                                   value="<?= $filters['date_from'] ?? '' ?>">
+                        </div>
 
-                    <!-- تاریخ تا -->
-                    <div class="col-md-2">
-                        <label for="date_to" class="form-label">تا تاریخ</label>
-                        <input type="date" 
-                               class="form-control" 
-                               id="date_to" 
-                               name="date_to" 
-                               value="<?= $filters['date_to'] ?? '' ?>">
-                    </div>
+                        <!-- تاریخ تا -->
+                        <div class="col-6 col-md-3">
+                            <label for="date_to" class="form-label">تا تاریخ</label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="date_to" 
+                                   name="date_to" 
+                                   value="<?= $filters['date_to'] ?? '' ?>">
+                        </div>
 
-                    <!-- دکمه‌ها -->
-                    <div class="col-md-12">
-                        <div class="d-flex gap-2 justify-content-end">
-                            <button type="button" class="btn btn-outline-secondary" id="clearFilters">
-                                <i class="fas fa-eraser me-2"></i>
-                                پاک کردن فیلترها
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search me-2"></i>
-                                اعمال فیلتر
-                            </button>
+                        <!-- دکمه‌ها -->
+                        <div class="col-12">
+                            <div class="filters-actions">
+                                <button type="button" class="btn btn-outline-secondary" id="clearFilters">
+                                    <i class="fas fa-eraser me-2"></i>
+                                    <span class="d-none d-md-inline">پاک کردن فیلترها</span>
+                                    <span class="d-md-none">پاک</span>
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-2"></i>
+                                    <span class="d-none d-md-inline">اعمال فیلتر</span>
+                                    <span class="d-md-none">جستجو</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -394,6 +395,17 @@ $filters = $filters ?? [];
     </div>
 </div>
 
+<!-- Force No Cache -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<!-- Load CSS مخصوص این صفحه - RTL Fixed Version -->
+<link rel="stylesheet" href="assets/css/requests-page.css?v=rtl-fixed-<?= time() ?>" id="requests-css">
+<script>
+console.log('🎯 Loading Requests CSS RTL Fixed: rtl-fixed-<?= time() ?>');
+</script>
+
 <!-- Modal تایید درخواست -->
 <div class="modal fade" id="approveModal" tabindex="-1">
     <div class="modal-dialog">
@@ -582,20 +594,157 @@ document.addEventListener('DOMContentLoaded', function() {
     window.exportTable = function(format) {
         alert(`صدور ${format.toUpperCase()} به زودی پیاده‌سازی می‌شود`);
     };
+
+    // Force Layout and Fix RTL Overflow
+    function forceLayoutFix() {
+        // Fix content wrapper
+        const contentWrapper = document.querySelector('.content-wrapper');
+        if (contentWrapper) {
+            contentWrapper.style.width = '100%';
+            contentWrapper.style.maxWidth = '100%';
+            contentWrapper.style.overflowX = 'hidden';
+            contentWrapper.style.boxSizing = 'border-box';
+            contentWrapper.style.paddingLeft = '0';
+            contentWrapper.style.paddingRight = '0';
+            
+            console.log('🔧 Content wrapper fixed for RTL');
+        }
+        
+        // Fix container fluid
+        const containerFluid = document.querySelector('.container-fluid');
+        if (containerFluid) {
+            containerFluid.style.width = '100%';
+            containerFluid.style.maxWidth = '100%';
+            containerFluid.style.paddingLeft = '0';
+            containerFluid.style.paddingRight = '0';
+            containerFluid.style.margin = '0';
+            containerFluid.style.boxSizing = 'border-box';
+            
+            console.log('🔧 Container fluid fixed');
+        }
+        
+        // Force Stats Grid
+        const statsGrid = document.querySelector('.stats-grid');
+        if (statsGrid) {
+            statsGrid.style.display = 'grid';
+            statsGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(250px, 1fr))';
+            statsGrid.style.gap = '1rem';
+            statsGrid.style.width = '100%';
+            statsGrid.style.maxWidth = '100%';
+            statsGrid.style.boxSizing = 'border-box';
+            
+            // Remove any Bootstrap classes
+            statsGrid.classList.remove('row');
+            
+            console.log('🎯 Stats Grid Forced');
+        }
+        
+        // Force stat cards
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            card.style.width = '100%';
+            card.style.maxWidth = '100%';
+            card.style.boxSizing = 'border-box';
+            card.style.margin = '0';
+            card.style.flex = 'none';
+            card.classList.remove('col-md-3', 'col-sm-6', 'col-12');
+        });
+        
+        // Fix all flat-card elements
+        const flatCards = document.querySelectorAll('.flat-card');
+        flatCards.forEach(card => {
+            card.style.width = '100%';
+            card.style.maxWidth = '100%';
+            card.style.boxSizing = 'border-box';
+            card.style.overflow = 'hidden';
+        });
+        
+        console.log(`✅ Layout fixed: ${statCards.length} stat cards, ${flatCards.length} flat cards`);
+    }
+    
+    // Force layout fix on load and after delays
+    forceLayoutFix();
+    setTimeout(forceLayoutFix, 100);
+    setTimeout(forceLayoutFix, 500);
+    setTimeout(forceLayoutFix, 1000); // اضافه کردن delay بیشتر
 });
 </script>
 
-<style>
-/* استایل‌های مخصوص صفحه لیست */
-.stats-section .stat-card {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 15px;
-    backdrop-filter: var(--glass-blur);
-    padding: 1.5rem;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+<!-- Debug Layout Issues -->
+<script>
+// اضافه کردن debug برای layout
+window.debugLayout = function() {
+    const contentWrapper = document.querySelector('.content-wrapper');
+    const rect = contentWrapper.getBoundingClientRect();
+    
+    console.log('🔍 Layout Debug:', {
+        width: rect.width,
+        right: rect.right,
+        windowWidth: window.innerWidth,
+        overflowing: rect.right > window.innerWidth,
+        marginRight: getComputedStyle(contentWrapper).marginRight,
+        paddingRight: getComputedStyle(contentWrapper).paddingRight
+    });
+    
+    if (rect.right > window.innerWidth) {
+        console.warn('⚠️ Content is overflowing!');
+    } else {
+        console.log('✅ Layout is contained within viewport');
+    }
+};
+
+// Auto debug after 2 seconds
+setTimeout(() => {
+    window.debugLayout();
+}, 2000);
+</script>
+
+<!-- Force CSS Refresh -->
+<style id="requests-list-style-v3">
+/* استایل‌های مخصوص صفحه لیست - نسخه Responsive - Force Override - v2.1 */
+
+/* =================
+   Stats Grid System - FORCED
+================== */
+.stats-grid {
+    display: grid !important;
+    gap: 1rem !important;
+    margin-bottom: 2rem !important;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Remove Bootstrap Row/Col from stats if any */
+.stats-section .row,
+.stats-section .col-md-3,
+.stats-section .col-sm-6 {
+    all: unset !important;
+}
+
+.stats-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+.stat-card {
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 15px !important;
+    backdrop-filter: var(--glass-blur) !important;
+    padding: 1.5rem !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+    overflow: hidden !important;
+    min-height: 120px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    flex: none !important;
+    margin: 0 !important;
 }
 
 .stat-card:hover {
@@ -662,13 +811,62 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 0.9rem;
 }
 
-/* جدول */
+/* =================
+   Filters Section
+================== */
+.filters-section .flat-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    backdrop-filter: var(--glass-blur);
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.filters-form {
+    width: 100%;
+}
+
+.filters-form .form-control,
+.filters-form .form-select {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.filters-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* =================
+   Table Section
+================== */
 .requests-table-section .flat-card {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     border-radius: 15px;
     backdrop-filter: var(--glass-blur);
     overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    min-width: 800px; /* حداقل عرض برای جدول */
 }
 
 .table thead th {
@@ -677,6 +875,7 @@ document.addEventListener('DOMContentLoaded', function() {
     color: var(--text-primary);
     font-weight: 600;
     padding: 1rem 0.75rem;
+    white-space: nowrap;
 }
 
 .table tbody td {
@@ -695,6 +894,7 @@ document.addEventListener('DOMContentLoaded', function() {
     padding: 0.5rem 0.75rem;
     border-radius: 8px;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 /* دکمه‌های عملیات */
@@ -709,16 +909,229 @@ document.addEventListener('DOMContentLoaded', function() {
     transform: translateY(-2px);
 }
 
-/* Responsive */
+/* =================
+   Mobile Responsive
+================== */
 @media (max-width: 768px) {
+    .content-wrapper {
+        padding: 0.75rem !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+    
+         /* Stats Grid - موبایل */
+     .stats-grid {
+         grid-template-columns: 1fr !important;
+         gap: 0.75rem !important;
+         margin-bottom: 1.5rem !important;
+         display: grid !important;
+     }
+    
+    .stat-card {
+        padding: 1rem;
+        min-height: 100px;
+    }
+    
     .stat-number {
         font-size: 1.5rem;
     }
     
+    .stat-icon {
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 1rem !important;
+    }
+    
+    /* Page Header - موبایل */
     .page-header .d-flex {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
+    
+    .page-header .btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Filters - موبایل */
+    .filters-section .card-body {
+        padding: 1rem !important;
+    }
+    
+    .filters-actions {
+        justify-content: stretch;
+        gap: 0.5rem;
+    }
+    
+    .filters-actions .btn {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    /* Table - موبایل */
+    .requests-table-section .card-header {
+        padding: 1rem !important;
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+    
+    .table-controls {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .table thead th,
+    .table tbody td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Card Footer Pagination */
+    .card-footer {
+        padding: 1rem !important;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .page-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+ @media (max-width: 576px) {
+     .stats-grid {
+         gap: 0.5rem !important;
+         grid-template-columns: 1fr !important;
+         display: grid !important;
+     }
+    
+    .stat-card {
+        padding: 0.75rem;
+        min-height: 80px;
+    }
+    
+    .stat-number {
+        font-size: 1.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+    
+    .filters-section .card-body {
+        padding: 0.75rem !important;
+    }
+    
+    .filters-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .filters-actions .btn {
+        width: 100%;
+    }
+    
+    .table {
+        min-width: 700px; /* کمتر برای موبایل کوچک */
+    }
+    
+    .table thead th,
+    .table tbody td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.125rem 0.25rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* =================
+   Tablet Responsive
+================== */
+ @media (min-width: 769px) and (max-width: 1024px) {
+     .stats-grid {
+         grid-template-columns: repeat(2, 1fr) !important;
+         gap: 1rem !important;
+         display: grid !important;
+     }
+    
+    .content-wrapper {
+        padding: 1.5rem !important;
+    }
+}
+
+/* =================
+   Large Screen
+================== */
+ @media (min-width: 1200px) {
+     .stats-grid {
+         grid-template-columns: repeat(4, 1fr) !important;
+         gap: 1.5rem !important;
+         display: grid !important;
+     }
+    
+    .stat-card {
+        padding: 2rem;
+    }
+    
+    .content-wrapper {
+        padding: 2rem !important;
+    }
+}
+
+/* =================
+   Print Styles
+================== */
+@media print {
+    .filters-section,
+    .page-header .btn,
+    .table-controls,
+    .btn-group {
+        display: none !important;
+    }
+    
+    .content-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .table {
+        border: 1px solid #000;
+    }
+    
+    .table thead th,
+    .table tbody td {
+        border: 1px solid #000;
+        color: #000;
+        background: #fff;
+    }
+}
+
+/* =================
+   Dark Theme Support
+================== */
+[data-theme="dark"] .stat-card {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .table thead th {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
 </style>

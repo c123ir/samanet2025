@@ -1,0 +1,217 @@
+/*
+ * CSS مخصوص صفحه درخواست‌ها - Fixed RTL Overflow
+ * تاریخ: 1404/03/31 - Version 3.0
+ */
+
+/* =================
+   Layout Fixes for RTL
+================== */
+.requests-page .content-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    padding-left: 0 !important; /* برای RTL */
+    padding-right: 0 !important;
+}
+
+/* Desktop RTL Fix */
+@media (min-width: 1200px) {
+    .requests-page .content-wrapper {
+        margin-right: var(--sidebar-width) !important;
+        margin-left: 0 !important;
+        width: calc(100% - var(--sidebar-width)) !important;
+        max-width: calc(100% - var(--sidebar-width)) !important;
+        padding: 1.5rem !important;
+        box-sizing: border-box !important;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .requests-page .content-wrapper {
+        margin-right: var(--sidebar-width) !important;
+        margin-left: 0 !important;
+        width: calc(100% - var(--sidebar-width)) !important;
+        max-width: calc(100% - var(--sidebar-width)) !important;
+        padding: 1.5rem !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .requests-page .content-wrapper {
+        margin-right: 220px !important;
+        margin-left: 0 !important;
+        width: calc(100% - 220px) !important;
+        max-width: calc(100% - 220px) !important;
+        padding: 1.5rem !important;
+    }
+}
+
+/* Container and Row Fixes */
+.requests-page .container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* =================
+   Stats Grid System
+================== */
+.stats-grid {
+    display: grid !important;
+    gap: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+@media (min-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1.5rem !important;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 1.25rem !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem !important;
+    }
+}
+
+/* Force Stat Cards */
+.stat-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 1.5rem !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    flex: none !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 15px !important;
+    backdrop-filter: blur(20px) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    min-height: 120px !important;
+}
+
+/* =================
+   Form and Table Fixes
+================== */
+.flat-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+}
+
+.table-responsive {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    box-sizing: border-box !important;
+}
+
+.form-row,
+.row {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* =================
+   Responsive Grid Cols
+================== */
+.col-12, .col-md-6, .col-lg-4, .col-md-3, .col-sm-6 {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    box-sizing: border-box !important;
+}
+
+@media (min-width: 768px) {
+    .col-md-6 {
+        width: 50% !important;
+        max-width: 50% !important;
+    }
+    
+    .col-md-3 {
+        width: 25% !important;
+        max-width: 25% !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .col-lg-4 {
+        width: 33.333333% !important;
+        max-width: 33.333333% !important;
+    }
+}
+
+/* Remove Bootstrap remnants */
+.stats-section .row {
+    display: none !important;
+}
+
+.stats-section .col-md-3,
+.stats-section .col-sm-6,
+.stats-section .col-12 {
+    all: unset !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Force everything to be visible */
+.stats-section,
+.stats-grid,
+.stat-card {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+}
+
+/* Debug helper - CSS Loaded Test */
+body.requests-page {
+    border-top: 5px solid red !important;
+}
+
+.stats-grid::after {
+    content: "✅ CSS LOADED & GRID ACTIVE";
+    position: absolute;
+    top: -25px;
+    left: 0;
+    font-size: 12px;
+    color: lime;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 2px 5px;
+    border-radius: 3px;
+    z-index: 1000;
+    font-weight: bold;
+} 
