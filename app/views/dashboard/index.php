@@ -105,7 +105,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h6 class="card-title mb-2">کل مبلغ</h6>
-                    <h4 class="mb-0 persian-num"><?= fa_num(number_format($stats['requests']['total_amount'])) ?></h4>
+                                                <h4 class="mb-0 persian-num"><?= isset($stats['requests']['total_amount']) && $stats['requests']['total_amount'] !== null ? fa_num(number_format($stats['requests']['total_amount'])) : '۰' ?></h4>
                     <small class="opacity-75">ریال</small>
                 </div>
                 <div class="stats-icon">
@@ -178,7 +178,7 @@
                                                 <?php if (mb_strlen($request['title']) > 30): ?>...<?php endif; ?>
                                             </div>
                                         </td>
-                                        <td class="persian-num"><?= fa_num(number_format($request['amount'])) ?></td>
+                                        <td class="persian-num"><?= $request['amount'] !== null ? fa_num(number_format($request['amount'])) : 'مشخص نشده' ?></td>
                                         <td>
                                             <span class="badge bg-<?= getStatusColor($request['status']) ?>">
                                                 <?= $request['status_label'] ?>
@@ -235,7 +235,7 @@
                             <div>
                                 <strong><?= htmlspecialchars(mb_substr($urgent['title'], 0, 25)) ?></strong>
                                 <small class="d-block text-muted persian-num">
-                                    <?= fa_num(number_format($urgent['amount'])) ?> ریال
+                                    <?= $urgent['amount'] !== null ? fa_num(number_format($urgent['amount'])) : 'مشخص نشده' ?> ریال
                                 </small>
                             </div>
                             <a href="<?= url("requests/view/{$urgent['id']}") ?>" class="btn btn-warning btn-sm flat-btn">

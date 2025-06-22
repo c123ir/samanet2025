@@ -268,7 +268,7 @@ console.log('📄 Added requests-page class to body');
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <span class="fw-bold"><?= number_format($request['amount']) ?></span>
+                                    <span class="fw-bold"><?= $request['amount'] !== null ? number_format($request['amount']) : 'مشخص نشده' ?></span>
                                     <small class="text-muted d-block">ریال</small>
                                 </td>
                                 <td class="text-center">
@@ -373,7 +373,7 @@ console.log('📄 Added requests-page class to body');
                     </nav>
                     <div class="text-center mt-2">
                         <small class="text-muted">
-                            نمایش <?= $requests_data['from'] ?> تا <?= $requests_data['to'] ?> از <?= number_format($requests_data['total']) ?> درخواست
+                            نمایش <?= $requests_data['from'] ?> تا <?= $requests_data['to'] ?> از <?= number_format($requests_data['total'] ?? 0) ?> درخواست
                         </small>
                     </div>
                 </div>

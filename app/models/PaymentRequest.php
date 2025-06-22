@@ -17,7 +17,8 @@ class PaymentRequest extends Database
         'requester_id', 'group_id', 'title', 'description', 'amount',
         'account_number', 'account_holder', 'bank_name', 'iban', 'card_number',
         'priority', 'status', 'assigned_to', 'due_date', 'reference_number',
-        'category', 'tags', 'is_urgent', 'approval_notes', 'rejection_reason'
+        'category', 'tags', 'is_urgent', 'approval_notes', 'rejection_reason',
+        'created_at', 'updated_at', 'completed_at'
     ];
     protected $hidden = [];
     
@@ -693,8 +694,8 @@ class PaymentRequest extends Database
             $request['priority_label'] = REQUEST_PRIORITIES[$request['priority']] ?? $request['priority'];
             $request['category_label'] = self::CATEGORIES[$request['category']] ?? $request['category'];
 
-            // فرمت کردن مبلغ
-            $request['amount_formatted'] = number_format($request['amount']);
+            // فرمت کردن مبلغ - رفع مشکل null
+            $request['amount_formatted'] = $request['amount'] !== null ? number_format($request['amount']) : 'مشخص نشده';
 
             // فرمت کردن تاریخ‌ها
             $request['created_at_jalali'] = date('Y/m/d H:i', strtotime($request['created_at']));
@@ -1145,7 +1146,7 @@ class PaymentRequest extends Database
                 $csvData[] = [
                     $request['reference_number'],
                     $request['title'],
-                    number_format($request['amount']),
+                    $request['amount'] !== null ? number_format($request['amount']) : 'مشخص نشده',
                     $request['account_holder'],
                     $request['account_number'],
                     $request['bank_name'],

@@ -117,34 +117,51 @@ class Database
     public function create($data) 
     {
         try {
+            writeLog("🔧 Database::create() called for table: {$this->table}", 'INFO');
+            writeLog("📥 Raw input data: " . json_encode($data), 'INFO');
+            
             // فیلتر کردن داده‌ها بر اساس fillable
             if (!empty($this->fillable)) {
-                $data = array_intersect_key($data, array_flip($this->fillable));
+                $filteredData = array_intersect_key($data, array_flip($this->fillable));
+                writeLog("📋 Fillable fields: " . json_encode($this->fillable), 'INFO');
+                writeLog("📋 Filtered data: " . json_encode($filteredData), 'INFO');
+                $data = $filteredData;
             }
 
             // حذف فیلدهای مخفی
             if (!empty($this->hidden)) {
                 $data = array_diff_key($data, array_flip($this->hidden));
+                writeLog("🙈 Hidden fields removed", 'INFO');
             }
 
             // اضافه کردن تاریخ ایجاد
             if (!isset($data['created_at'])) {
                 $data['created_at'] = date('Y-m-d H:i:s');
+                writeLog("📅 Added created_at: " . $data['created_at'], 'INFO');
             }
 
             $columns = implode(',', array_keys($data));
             $placeholders = ':' . implode(', :', array_keys($data));
             
             $sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$placeholders})";
+            writeLog("🔍 SQL Query: " . $sql, 'INFO');
+            writeLog("🔍 SQL Params: " . json_encode($data), 'INFO');
+            
             $stmt = $this->connection->prepare($sql);
             
             if ($stmt->execute($data)) {
-                return $this->connection->lastInsertId();
+                $insertId = $this->connection->lastInsertId();
+                writeLog("✅ Record created successfully with ID: " . $insertId, 'INFO');
+                return $insertId;
+            } else {
+                $errorInfo = $stmt->errorInfo();
+                writeLog("❌ Execute failed. Error info: " . json_encode($errorInfo), 'ERROR');
+                return false;
             }
             
-            return false;
         } catch (PDOException $e) {
-            writeLog("خطا در ایجاد رکورد جدید: " . $e->getMessage(), 'ERROR');
+            writeLog("💥 PDO Exception in create(): " . $e->getMessage(), 'ERROR');
+            writeLog("📍 SQL State: " . $e->getCode(), 'ERROR');
             return false;
         }
     }
