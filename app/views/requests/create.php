@@ -115,8 +115,9 @@ if ($flash) {
                                                class="form-control number-input" 
                                                id="amount" 
                                                name="amount" 
-                                               placeholder="۱۰۰۰۰۰۰"
-                                               data-persian-convert="true">
+                                               placeholder="۱،۰۰۰،۰۰۰"
+                                               data-persian-convert="true"
+                                               maxlength="20">
                                         <span class="input-group-text">ریال</span>
                                     </div>
                                     <div class="form-text">اختیاری - مبلغ درخواست</div>
@@ -313,14 +314,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     value = value.substring(0, 19);
                 }
             }
-            // مخصوص مبلغ - حذف کاراکترهای غیرعددی
+            // مخصوص مبلغ - فرمت هزارگان پیشرفته
             else if (e.target.id === 'amount') {
-                value = value.replace(/\D/g, '');
-                // اضافه کردن کاما برای هزارگان
+                value = value.replace(/\D/g, ''); // حذف همه کلاراکترهای غیرعددی
+                
                 if (value) {
-                    const formatted = parseInt(value).toLocaleString('fa-IR');
+                    // فرمت کردن با کاما برای هزارگان
+                    const formatted = formatNumberWithCommas(value);
                     e.target.value = formatted;
                     updateAmountWords(parseInt(value));
+                    return;
+                } else {
+                    // اگر فیلد خالی شد
+                    e.target.value = '';
+                    updateAmountWords(0);
                     return;
                 }
             }
@@ -331,13 +338,49 @@ document.addEventListener('DOMContentLoaded', function() {
             
             e.target.value = value;
         });
+        
+        // Event listener مخصوص فیلد amount برای blur
+        input.addEventListener('blur', function(e) {
+            if (e.target.id === 'amount' && e.target.value) {
+                // اطمینان از فرمت صحیح هنگام خروج از فیلد
+                const cleanValue = e.target.value.replace(/\D/g, '');
+                if (cleanValue) {
+                    e.target.value = formatNumberWithCommas(cleanValue);
+                    updateAmountWords(parseInt(cleanValue));
+                }
+            }
+        });
+        
+        // Event listener برای focus (انتخاب متن)
+        input.addEventListener('focus', function(e) {
+            if (e.target.id === 'amount') {
+                // انتخاب تمام متن برای تایپ راحت‌تر
+                setTimeout(() => {
+                    e.target.select();
+                }, 10);
+            }
+        });
     });
+    
+    // فرمت کردن عدد با کاما (هزارگان)
+    function formatNumberWithCommas(number) {
+        // تبدیل به رشته و حذف کاماهای قبلی
+        const numStr = number.toString().replace(/,/g, '');
+        
+        // اضافه کردن کاما هر ۳ رقم از راست
+        return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+    
+    // حذف کاما از عدد برای ارسال به سرور
+    function removeCommas(numberStr) {
+        return numberStr.replace(/,/g, '');
+    }
     
     // تبدیل مبلغ به حروف
     function updateAmountWords(amount) {
         if (amount && amount > 0) {
             const words = numberToWords(amount);
-            amountWordsDiv.textContent = words + ' ریال';
+            amountWordsDiv.textContent = words;
             amountWordsDiv.classList.add('text-success');
         } else {
             amountWordsDiv.textContent = '';
@@ -345,12 +388,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // تابع ساده تبدیل عدد به حروف
+    // تابع بهبود یافته تبدیل عدد به حروف
     function numberToWords(num) {
-        if (num < 1000) return num + ' ریال';
-        if (num < 1000000) return Math.floor(num / 1000) + ' هزار ریال';
-        if (num < 1000000000) return Math.floor(num / 1000000) + ' میلیون ریال';
-        return Math.floor(num / 1000000000) + ' میلیارد ریال';
+        if (!num || num === 0) return '';
+        
+        const persianNumbers = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+        
+        if (num < 1000) {
+            return formatNumberWithCommas(num) + ' ریال';
+        } else if (num < 1000000) {
+            const thousands = Math.floor(num / 1000);
+            const remainder = num % 1000;
+            
+            if (remainder === 0) {
+                return formatNumberWithCommas(thousands) + ' هزار ریال';
+            } else {
+                return formatNumberWithCommas(thousands) + ' هزار و ' + formatNumberWithCommas(remainder) + ' ریال';
+            }
+        } else if (num < 1000000000) {
+            const millions = Math.floor(num / 1000000);
+            return formatNumberWithCommas(millions) + ' میلیون ریال';
+        } else if (num < 1000000000000) {
+            const billions = Math.floor(num / 1000000000);
+            return formatNumberWithCommas(billions) + ' میلیارد ریال';
+        } else {
+            return 'مبلغ بسیار زیاد!';
+        }
     }
     
     // اعتبارسنجی فرم
@@ -374,6 +437,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         console.log('✅ Form validation passed');
+        
+        // حذف کاما از فیلد مبلغ قبل از ارسال
+        const amountField = document.getElementById('amount');
+        if (amountField && amountField.value) {
+            amountField.value = removeCommas(amountField.value);
+        }
         
         // جمع‌آوری تمام داده‌های فرم برای logging
         const formData = new FormData(form);
@@ -443,6 +512,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 // نمایش پیام خطا
                 showErrorMessage(result.message || 'خطا در ایجاد درخواست');
                 
+                // بازگردانی فرمت فیلد amount
+                if (amountField && amountField.value) {
+                    amountField.value = formatNumberWithCommas(amountField.value);
+                }
+                
                 // بازگردانی دکمه
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
@@ -451,6 +525,11 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('❌ Error submitting form:', error);
             showErrorMessage('خطا در ارسال درخواست');
+            
+            // بازگردانی فرمت فیلد amount
+            if (amountField && amountField.value) {
+                amountField.value = formatNumberWithCommas(amountField.value);
+            }
             
             // بازگردانی دکمه
             submitBtn.innerHTML = originalText;
@@ -499,6 +578,14 @@ document.addEventListener('DOMContentLoaded', function() {
         form.classList.remove('was-validated');
         amountWordsDiv.textContent = '';
         amountWordsDiv.classList.remove('text-success');
+        
+        // پاک کردن فیلد amount
+        setTimeout(() => {
+            const amountField = document.getElementById('amount');
+            if (amountField) {
+                amountField.value = '';
+            }
+        }, 10);
     });
     
     // Auto-resize textarea
@@ -600,6 +687,32 @@ document.addEventListener('DOMContentLoaded', function() {
     background-repeat: no-repeat;
     background-position: left calc(0.375em + 0.1875rem) center;
     background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+/* استایل مخصوص فیلد amount */
+#amount {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    text-align: left;
+    direction: ltr;
+    font-size: 1.1rem;
+}
+
+#amount:focus {
+    font-size: 1.2rem;
+    transition: font-size 0.2s ease;
+}
+
+.amount-words {
+    font-weight: 500;
+    padding: 0.5rem;
+    border-radius: 8px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    margin-top: 0.5rem;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
 }
 
 /* Animation for form sections */
