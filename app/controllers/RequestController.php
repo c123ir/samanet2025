@@ -150,15 +150,15 @@ class RequestController extends BaseController
                 'group_id' => $user['group_id'],
                 'title' => $this->input('title'),
                 'description' => $this->input('description'),
-                'amount' => $this->convertPersianNumbers($this->input('amount')),
-                'account_number' => $this->convertPersianNumbers($this->input('account_number')),
-                'account_holder' => $this->input('account_holder'),
-                'bank_name' => $this->input('bank_name'),
-                'iban' => $this->input('iban'),
-                'card_number' => $this->convertPersianNumbers($this->input('card_number')),
+                'amount' => $this->processAmountField($this->input('amount')),
+                'account_number' => $this->processStringField($this->input('account_number')),
+                'account_holder' => $this->processStringField($this->input('account_holder')),
+                'bank_name' => $this->processStringField($this->input('bank_name')),
+                'iban' => $this->processStringField($this->input('iban')),
+                'card_number' => $this->processStringField($this->input('card_number')),
                 'priority' => $this->input('priority', PaymentRequest::PRIORITY_NORMAL),
                 'category' => $this->input('category'),
-                'due_date' => $this->input('due_date'),
+                'due_date' => $this->processDateField($this->input('due_date')),
                 'tags' => $this->input('tags'),
                 'is_urgent' => $this->input('is_urgent') ? 1 : 0
             ];
@@ -389,6 +389,54 @@ class RequestController extends BaseController
         // فقط مدیران و ادمین‌ها
         return in_array($user['role'], ['admin', 'manager']) && 
                $request['status'] === PaymentRequest::STATUS_PENDING;
+    }
+
+    /**
+     * پردازش فیلد مبلغ
+     */
+    private function processAmountField($amount)
+    {
+        if (empty($amount) || trim($amount) === '') {
+            return null; // برای فیلدهای اختیاری
+        }
+        
+        $amount = $this->convertPersianNumbers($amount);
+        $amount = str_replace([',', ' '], '', $amount); // حذف کاما و فاصله
+        
+        return is_numeric($amount) ? (float)$amount : null;
+    }
+
+    /**
+     * پردازش فیلدهای رشته‌ای
+     */
+    private function processStringField($value)
+    {
+        if (empty($value) || trim($value) === '') {
+            return null; // به جای رشته خالی، null برگردان
+        }
+        
+        if (is_numeric($value)) {
+            return $this->convertPersianNumbers($value);
+        }
+        
+        return trim($value);
+    }
+
+    /**
+     * پردازش فیلد تاریخ
+     */
+    private function processDateField($date)
+    {
+        if (empty($date) || trim($date) === '') {
+            return null;
+        }
+        
+        // اگر تاریخ معتبر است، برگردان
+        if (strtotime($date)) {
+            return $date;
+        }
+        
+        return null;
     }
 }
 ?>
