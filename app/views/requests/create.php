@@ -300,39 +300,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const amountWordsDiv = document.querySelector('.amount-words');
     const cardNumberInput = document.getElementById('card_number');
     
-    // Event listener مخصوص فیلد مبلغ - فرمت بلادرنگ
+    // Debug: چک کردن وجود المان‌ها
+    console.log('🔍 Amount input exists:', !!amountInput);
+    console.log('🔍 Amount words div exists:', !!amountWordsDiv);
+    
+    if (!amountInput) {
+        console.error('❌ Amount input field not found!');
+        return;
+    }
+    
+    // تست اولیه - Event listener ساده
+    amountInput.addEventListener('keyup', function(e) {
+        console.log('⌨️ Keyup event triggered:', e.target.value);
+    });
+    
+    // Event listener مخصوص فیلد مبلغ - ساده و قابل اعتماد
     amountInput.addEventListener('input', function(e) {
-        const value = window.Samanet.toEnglishNumbers(e.target.value);
-        console.log('💰 Amount input:', value); // Debug
+        console.log('🚀 Input event triggered! Value:', e.target.value); // Debug
         
-        // ذخیره موقعیت cursor
-        const cursorPosition = e.target.selectionStart;
-        const oldValue = e.target.value;
+        // تبدیل اعداد فارسی به انگلیسی (fallback)
+        let value = e.target.value;
         
-        // حذف تمام کاراکترهای غیرعددی (شامل کاماهای قبلی)
-        const cleanValue = value.replace(/\D/g, '');
+        // تبدیل اعداد فارسی
+        value = value.replace(/[۰-۹]/g, function(match) {
+            return String.fromCharCode(match.charCodeAt(0) - '۰'.charCodeAt(0) + '0'.charCodeAt(0));
+        });
+        
+        console.log('💰 After Persian conversion:', value); // Debug
+        
+        // حذف همه کاراکترهای غیرعددی
+        const cleanValue = value.replace(/[^\d]/g, '');
         console.log('🧹 Clean value:', cleanValue); // Debug
         
-        if (cleanValue) {
-            // فرمت کردن با کاما
-            const formattedValue = formatNumberWithCommas(cleanValue);
-            console.log('✨ Formatted value:', formattedValue); // Debug
+        if (cleanValue && cleanValue !== '') {
+            // فرمت با کاما
+            const formatted = addCommas(cleanValue);
+            console.log('✨ Formatted:', formatted); // Debug
             
-            // تنظیم مقدار جدید
-            e.target.value = formattedValue;
+            // تنظیم مقدار بدون cursor positioning
+            e.target.value = formatted;
             
-            // محاسبه موقعیت جدید cursor
-            const newCursorPosition = calculateCursorPosition(oldValue, formattedValue, cursorPosition);
-            
-            // تنظیم cursor در موقعیت درست
-            setTimeout(() => {
-                e.target.setSelectionRange(newCursorPosition, newCursorPosition);
-            }, 0);
-            
-            // به‌روزرسانی متن
+            // بروزرسانی متن توضیحی
             updateAmountWords(parseInt(cleanValue));
         } else {
-            // اگر فیلد خالی شد
             e.target.value = '';
             updateAmountWords(0);
         }
@@ -381,54 +391,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // فرمت کردن عدد با کاما (هزارگان) - سریع و بهینه
-    function formatNumberWithCommas(number) {
+    // تابع ساده اضافه کردن کاما
+    function addCommas(num) {
+        console.log('🔧 Adding commas to:', num); // Debug
+        
+        if (!num || num === '' || num === '0') {
+            return '';
+        }
+        
         // تبدیل به رشته و حذف کاماهای قبلی
-        const numStr = number.toString().replace(/[^\d]/g, '');
+        const str = num.toString().replace(/,/g, '');
         
-        // اگر خالی است، برگرداندن رشته خالی
-        if (!numStr) return '';
-        
-        // اضافه کردن کاما هر ۳ رقم از راست
-        const parts = [];
-        let str = numStr;
-        
-        while (str.length > 3) {
-            parts.unshift(str.slice(-3));
-            str = str.slice(0, -3);
-        }
-        
-        if (str.length > 0) {
-            parts.unshift(str);
-        }
-        
-        return parts.join(',');
+        // اضافه کردن کاما از راست به چپ
+        return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
     
-    // محاسبه موقعیت cursor بعد از فرمت کردن
-    function calculateCursorPosition(oldValue, newValue, oldCursorPos) {
-        // تعداد کاماهای قبلی قبل از cursor
-        const commasBeforeCursor = (oldValue.substring(0, oldCursorPos).match(/,/g) || []).length;
-        
-        // تعداد ارقام قبل از cursor (بدون کاما)
-        const digitsBeforeCursor = oldValue.substring(0, oldCursorPos).replace(/,/g, '').length;
-        
-        // پیدا کردن موقعیت جدید بر اساس تعداد ارقام
-        let newCursorPos = 0;
-        let digitCount = 0;
-        
-        for (let i = 0; i < newValue.length; i++) {
-            if (newValue[i] !== ',') {
-                digitCount++;
-                if (digitCount === digitsBeforeCursor) {
-                    newCursorPos = i + 1;
-                    break;
-                }
-            }
-        }
-        
-        return newCursorPos;
+    // تابع قدیمی نگه داشتن برای سازگاری
+    function formatNumberWithCommas(number) {
+        return addCommas(number);
     }
+    
+
     
     // حذف کاما از عدد برای ارسال به سرور
     function removeCommas(numberStr) {
