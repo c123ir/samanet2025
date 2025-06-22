@@ -300,8 +300,66 @@ document.addEventListener('DOMContentLoaded', function() {
     const amountWordsDiv = document.querySelector('.amount-words');
     const cardNumberInput = document.getElementById('card_number');
     
-    // تبدیل خودکار اعداد فارسی
-    const numberInputs = document.querySelectorAll('.number-input');
+    // Event listener مخصوص فیلد مبلغ - فرمت بلادرنگ
+    amountInput.addEventListener('input', function(e) {
+        const value = window.Samanet.toEnglishNumbers(e.target.value);
+        console.log('💰 Amount input:', value); // Debug
+        
+        // ذخیره موقعیت cursor
+        const cursorPosition = e.target.selectionStart;
+        const oldValue = e.target.value;
+        
+        // حذف تمام کاراکترهای غیرعددی (شامل کاماهای قبلی)
+        const cleanValue = value.replace(/\D/g, '');
+        console.log('🧹 Clean value:', cleanValue); // Debug
+        
+        if (cleanValue) {
+            // فرمت کردن با کاما
+            const formattedValue = formatNumberWithCommas(cleanValue);
+            console.log('✨ Formatted value:', formattedValue); // Debug
+            
+            // تنظیم مقدار جدید
+            e.target.value = formattedValue;
+            
+            // محاسبه موقعیت جدید cursor
+            const newCursorPosition = calculateCursorPosition(oldValue, formattedValue, cursorPosition);
+            
+            // تنظیم cursor در موقعیت درست
+            setTimeout(() => {
+                e.target.setSelectionRange(newCursorPosition, newCursorPosition);
+            }, 0);
+            
+            // به‌روزرسانی متن
+            updateAmountWords(parseInt(cleanValue));
+        } else {
+            // اگر فیلد خالی شد
+            e.target.value = '';
+            updateAmountWords(0);
+        }
+    });
+    
+    // Event listener های اضافی برای فیلد amount
+    amountInput.addEventListener('blur', function(e) {
+        if (e.target.value) {
+            // اطمینان از فرمت صحیح هنگام خروج از فیلد
+            const cleanValue = e.target.value.replace(/\D/g, '');
+            if (cleanValue) {
+                e.target.value = formatNumberWithCommas(cleanValue);
+                updateAmountWords(parseInt(cleanValue));
+            }
+        }
+    });
+    
+    // انتخاب متن هنگام focus
+    amountInput.addEventListener('focus', function(e) {
+        // انتخاب تمام متن برای تایپ راحت‌تر
+        setTimeout(() => {
+            e.target.select();
+        }, 10);
+    });
+    
+    // تبدیل خودکار اعداد فارسی برای سایر فیلدها
+    const numberInputs = document.querySelectorAll('.number-input:not(#amount)');
     numberInputs.forEach(input => {
         input.addEventListener('input', function(e) {
             let value = window.Samanet.toEnglishNumbers(e.target.value);
@@ -314,23 +372,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     value = value.substring(0, 19);
                 }
             }
-            // مخصوص مبلغ - فرمت هزارگان پیشرفته
-            else if (e.target.id === 'amount') {
-                value = value.replace(/\D/g, ''); // حذف همه کلاراکترهای غیرعددی
-                
-                if (value) {
-                    // فرمت کردن با کاما برای هزارگان
-                    const formatted = formatNumberWithCommas(value);
-                    e.target.value = formatted;
-                    updateAmountWords(parseInt(value));
-                    return;
-                } else {
-                    // اگر فیلد خالی شد
-                    e.target.value = '';
-                    updateAmountWords(0);
-                    return;
-                }
-            }
             // سایر فیلدهای عددی
             else {
                 value = value.replace(/\D/g, '');
@@ -338,37 +379,55 @@ document.addEventListener('DOMContentLoaded', function() {
             
             e.target.value = value;
         });
-        
-        // Event listener مخصوص فیلد amount برای blur
-        input.addEventListener('blur', function(e) {
-            if (e.target.id === 'amount' && e.target.value) {
-                // اطمینان از فرمت صحیح هنگام خروج از فیلد
-                const cleanValue = e.target.value.replace(/\D/g, '');
-                if (cleanValue) {
-                    e.target.value = formatNumberWithCommas(cleanValue);
-                    updateAmountWords(parseInt(cleanValue));
-                }
-            }
-        });
-        
-        // Event listener برای focus (انتخاب متن)
-        input.addEventListener('focus', function(e) {
-            if (e.target.id === 'amount') {
-                // انتخاب تمام متن برای تایپ راحت‌تر
-                setTimeout(() => {
-                    e.target.select();
-                }, 10);
-            }
-        });
     });
     
-    // فرمت کردن عدد با کاما (هزارگان)
+    // فرمت کردن عدد با کاما (هزارگان) - سریع و بهینه
     function formatNumberWithCommas(number) {
         // تبدیل به رشته و حذف کاماهای قبلی
-        const numStr = number.toString().replace(/,/g, '');
+        const numStr = number.toString().replace(/[^\d]/g, '');
+        
+        // اگر خالی است، برگرداندن رشته خالی
+        if (!numStr) return '';
         
         // اضافه کردن کاما هر ۳ رقم از راست
-        return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const parts = [];
+        let str = numStr;
+        
+        while (str.length > 3) {
+            parts.unshift(str.slice(-3));
+            str = str.slice(0, -3);
+        }
+        
+        if (str.length > 0) {
+            parts.unshift(str);
+        }
+        
+        return parts.join(',');
+    }
+    
+    // محاسبه موقعیت cursor بعد از فرمت کردن
+    function calculateCursorPosition(oldValue, newValue, oldCursorPos) {
+        // تعداد کاماهای قبلی قبل از cursor
+        const commasBeforeCursor = (oldValue.substring(0, oldCursorPos).match(/,/g) || []).length;
+        
+        // تعداد ارقام قبل از cursor (بدون کاما)
+        const digitsBeforeCursor = oldValue.substring(0, oldCursorPos).replace(/,/g, '').length;
+        
+        // پیدا کردن موقعیت جدید بر اساس تعداد ارقام
+        let newCursorPos = 0;
+        let digitCount = 0;
+        
+        for (let i = 0; i < newValue.length; i++) {
+            if (newValue[i] !== ',') {
+                digitCount++;
+                if (digitCount === digitsBeforeCursor) {
+                    newCursorPos = i + 1;
+                    break;
+                }
+            }
+        }
+        
+        return newCursorPos;
     }
     
     // حذف کاما از عدد برای ارسال به سرور
