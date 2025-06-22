@@ -92,6 +92,53 @@ if (isset($routes[$route])) {
         }
     }
     
+    // مسیریابی requests با پارامتر
+    if ($routeParts[0] === 'requests' && isset($_GET['action'])) {
+        $action = $_GET['action'];
+        
+        require_once "app/controllers/RequestController.php";
+        $controller = new RequestController();
+        
+        switch ($action) {
+            case 'create':
+                if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+                    $controller->create();
+                    $handled = true;
+                }
+                break;
+            case 'store':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->store();
+                    $handled = true;
+                }
+                break;
+            case 'show':
+                if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+                    $controller->show();
+                    $handled = true;
+                }
+                break;
+            case 'approve':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->approve();
+                    $handled = true;
+                }
+                break;
+            case 'reject':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->reject();
+                    $handled = true;
+                }
+                break;
+            case 'complete':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->complete();
+                    $handled = true;
+                }
+                break;
+        }
+    }
+    
     // اگر route پیدا نشد، صفحه 404
     if (!$handled) {
         http_response_code(404);

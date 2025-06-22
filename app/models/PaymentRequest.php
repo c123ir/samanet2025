@@ -9,7 +9,7 @@
 
 require_once APP_PATH . 'models/Database.php';
 
-class PaymentRequest 
+class PaymentRequest extends Database
 {
     private $db;
     protected $table = 'payment_requests';
@@ -59,6 +59,34 @@ class PaymentRequest
         'rent' => 'اجاره',
         'other' => 'سایر موارد'
     ];
+
+    /**
+     * دریافت لیست وضعیت‌های درخواست
+     */
+    public static function getStatuses() 
+    {
+        return [
+            self::STATUS_PENDING => 'در انتظار',
+            self::STATUS_PROCESSING => 'در حال پردازش',
+            self::STATUS_APPROVED => 'تایید شده',
+            self::STATUS_COMPLETED => 'تکمیل شده',
+            self::STATUS_REJECTED => 'رد شده',
+            self::STATUS_CANCELLED => 'لغو شده'
+        ];
+    }
+
+    /**
+     * دریافت لیست اولویت‌های درخواست
+     */
+    public static function getPriorities() 
+    {
+        return [
+            self::PRIORITY_LOW => 'کم',
+            self::PRIORITY_NORMAL => 'معمولی',
+            self::PRIORITY_HIGH => 'بالا',
+            self::PRIORITY_URGENT => 'فوری'
+        ];
+    }
 
     /**
      * بانک‌های ایرانی

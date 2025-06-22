@@ -415,5 +415,75 @@ class BaseController
     {
         // متد قابل بازنویسی در کنترلرهای فرزند
     }
+
+    /**
+     * Alias برای checkAuth
+     */
+    protected function requireAuth() 
+    {
+        if (!$this->checkAuth()) {
+            $this->redirectToLogin();
+        }
+    }
+
+    /**
+     * دریافت کاربر فعلی
+     */
+    protected function getCurrentUser() 
+    {
+        if (!$this->user) {
+            $this->loadUser();
+        }
+        return $this->user;
+    }
+
+    /**
+     * Alias برای view method
+     */
+    protected function render($viewPath, $data = []) 
+    {
+        return $this->view($viewPath, $data);
+    }
+
+    /**
+     * مدیریت خطا
+     */
+    protected function handleError($exception, $userMessage = 'خطایی رخ داده است') 
+    {
+        writeLog("Error: " . $exception->getMessage(), 'ERROR');
+        $this->sendError($userMessage, 500);
+    }
+
+    /**
+     * Alias برای setFlash
+     */
+    protected function setFlashMessage($type, $message) 
+    {
+        return $this->setFlash($type, $message);
+    }
+
+    /**
+     * Alias برای verifyCSRF  
+     */
+    protected function validateCsrfToken() 
+    {
+        return $this->verifyCSRF();
+    }
+
+    /**
+     * ریدایرکت ساده
+     */
+    protected function redirect($url) 
+    {
+        Security::redirect($url);
+    }
+
+    /**
+     * تبدیل اعداد فارسی به انگلیسی
+     */
+    protected function convertPersianNumbers($string) 
+    {
+        return Security::convertPersianToEnglishNumbers($string);
+    }
 }
 ?>
