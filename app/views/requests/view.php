@@ -8,8 +8,8 @@
  */
 
 // تنظیم متغیرهای صفحه
-$page_title = $title ?? 'جزئیات درخواست';
-$page_description = 'مشاهده جزئیات و وضعیت درخواست حواله';
+$page_title = $title ?? 'جزئیات درخواست حواله';
+$page_description = 'نمایش کامل اطلاعات و تاریخچه درخواست حواله';
 $active_menu = 'requests';
 
 // دریافت پیام‌های flash
@@ -18,11 +18,16 @@ if ($flash) {
     unset($_SESSION['flash']);
 }
 
-// اطلاعات درخواست
-$request = $request ?? [];
+// چک کردن وجود درخواست
+if (!isset($request) || !$request) {
+    header('Location: ?route=requests');
+    exit;
+}
+
+// تنظیم متغیرها
 $current_user = $user ?? [];
-$can_edit = $can_edit ?? false;
-$can_approve = $can_approve ?? false;
+$can_edit = ($current_user['id'] == $request['requester_id']) || in_array($current_user['role'], ['admin', 'manager']);
+$can_approve = in_array($current_user['role'], ['admin', 'manager']) && $request['status'] === 'pending';
 ?>
 
 <div class="content-wrapper">
@@ -31,24 +36,33 @@ $can_approve = $can_approve ?? false;
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h1 class="page-title">
-                    <i class="fas fa-file-alt text-primary me-2"></i>
-                    جزئیات درخواست
+                    <i class="fas fa-file-invoice text-primary me-2"></i>
+                    جزئیات درخواست حواله
                 </h1>
                 <p class="page-subtitle text-muted">
-                    کد مرجع: <?= htmlspecialchars($request['reference_number'] ?? '') ?>
+                    شماره مرجع: <span class="fw-bold text-primary"><?= $request['reference_number'] ?></span>
                 </p>
             </div>
-            <div>
+            <div class="d-flex gap-2">
+                <!-- دکمه بازگشت -->
                 <a href="?route=requests" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-right me-2"></i>
                     بازگشت به لیست
                 </a>
-                <?php if ($can_edit): ?>
+                
+                <!-- دکمه ویرایش -->
+                <?php if ($can_edit && $request['status'] === 'pending'): ?>
                 <a href="?route=requests&action=edit&id=<?= $request['id'] ?>" class="btn btn-outline-primary">
                     <i class="fas fa-edit me-2"></i>
                     ویرایش
                 </a>
                 <?php endif; ?>
+                
+                <!-- دکمه چاپ -->
+                <button onclick="printRequest()" class="btn btn-outline-info">
+                    <i class="fas fa-print me-2"></i>
+                    چاپ
+                </button>
             </div>
         </div>
     </div>
@@ -62,74 +76,96 @@ $can_approve = $can_approve ?? false;
     </div>
     <?php endif; ?>
 
+    <!-- Main Content -->
     <div class="row">
         <!-- اطلاعات اصلی درخواست -->
-        <div class="col-lg-8">
+        <div class="col-xl-8 col-lg-7 mb-4">
+            <!-- کارت اطلاعات اصلی -->
             <div class="flat-card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
-                        اطلاعات درخواست
+                        <i class="fas fa-info-circle text-primary me-2"></i>
+                        اطلاعات اصلی درخواست
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label fw-bold">عنوان درخواست</label>
-                            <p class="form-control-plaintext"><?= htmlspecialchars($request['title'] ?? '') ?></p>
+                    <div class="row g-4">
+                        <!-- عنوان درخواست -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">عنوان درخواست:</label>
+                            <div class="info-value">
+                                <?= htmlspecialchars($request['title']) ?>
+                            </div>
                         </div>
 
-                        <?php if (!empty($request['description'])): ?>
-                        <div class="col-12">
-                            <label class="form-label fw-bold">توضیحات</label>
-                            <p class="form-control-plaintext"><?= nl2br(htmlspecialchars($request['description'])) ?></p>
-                        </div>
-                        <?php endif; ?>
-
+                        <!-- مبلغ -->
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">مبلغ</label>
-                            <p class="form-control-plaintext">
-                                <?= $request['amount'] ? number_format($request['amount']) . ' ریال' : 'مشخص نشده' ?>
-                            </p>
+                            <label class="form-label fw-bold">مبلغ:</label>
+                            <div class="info-value amount-display">
+                                <?php if ($request['amount']): ?>
+                                    <span class="amount-number"><?= $request['amount_formatted'] ?></span>
+                                    <span class="text-muted"> ریال</span>
+                                <?php else: ?>
+                                    <span class="text-muted">مشخص نشده</span>
+                                <?php endif; ?>
+                            </div>
                         </div>
 
+                        <!-- اولویت -->
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">اولویت</label>
-                            <p class="form-control-plaintext">
-                                <?php
-                                $priority_classes = [
-                                    'low' => 'success',
-                                    'normal' => 'secondary', 
-                                    'high' => 'warning',
-                                    'urgent' => 'danger'
-                                ];
-                                $priority_class = $priority_classes[$request['priority']] ?? 'secondary';
-                                ?>
-                                <span class="badge bg-<?= $priority_class ?>">
-                                    <?= $request['priority_label'] ?? $request['priority'] ?>
+                            <label class="form-label fw-bold">اولویت:</label>
+                            <div class="info-value">
+                                <span class="badge priority-<?= $request['priority'] ?>">
+                                    <?= $request['priority_label'] ?>
                                 </span>
-                            </p>
+                            </div>
                         </div>
 
-                        <?php if (!empty($request['category'])): ?>
+                        <!-- دسته‌بندی -->
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">دسته‌بندی</label>
-                            <p class="form-control-plaintext"><?= htmlspecialchars($request['category_label'] ?? $request['category']) ?></p>
+                            <label class="form-label fw-bold">دسته‌بندی:</label>
+                            <div class="info-value">
+                                <?= $request['category_label'] ?? 'تعیین نشده' ?>
+                            </div>
                         </div>
-                        <?php endif; ?>
 
-                        <?php if (!empty($request['due_date'])): ?>
+                        <!-- تاریخ سررسید -->
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">تاریخ سررسید</label>
-                            <p class="form-control-plaintext"><?= $request['due_date_jalali'] ?? $request['due_date'] ?></p>
+                            <label class="form-label fw-bold">تاریخ سررسید:</label>
+                            <div class="info-value">
+                                <?= $request['due_date'] ? date('Y/m/d', strtotime($request['due_date'])) : 'تعیین نشده' ?>
+                            </div>
                         </div>
-                        <?php endif; ?>
 
-                        <?php if ($request['is_urgent']): ?>
+                        <!-- توضیحات -->
+                        <?php if ($request['description']): ?>
                         <div class="col-12">
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                این درخواست فوری است
+                            <label class="form-label fw-bold">توضیحات:</label>
+                            <div class="info-value">
+                                <?= nl2br(htmlspecialchars($request['description'])) ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <!-- تگ‌ها -->
+                        <?php if ($request['tags'] && $request['tags'] !== '[""]'): ?>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">تگ‌ها:</label>
+                            <div class="info-value">
+                                <div class="tags-display">
+                                    <?php 
+                                    $tags = json_decode($request['tags'], true);
+                                    if (is_array($tags)):
+                                        foreach ($tags as $tag):
+                                            if (!empty(trim($tag))):
+                                    ?>
+                                        <span class="badge bg-light text-dark me-1 mb-1"><?= htmlspecialchars(trim($tag)) ?></span>
+                                    <?php 
+                                            endif;
+                                        endforeach;
+                                    endif;
+                                    ?>
+                                </div>
                             </div>
                         </div>
                         <?php endif; ?>
@@ -137,196 +173,191 @@ $can_approve = $can_approve ?? false;
                 </div>
             </div>
 
-            <!-- اطلاعات حساب -->
+            <!-- کارت اطلاعات حساب -->
+            <?php if ($request['account_holder'] || $request['bank_name'] || $request['account_number'] || $request['iban']): ?>
             <div class="flat-card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-university me-2"></i>
+                        <i class="fas fa-university text-success me-2"></i>
                         اطلاعات حساب مقصد
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <?php if (!empty($request['account_holder'])): ?>
+                        <?php if ($request['account_holder']): ?>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">صاحب حساب</label>
-                            <p class="form-control-plaintext"><?= htmlspecialchars($request['account_holder']) ?></p>
+                            <label class="form-label fw-bold">نام صاحب حساب:</label>
+                            <div class="info-value"><?= htmlspecialchars($request['account_holder']) ?></div>
                         </div>
                         <?php endif; ?>
 
-                        <?php if (!empty($request['bank_name'])): ?>
+                        <?php if ($request['bank_name']): ?>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">بانک</label>
-                            <p class="form-control-plaintext"><?= htmlspecialchars($request['bank_name']) ?></p>
+                            <label class="form-label fw-bold">بانک:</label>
+                            <div class="info-value"><?= htmlspecialchars($request['bank_name']) ?></div>
                         </div>
                         <?php endif; ?>
 
-                        <?php if (!empty($request['account_number'])): ?>
+                        <?php if ($request['account_number']): ?>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">شماره حساب</label>
-                            <p class="form-control-plaintext"><?= htmlspecialchars($request['account_number']) ?></p>
+                            <label class="form-label fw-bold">شماره حساب:</label>
+                            <div class="info-value ltr-text"><?= htmlspecialchars($request['account_number']) ?></div>
                         </div>
                         <?php endif; ?>
 
-                        <?php if (!empty($request['card_number'])): ?>
+                        <?php if ($request['card_number']): ?>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">شماره کارت</label>
-                            <p class="form-control-plaintext"><?= htmlspecialchars($request['card_number']) ?></p>
+                            <label class="form-label fw-bold">شماره کارت:</label>
+                            <div class="info-value ltr-text"><?= htmlspecialchars($request['card_number']) ?></div>
                         </div>
                         <?php endif; ?>
 
-                        <?php if (!empty($request['iban'])): ?>
+                        <?php if ($request['iban']): ?>
                         <div class="col-12">
-                            <label class="form-label fw-bold">شماره شبا</label>
-                            <p class="form-control-plaintext">IR<?= htmlspecialchars($request['iban']) ?></p>
+                            <label class="form-label fw-bold">شماره شبا:</label>
+                            <div class="info-value ltr-text">IR<?= htmlspecialchars($request['iban']) ?></div>
                         </div>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
+
+            <!-- دکمه‌های عملیات برای مدیران -->
+            <?php if ($can_approve): ?>
+            <div class="flat-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cogs text-warning me-2"></i>
+                        عملیات مدیریتی
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button onclick="approveRequest()" class="btn btn-success">
+                            <i class="fas fa-check me-2"></i>
+                            تایید درخواست
+                        </button>
+                        <button onclick="showRejectModal()" class="btn btn-danger">
+                            <i class="fas fa-times me-2"></i>
+                            رد درخواست
+                        </button>
+                        <button onclick="showCommentModal()" class="btn btn-warning">
+                            <i class="fas fa-comment me-2"></i>
+                            افزودن یادداشت
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
         </div>
 
-        <!-- sidebar اطلاعات جانبی -->
-        <div class="col-lg-4">
-            <!-- وضعیت درخواست -->
+        <!-- Sidebar - اطلاعات کلی و تاریخچه -->
+        <div class="col-xl-4 col-lg-5">
+            <!-- کارت وضعیت درخواست -->
             <div class="flat-card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-chart-line me-2"></i>
+                        <i class="fas fa-chart-line text-info me-2"></i>
                         وضعیت درخواست
                     </h5>
                 </div>
                 <div class="card-body text-center">
-                    <?php
-                    $status_classes = [
-                        'pending' => 'warning',
-                        'processing' => 'info',
-                        'approved' => 'primary',
-                        'completed' => 'success',
-                        'rejected' => 'danger',
-                        'cancelled' => 'secondary'
-                    ];
-                    $status_class = $status_classes[$request['status']] ?? 'secondary';
-                    ?>
-                    <div class="status-badge mb-3">
-                        <span class="badge bg-<?= $status_class ?> fs-6 p-3">
-                            <?= $request['status_label'] ?? $request['status'] ?>
+                    <div class="status-display mb-3">
+                        <span class="badge status-<?= $request['status'] ?> fs-6 px-3 py-2">
+                            <?= $request['status_label'] ?>
                         </span>
                     </div>
-
-                    <!-- دکمه‌های عملیات -->
-                    <?php if ($can_approve && $request['status'] === 'pending'): ?>
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-success" onclick="approveRequest(<?= $request['id'] ?>)">
-                            <i class="fas fa-check me-2"></i>
-                            تایید درخواست
-                        </button>
-                        <button class="btn btn-danger" onclick="rejectRequest(<?= $request['id'] ?>)">
-                            <i class="fas fa-times me-2"></i>
-                            رد درخواست
-                        </button>
+                    
+                    <div class="status-info">
+                        <small class="text-muted d-block mb-2">
+                            ایجاد شده در: <?= $request['created_at_jalali'] ?>
+                        </small>
+                        <?php if ($request['updated_at'] && $request['updated_at'] !== $request['created_at']): ?>
+                        <small class="text-muted d-block">
+                            آخرین بروزرسانی: <?= date('Y/m/d H:i', strtotime($request['updated_at'])) ?>
+                        </small>
+                        <?php endif; ?>
                     </div>
-                    <?php endif; ?>
-
-                    <?php if ($request['status'] === 'approved'): ?>
-                    <div class="d-grid">
-                        <button class="btn btn-primary" onclick="completeRequest(<?= $request['id'] ?>)">
-                            <i class="fas fa-check-double me-2"></i>
-                            تکمیل درخواست
-                        </button>
-                    </div>
-                    <?php endif; ?>
                 </div>
             </div>
 
-            <!-- اطلاعات درخواست‌کننده -->
+            <!-- کارت اطلاعات درخواست‌دهنده -->
             <div class="flat-card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-user me-2"></i>
-                        درخواست‌کننده
+                        <i class="fas fa-user text-secondary me-2"></i>
+                        درخواست‌دهنده
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar me-3">
-                            <i class="fas fa-user-circle fa-2x text-muted"></i>
+                    <div class="requester-info">
+                        <div class="mb-2">
+                            <strong><?= htmlspecialchars($request['requester_name']) ?></strong>
                         </div>
-                        <div>
-                            <p class="mb-1 fw-bold"><?= htmlspecialchars($request['requester_name'] ?? 'نامشخص') ?></p>
-                            <small class="text-muted">درخواست‌کننده</small>
-                        </div>
+                        <small class="text-muted">
+                            گروه: <?= htmlspecialchars($request['group_name']) ?>
+                        </small>
                     </div>
                 </div>
             </div>
 
-            <!-- تواریخ مهم -->
+            <!-- QR Code شماره مرجع -->
             <div class="flat-card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i class="fas fa-calendar me-2"></i>
-                        تواریخ مهم
+                        <i class="fas fa-qrcode text-dark me-2"></i>
+                        کد QR
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div id="qrcode" class="mb-3"></div>
+                    <small class="text-muted">
+                        برای اشتراک‌گذاری سریع درخواست
+                    </small>
+                </div>
+            </div>
+
+            <!-- تاریخچه تغییرات -->
+            <?php if (isset($workflow_history) && !empty($workflow_history)): ?>
+            <div class="flat-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history text-primary me-2"></i>
+                        تاریخچه تغییرات
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="timeline">
-                        <div class="timeline-item">
-                            <i class="fas fa-plus timeline-icon text-primary"></i>
+                        <?php foreach ($workflow_history as $index => $history): ?>
+                        <div class="timeline-item <?= $index === 0 ? 'timeline-item-current' : '' ?>">
+                            <div class="timeline-marker">
+                                <i class="fas fa-<?= getHistoryIcon($history['action']) ?>"></i>
+                            </div>
                             <div class="timeline-content">
-                                <h6>ایجاد درخواست</h6>
-                                <small class="text-muted"><?= $request['created_at_jalali'] ?? $request['created_at'] ?></small>
+                                <div class="timeline-header">
+                                    <strong><?= getHistoryActionLabel($history['action']) ?></strong>
+                                    <small class="text-muted ms-2">
+                                        <?= date('Y/m/d H:i', strtotime($history['created_at'])) ?>
+                                    </small>
+                                </div>
+                                <div class="timeline-body">
+                                    <small class="text-muted">
+                                        توسط: <?= htmlspecialchars($history['user_name']) ?>
+                                    </small>
+                                    <?php if ($history['comment']): ?>
+                                    <div class="mt-1">
+                                        <small><?= htmlspecialchars($history['comment']) ?></small>
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
-
-                        <?php if (!empty($request['updated_at']) && $request['updated_at'] !== $request['created_at']): ?>
-                        <div class="timeline-item">
-                            <i class="fas fa-edit timeline-icon text-info"></i>
-                            <div class="timeline-content">
-                                <h6>آخرین بروزرسانی</h6>
-                                <small class="text-muted"><?= $request['updated_at_jalali'] ?? $request['updated_at'] ?></small>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-
-                        <?php if (!empty($request['due_date'])): ?>
-                        <div class="timeline-item">
-                            <i class="fas fa-clock timeline-icon text-warning"></i>
-                            <div class="timeline-content">
-                                <h6>تاریخ سررسید</h6>
-                                <small class="text-muted"><?= $request['due_date_jalali'] ?? $request['due_date'] ?></small>
-                            </div>
-                        </div>
-                        <?php endif; ?>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal تایید درخواست -->
-<div class="modal fade" id="approveModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">تایید درخواست</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="approveForm" method="POST" action="?route=requests&action=approve">
-                <div class="modal-body">
-                    <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
-                    <input type="hidden" name="id" value="<?= $request['id'] ?>">
-                    <div class="mb-3">
-                        <label for="approve_notes" class="form-label">توضیحات (اختیاری)</label>
-                        <textarea class="form-control" id="approve_notes" name="notes" rows="3"
-                                  placeholder="توضیحات تایید..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                    <button type="submit" class="btn btn-success">تایید درخواست</button>
-                </div>
-            </form>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -339,14 +370,15 @@ $can_approve = $can_approve ?? false;
                 <h5 class="modal-title">رد درخواست</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="rejectForm" method="POST" action="?route=requests&action=reject">
+            <form id="rejectForm">
                 <div class="modal-body">
-                    <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+                    <input type="hidden" name="_token" value="<?= $csrf_token ?>">
                     <input type="hidden" name="id" value="<?= $request['id'] ?>">
+                    
                     <div class="mb-3">
-                        <label for="reject_reason" class="form-label required">دلیل رد</label>
-                        <textarea class="form-control" id="reject_reason" name="reason" rows="3"
-                                  placeholder="لطفاً دلیل رد درخواست را توضیح دهید..." required></textarea>
+                        <label for="rejection_reason" class="form-label">دلیل رد درخواست <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="rejection_reason" name="rejection_reason" rows="4" 
+                                  placeholder="لطفاً دلیل رد درخواست را بنویسید..." required></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -358,107 +390,415 @@ $can_approve = $can_approve ?? false;
     </div>
 </div>
 
-<!-- Modal تکمیل درخواست -->
-<div class="modal fade" id="completeModal" tabindex="-1">
+<!-- Modal افزودن یادداشت -->
+<div class="modal fade" id="commentModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">تکمیل درخواست</h5>
+                <h5 class="modal-title">افزودن یادداشت</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="completeForm" method="POST" action="?route=requests&action=complete">
+            <form id="commentForm">
                 <div class="modal-body">
-                    <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
+                    <input type="hidden" name="_token" value="<?= $csrf_token ?>">
                     <input type="hidden" name="id" value="<?= $request['id'] ?>">
+                    
                     <div class="mb-3">
-                        <label for="complete_notes" class="form-label">توضیحات (اختیاری)</label>
-                        <textarea class="form-control" id="complete_notes" name="notes" rows="3"
-                                  placeholder="توضیحات تکمیل..."></textarea>
+                        <label for="comment" class="form-label">یادداشت</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="4" 
+                                  placeholder="یادداشت یا نظر خود را بنویسید..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
-                    <button type="submit" class="btn btn-primary">تکمیل درخواست</button>
+                    <button type="submit" class="btn btn-primary">ثبت یادداشت</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- JavaScript مخصوص این صفحه -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
 <script>
-function approveRequest(requestId) {
-    const modal = new bootstrap.Modal(document.getElementById('approveModal'));
-    modal.show();
+document.addEventListener('DOMContentLoaded', function() {
+    // ایجاد QR Code
+    generateQRCode();
+    
+    // تنظیم event listener های modal ها
+    setupModals();
+});
+
+// ایجاد QR Code
+function generateQRCode() {
+    const qrCodeDiv = document.getElementById('qrcode');
+    const referenceNumber = '<?= $request['reference_number'] ?>';
+    const url = `${window.location.origin}${window.location.pathname}?route=requests&action=show&id=<?= $request['id'] ?>`;
+    
+    QRCode.toCanvas(qrCodeDiv, url, {
+        width: 120,
+        height: 120,
+        colorDark: '#667eea',
+        colorLight: '#ffffff',
+        margin: 1
+    }, function(error) {
+        if (error) {
+            console.error('خطا در ایجاد QR Code:', error);
+            qrCodeDiv.innerHTML = '<small class="text-muted">خطا در ایجاد QR Code</small>';
+        }
+    });
 }
 
-function rejectRequest(requestId) {
+// تنظیم Modal ها
+function setupModals() {
+    // Modal رد درخواست
+    const rejectForm = document.getElementById('rejectForm');
+    if (rejectForm) {
+        rejectForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitAction('reject', new FormData(this));
+        });
+    }
+    
+    // Modal یادداشت
+    const commentForm = document.getElementById('commentForm');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitAction('comment', new FormData(this));
+        });
+    }
+}
+
+// تایید درخواست
+function approveRequest() {
+    if (confirm('آیا از تایید این درخواست اطمینان دارید؟')) {
+        const formData = new FormData();
+        formData.append('_token', '<?= $csrf_token ?>');
+        formData.append('id', '<?= $request['id'] ?>');
+        
+        submitAction('approve', formData);
+    }
+}
+
+// نمایش Modal رد درخواست
+function showRejectModal() {
     const modal = new bootstrap.Modal(document.getElementById('rejectModal'));
     modal.show();
 }
 
-function completeRequest(requestId) {
-    const modal = new bootstrap.Modal(document.getElementById('completeModal'));
+// نمایش Modal یادداشت
+function showCommentModal() {
+    const modal = new bootstrap.Modal(document.getElementById('commentModal'));
     modal.show();
+}
+
+// ارسال عملیات
+async function submitAction(action, formData) {
+    try {
+        const response = await fetch(`?route=requests&action=${action}`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // نمایش پیام موفقیت
+            showAlert('success', result.message || 'عملیات با موفقیت انجام شد');
+            
+            // ریلود صفحه بعد از 1.5 ثانیه
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showAlert('error', result.message || 'خطا در انجام عملیات');
+        }
+        
+        // بستن modal ها
+        const modals = document.querySelectorAll('.modal.show');
+        modals.forEach(modal => {
+            bootstrap.Modal.getInstance(modal).hide();
+        });
+        
+    } catch (error) {
+        console.error('خطا در ارسال:', error);
+        showAlert('error', 'خطا در ارتباط با سرور');
+    }
+}
+
+// نمایش Alert
+function showAlert(type, message) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const icon = type === 'success' ? 'check-circle' : 'exclamation-triangle';
+    
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            <i class="fas fa-${icon} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const contentWrapper = document.querySelector('.content-wrapper');
+    contentWrapper.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Scroll به بالا
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// چاپ درخواست
+function printRequest() {
+    window.print();
 }
 </script>
 
 <style>
-/* استایل‌های مخصوص صفحه جزئیات */
+/* استایل‌های مخصوص صفحه نمایش */
+.flat-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: var(--card-blur);
+    transition: all 0.3s ease;
+}
+
+.flat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    border-bottom: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px 20px 0 0;
+    padding: 1.25rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.info-value {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.amount-display {
+    background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.amount-number {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+}
+
+.ltr-text {
+    direction: ltr;
+    text-align: left;
+    font-family: 'Courier New', monospace;
+}
+
+/* Badge های وضعیت */
+.badge.status-pending {
+    background: var(--warning-color);
+    color: #856404;
+}
+
+.badge.status-approved {
+    background: var(--success-color);
+    color: white;
+}
+
+.badge.status-rejected {
+    background: var(--danger-color);
+    color: white;
+}
+
+.badge.status-completed {
+    background: var(--info-color);
+    color: white;
+}
+
+/* Badge های اولویت */
+.badge.priority-low {
+    background: #17a2b8;
+    color: white;
+}
+
+.badge.priority-normal {
+    background: #6c757d;
+    color: white;
+}
+
+.badge.priority-high {
+    background: #fd7e14;
+    color: white;
+}
+
+.badge.priority-urgent {
+    background: #dc3545;
+    color: white;
+}
+
+/* Timeline */
 .timeline {
     position: relative;
-    padding: 1rem 0;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--glass-border);
 }
 
 .timeline-item {
     position: relative;
-    padding-right: 3rem;
     margin-bottom: 1.5rem;
 }
 
-.timeline-item:last-child {
-    margin-bottom: 0;
-}
-
-.timeline-icon {
+.timeline-marker {
     position: absolute;
-    right: 0;
-    top: 0;
-    width: 2rem;
-    height: 2rem;
+    left: -2.25rem;
+    top: 0.25rem;
+    width: 1.5rem;
+    height: 1.5rem;
     background: var(--glass-bg);
+    border: 2px solid var(--primary-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.875rem;
+    font-size: 0.7rem;
+    color: var(--primary-color);
 }
 
-.timeline-content h6 {
-    margin-bottom: 0.25rem;
-    font-weight: 600;
+.timeline-item-current .timeline-marker {
+    background: var(--primary-color);
+    color: white;
+    animation: pulse 2s infinite;
 }
 
-.status-badge .badge {
-    border-radius: 15px;
-    font-weight: 500;
-}
-
-.avatar i {
-    color: var(--text-muted);
-}
-
-.form-control-plaintext {
-    padding: 0.375rem 0;
-    margin-bottom: 0;
-    line-height: 1.5;
-    color: var(--text-primary);
-    background-color: transparent;
-    border: none;
-    border-bottom: 1px solid var(--glass-border);
-}
-
-.card-header {
+.timeline-content {
     background: var(--glass-bg);
-    border-bottom: 1px solid var(--glass-border);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 0.75rem;
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+/* Tags */
+.tags-display .badge {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+}
+
+/* QR Code Container */
+#qrcode canvas {
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+}
+
+/* Print Styles */
+@media print {
+    .btn, .modal, .page-header .d-flex > div:last-child {
+        display: none !important;
+    }
+    
+    .flat-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+    
+    .page-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .d-flex.gap-2 {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .timeline {
+        padding-left: 1.5rem;
+    }
+    
+    .timeline-marker {
+        left: -1.75rem;
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+}
+
+/* Animation */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+    }
 }
 </style>
+
+<?php
+// توابع کمکی
+function getHistoryIcon($action) {
+    switch ($action) {
+        case 'created': return 'plus-circle';
+        case 'approved': return 'check-circle';
+        case 'rejected': return 'times-circle';
+        case 'completed': return 'flag-checkered';
+        case 'updated': return 'edit';
+        case 'commented': return 'comment';
+        default: return 'circle';
+    }
+}
+
+function getHistoryActionLabel($action) {
+    switch ($action) {
+        case 'created': return 'ایجاد درخواست';
+        case 'approved': return 'تایید درخواست';
+        case 'rejected': return 'رد درخواست';
+        case 'completed': return 'تکمیل درخواست';
+        case 'updated': return 'ویرایش درخواست';
+        case 'commented': return 'افزودن یادداشت';
+        default: return 'تغییر وضعیت';
+    }
+}
+?>
