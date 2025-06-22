@@ -390,10 +390,109 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
         console.log('⏳ Submit button set to loading state');
         
-        // ارسال فرم
+        // ارسال فرم با AJAX
         console.log('📤 Submitting form to:', form.action);
-        form.submit();
+        submitFormAjax(form, submitBtn, originalText);
     });
+    
+    // تابع ارسال فرم با AJAX
+    async function submitFormAjax(form, submitBtn, originalText) {
+        try {
+            const formData = new FormData(form);
+            
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            console.log('📥 Response status:', response.status);
+            
+            const result = await response.json();
+            console.log('📥 Response data:', result);
+            
+            if (result.success) {
+                // حذف کلاس was-validated برای جلوگیری از beforeunload
+                form.classList.remove('was-validated');
+                
+                // بازنشانی دکمه submit
+                submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>درخواست ثبت شد';
+                submitBtn.classList.remove('btn-primary');
+                submitBtn.classList.add('btn-success');
+                
+                // نمایش پیام موفقیت
+                showSuccessMessage('درخواست با موفقیت ایجاد شد!');
+                
+                // ریدایرکت بعد از 2 ثانیه (زمان بیشتر برای نمایش پیام)
+                setTimeout(() => {
+                    // Smooth transition
+                    document.body.style.opacity = '0.7';
+                    document.body.style.transition = 'opacity 0.3s ease';
+                    
+                    setTimeout(() => {
+                        if (result.redirect_url) {
+                            window.location.href = result.redirect_url;
+                        } else {
+                            window.location.href = '?route=requests';
+                        }
+                    }, 300);
+                }, 2000);
+            } else {
+                // نمایش پیام خطا
+                showErrorMessage(result.message || 'خطا در ایجاد درخواست');
+                
+                // بازگردانی دکمه
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+            
+        } catch (error) {
+            console.error('❌ Error submitting form:', error);
+            showErrorMessage('خطا در ارسال درخواست');
+            
+            // بازگردانی دکمه
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+    
+    // نمایش پیام موفقیت
+    function showSuccessMessage(message) {
+        const alertHtml = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // اضافه کردن به ابتدای صفحه
+        const contentWrapper = document.querySelector('.content-wrapper');
+        contentWrapper.insertAdjacentHTML('afterbegin', alertHtml);
+        
+        // Scroll به بالا
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    // نمایش پیام خطا
+    function showErrorMessage(message) {
+        const alertHtml = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // اضافه کردن به ابتدای صفحه
+        const contentWrapper = document.querySelector('.content-wrapper');
+        contentWrapper.insertAdjacentHTML('afterbegin', alertHtml);
+        
+        // Scroll به بالا
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     
     // Reset form
     form.addEventListener('reset', function() {
