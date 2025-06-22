@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست سریع - سامانت</title>
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        button { 
+            background: #667eea; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        button:hover { background: #5a6fd8; }
+        .result { 
+            margin-top: 20px; 
+            padding: 10px; 
+            border-radius: 5px; 
+            display: none; 
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+    </style>
+</head>
+<body>
+    <h1>🧪 تست سریع ارسال فرم</h1>
+    
+    <form id="testForm" class="needs-validation" novalidate>
+        <input type="hidden" name="_token" value="test_token_123">
+        
+        <div class="form-group">
+            <label for="title">عنوان درخواست:</label>
+            <input type="text" id="title" name="title" required value="تست سریع">
+        </div>
+        
+        <div class="form-group">
+            <label for="description">توضیحات:</label>
+            <textarea id="description" name="description" rows="3">این یک تست سریع است</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="amount">مبلغ:</label>
+            <input type="text" id="amount" name="amount" value="۱۲۳۴۵۶">
+        </div>
+        
+        <button type="submit">ارسال تست</button>
+    </form>
+    
+    <div id="result" class="result"></div>
+    
+    <script>
+        // شبیه‌سازی محیط سامانت
+        window.App = {
+            config: {
+                csrf: 'test_token_123',
+                baseUrl: 'http://localhost:3110/'
+            }
+        };
+        
+        // تابع تبدیل اعداد فارسی
+        function toEnglishNumbers(str) {
+            const persianNumbers = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g];
+            for (let i = 0; i < 10; i++) {
+                str = str.replace(persianNumbers[i], i);
+            }
+            return str;
+        }
+        
+        // رویداد ارسال فرم
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            
+            // نمایش loading
+            resultDiv.className = 'result loading';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '⏳ در حال ارسال...';
+            
+            const formData = new FormData(this);
+            
+            // تبدیل اعداد فارسی
+            const amount = formData.get('amount');
+            formData.set('amount', toEnglishNumbers(amount));
+            
+            console.log('📤 ارسال درخواست AJAX...');
+            console.log('📋 داده‌های فرم:', Object.fromEntries(formData));
+            
+            try {
+                const response = await fetch('index.php?route=requests&action=store', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': 'test_token_123'
+                    }
+                });
+                
+                console.log('📥 Response Status:', response.status);
+                console.log('📥 Response Headers:', [...response.headers.entries()]);
+                
+                const responseText = await response.text();
+                console.log('📥 Response Text:', responseText);
+                
+                try {
+                    const result = JSON.parse(responseText);
+                    console.log('📥 JSON Response:', result);
+                    
+                    if (result.success) {
+                        resultDiv.className = 'result success';
+                        resultDiv.innerHTML = `✅ موفق: ${result.message}`;
+                        
+                        if (result.redirect_url) {
+                            setTimeout(() => {
+                                console.log('🔄 ریدایرکت به:', result.redirect_url);
+                                // window.location.href = result.redirect_url;
+                            }, 2000);
+                        }
+                    } else {
+                        resultDiv.className = 'result error';
+                        resultDiv.innerHTML = `❌ خطا: ${result.message}`;
+                    }
+                } catch (jsonError) {
+                    console.error('❌ خطا در parse کردن JSON:', jsonError);
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ پاسخ غیرقابل تشخیص: ${responseText.substring(0, 200)}...`;
+                }
+                
+            } catch (error) {
+                console.error('❌ خطا در ارسال:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ خطا در ارسال: ${error.message}`;
+            }
+        });
+        
+        console.log('🧪 تست فرم آماده است!');
+    </script>
+</body>
+</html> 
