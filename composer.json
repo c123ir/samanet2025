@@ -1,0 +1,23 @@
+{
+    "name": "samanat/payment-management",
+    "description": "سامانه مدیریت حواله و بایگانی اسناد",
+    "type": "project",
+    "authors": [
+        {
+            "name": "توسعه‌دهنده سامانت",
+            "email": "developer@samanat.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "intervention/image": "^2.7",
+        "phpmailer/phpmailer": "^6.6",
+        "guzzlehttp/guzzle": "^7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "minimum-stability": "stable"
+}

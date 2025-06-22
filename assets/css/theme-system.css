@@ -1,0 +1,520 @@
+/*
+ * نام فایل: theme-system.css
+ * مسیر فایل: /assets/css/theme-system.css
+ * توضیح: سیستم جامع تم (شب/روز) سامانت
+ * تاریخ ایجاد: 1404/03/31
+ */
+
+/* ========================================
+   CSS Variables برای Light و Dark Mode
+======================================== */
+
+:root {
+    /* Light Mode Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #e9ecef;
+    --text-primary: #2d3748;
+    --text-secondary: #6c757d;
+    --text-muted: #9ca3af;
+    
+    /* Glass Effects */
+    --glass-bg: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --backdrop-blur: blur(20px);
+    
+    /* Accent Colors */
+    --primary-color: #667eea;
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-color: #06D6A0;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #3b82f6;
+    
+    /* Background Gradient */
+    --body-bg: linear-gradient(135deg, #667eea 0%, #764ba2 35%, #f093fb 70%, #4ecdc4 100%);
+    
+    /* UI Elements */
+    --border-radius: 20px;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --input-bg: rgba(255, 255, 255, 0.9);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --navbar-bg: rgba(255, 255, 255, 0.15);
+    --sidebar-bg: rgba(255, 255, 255, 0.15);
+    
+    /* Transitions */
+    --transition-theme: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.3s ease;
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+    /* Dark Mode Colors */
+    --bg-primary: #1a202c;
+    --bg-secondary: #2d3748;
+    --bg-tertiary: #4a5568;
+    --text-primary: #f7fafc;
+    --text-secondary: #e2e8f0;
+    --text-muted: #a0aec0;
+    
+    /* Glass Effects Dark */
+    --glass-bg: rgba(0, 0, 0, 0.3);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    
+    /* Accent Colors Dark */
+    --primary-color: #9f7aea;
+    --primary-gradient: linear-gradient(135deg, #9f7aea 0%, #667eea 100%);
+    --secondary-color: #4fd1c7;
+    --success-color: #68d391;
+    --warning-color: #f6ad55;
+    --danger-color: #fc8181;
+    --info-color: #63b3ed;
+    
+    /* Background Gradient Dark */
+    --body-bg: linear-gradient(135deg, #1a202c 0%, #2d3748 35%, #4a5568 70%, #2b6cb0 100%);
+    
+    /* UI Elements Dark */
+    --border-color: rgba(255, 255, 255, 0.1);
+    --input-bg: rgba(0, 0, 0, 0.3);
+    --card-bg: rgba(0, 0, 0, 0.3);
+    --navbar-bg: rgba(0, 0, 0, 0.3);
+    --sidebar-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   Global Theme Styles
+======================================== */
+
+html {
+    transition: var(--transition-theme);
+}
+
+body {
+    background: var(--body-bg) !important;
+    background-attachment: fixed !important;
+    color: var(--text-primary) !important;
+    transition: var(--transition-theme) !important;
+}
+
+/* ========================================
+   Theme Toggle Button
+======================================== */
+
+.theme-toggle {
+    position: relative !important;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    background: var(--glass-bg) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: var(--transition-fast) !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    outline: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1) rotate(10deg) !important;
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    color: white !important;
+}
+
+.theme-toggle:active {
+    transform: scale(0.95) !important;
+}
+
+.theme-toggle i {
+    font-size: 1.2rem !important;
+    transition: all 0.3s ease !important;
+    z-index: 2 !important;
+    position: relative !important;
+}
+
+.theme-toggle.rotating i {
+    animation: themeRotate 0.6s ease-in-out !important;
+}
+
+@keyframes themeRotate {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Theme Toggle Glow Effect */
+.theme-toggle::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #4ecdc4);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.theme-toggle:hover::before {
+    opacity: 0.7;
+    animation: rotateGlow 2s linear infinite;
+}
+
+@keyframes rotateGlow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   Cards & Components
+======================================== */
+
+.card, .flat-card {
+    background: var(--card-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    color: var(--text-primary) !important;
+    transition: var(--transition-fast) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+.card-header {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.card-body {
+    color: var(--text-primary) !important;
+}
+
+/* ========================================
+   Navigation & Sidebar
+======================================== */
+
+.navbar {
+    background: var(--navbar-bg) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    transition: var(--transition-fast) !important;
+}
+
+.navbar-brand {
+    color: var(--text-primary) !important;
+}
+
+.sidebar {
+    background: var(--sidebar-bg) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    border-left: 1px solid var(--glass-border) !important;
+    transition: var(--transition-fast) !important;
+}
+
+.sidebar .nav-link {
+    color: var(--text-primary) !important;
+    transition: var(--transition-fast) !important;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background: var(--primary-gradient) !important;
+    color: white !important;
+}
+
+/* ========================================
+   Forms & Inputs
+======================================== */
+
+.form-control, .form-select, .form-input {
+    background: var(--input-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    transition: var(--transition-fast) !important;
+}
+
+.form-control:focus, .form-select:focus, .form-input:focus {
+    background: var(--input-bg) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+}
+
+.form-control::placeholder, .form-input::placeholder {
+    color: var(--text-muted) !important;
+}
+
+.form-label {
+    color: var(--text-primary) !important;
+}
+
+.form-help {
+    color: var(--text-muted) !important;
+}
+
+/* ========================================
+   Tables
+======================================== */
+
+.table, .flat-table {
+    background: var(--card-bg) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    color: var(--text-primary) !important;
+}
+
+.table thead th, .flat-table thead th {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.table tbody td, .flat-table tbody td {
+    color: var(--text-primary) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+}
+
+.table tbody tr:hover, .flat-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ========================================
+   Buttons
+======================================== */
+
+.btn-primary {
+    background: var(--primary-gradient) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success-color), #06d6a0) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--warning-color), #f093fb) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), #ff6b6b) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, var(--info-color), #4ecdc4) !important;
+    border: none !important;
+    color: white !important;
+}
+
+.btn-secondary {
+    background: var(--glass-bg) !important;
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+}
+
+/* ========================================
+   Alerts & Notifications
+======================================== */
+
+.alert {
+    backdrop-filter: var(--backdrop-blur) !important;
+    border: 1px solid var(--glass-border) !important;
+}
+
+.alert-success {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+.alert-danger {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+.alert-warning {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+.alert-info {
+    background: rgba(59, 130, 246, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ========================================
+   Dropdown & Modals
+======================================== */
+
+.dropdown-menu {
+    background: var(--card-bg) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow) !important;
+}
+
+.dropdown-item {
+    color: var(--text-primary) !important;
+    transition: var(--transition-fast) !important;
+}
+
+.dropdown-item:hover {
+    background: rgba(102, 126, 234, 0.1) !important;
+    color: var(--text-primary) !important;
+}
+
+.modal-content {
+    background: var(--card-bg) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    border: 1px solid var(--glass-border) !important;
+}
+
+.modal-header {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
+}
+
+.modal-body {
+    color: var(--text-primary) !important;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--glass-border) !important;
+}
+
+/* ========================================
+   Text & Typography
+======================================== */
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+/* ========================================
+   Footer
+======================================== */
+
+footer {
+    background: var(--navbar-bg) !important;
+    backdrop-filter: var(--backdrop-blur) !important;
+    border-top: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ========================================
+   Mobile Responsive
+======================================== */
+
+@media (max-width: 768px) {
+    .theme-toggle {
+        width: 45px !important;
+        height: 45px !important;
+    }
+    
+    .theme-toggle i {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .theme-toggle {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .theme-toggle i {
+        font-size: 1rem !important;
+    }
+}
+
+/* ========================================
+   Animation & Transitions
+======================================== */
+
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+.fade-theme-transition {
+    transition: var(--transition-theme) !important;
+}
+
+/* Special Effects */
+.floating-circle {
+    background: var(--glass-bg) !important;
+    transition: var(--transition-theme) !important;
+}
+
+/* ========================================
+   Print Styles
+======================================== */
+
+@media print {
+    [data-theme="dark"] {
+        --bg-primary: #ffffff !important;
+        --text-primary: #000000 !important;
+        --card-bg: #ffffff !important;
+    }
+    
+    .theme-toggle {
+        display: none !important;
+    }
+}
+
+/* ========================================
+   High Contrast Mode Support
+======================================== */
+
+@media (prefers-contrast: high) {
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.95) !important;
+        --border-color: #000000 !important;
+    }
+    
+    [data-theme="dark"] {
+        --glass-bg: rgba(0, 0, 0, 0.95) !important;
+        --border-color: #ffffff !important;
+    }
+}
+
+/* ========================================
+   Reduced Motion Support
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    .theme-toggle:hover {
+        transform: none !important;
+    }
+} 

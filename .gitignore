@@ -1,0 +1,57 @@
+# فایل‌های سیستمی
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE و ویرایشگرها
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# لاگ‌ها
+logs/
+*.log
+
+# فایل‌های Cache
+cache/
+*.cache
+
+# فایل‌های آپلودی (حفظ ساختار پوشه)
+upld/*
+!upld/.gitkeep
+
+# Vendor (کتابخانه‌های Composer)
+vendor/
+
+# فایل‌های تنظیمات محلی
+.env
+config/database.local.php
+config/config.local.php
+
+# فایل‌های موقت
+tmp/
+temp/
+*.tmp
+
+# فایل‌های بک‌آپ
+*.bak
+*.backup
+*.sql
+
+# Node modules (اگر استفاده شود)
+node_modules/
+
+# فایل‌های کامپایل شده
+*.min.js
+*.min.css
+
+# فایل‌های تست
+phpunit.xml
+.phpunit.result.cache
+tests/_output/ 

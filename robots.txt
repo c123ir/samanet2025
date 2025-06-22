@@ -1,0 +1,16 @@
+# نام فایل: robots.txt
+# مسیر فایل: /robots.txt
+
+User-agent: *
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /logs/
+Disallow: /cache/
+Disallow: /.env
+Disallow: /composer.json
+Disallow: /composer.lock
+
+Allow: /assets/
+Allow: /pub/
+
+Sitemap: https://yourdomain.com/sitemap.xml
