@@ -56,7 +56,8 @@ class BaseController
             'current_route' => $this->getCurrentRoute(),
             'csrf_token' => $this->getCSRFToken(),
             'app_name' => APP_NAME,
-            'app_version' => APP_VERSION
+            'app_version' => APP_VERSION,
+            'flash' => $this->getFlash()
         ];
     }
 
@@ -151,7 +152,12 @@ class BaseController
         // ترکیب داده‌های پیش‌فرض با داده‌های ارسالی
         $viewData = array_merge($this->data, $data);
         
-        // استخراج متغیرها
+        // استخراج متغیرها به global scope
+        foreach ($viewData as $key => $value) {
+            $GLOBALS[$key] = $value;
+        }
+        
+        // استخراج متغیرها در local scope نیز
         extract($viewData);
         
         // بررسی وجود فایل view
@@ -490,6 +496,74 @@ class BaseController
     protected function setFlashMessage($type, $message) 
     {
         return $this->setFlash($type, $message);
+    }
+
+    /**
+     * ارسال JSON response
+     */
+    protected function sendJSON($data) 
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($data, JSON_UNESCAPED_UNICODE);
+        exit();
+    }
+
+    /**
+     * اعتبارسنجی CSRF Token
+     */
+    protected function validateCSRF($token) 
+    {
+        if (!isset($_SESSION['csrf_token']) || empty($token)) {
+            return false;
+        }
+        return hash_equals($_SESSION['csrf_token'], $token);
+    }
+
+    /**
+     * بررسی مجوز دسترسی
+     */
+    protected function checkPermission($permission) 
+    {
+        // بررسی ساده - در آینده می‌توان پیچیده‌تر کرد
+        if (!$this->user) {
+            return false;
+        }
+        
+        // مدیران کل دسترسی دارند
+        if ($this->user['role'] === 'admin') {
+            return true;
+        }
+        
+        // سایر نقش‌ها
+        $permissions = [
+            'manage_tags' => ['admin', 'manager'],
+            'create_tags' => ['admin', 'manager', 'user'],
+            'edit_tags' => ['admin', 'manager'],
+            'delete_tags' => ['admin']
+        ];
+        
+        if (!isset($permissions[$permission])) {
+            return false;
+        }
+        
+        return in_array($this->user['role'], $permissions[$permission]);
+    }
+
+    /**
+     * ریدایرکت با پیام خطا
+     */
+    protected function redirectWithError($url, $message) 
+    {
+        $this->setFlash('error', $message);
+        Security::redirect($url);
+    }
+
+    /**
+     * دریافت شناسه کاربر فعلی
+     */
+    protected function getCurrentUserId() 
+    {
+        return $this->user ? $this->user['id'] : null;
     }
 
     /**

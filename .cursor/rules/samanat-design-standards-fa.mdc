@@ -1,0 +1,754 @@
+---
+description: استانداردهای طراحی مدرن سامانت - راهنمای فارسی
+globs: ["**/*.php", "**/*.html", "**/*.css", "**/*.js"]
+alwaysApply: true
+---
+# 🎨 استانداردهای طراحی حرفه‌ای داشبورد سامانت
+## راهنمای جامع UI/UX در سطح Enterprise
+
+**نسخه:** 5.0 حرفه‌ای  
+**وضعیت:** ✅ فعال - اعمال خودکار به همه صفحات  
+**هدف:** داشبورد حرفه‌ای دقیقاً مطابق dashboard.css و users.css
+
+---
+
+## 🎯 **اصول کلیدی طراحی حرفه‌ای**
+
+### **قوانین الزامی:**
+1. **طراحی Enterprise-Grade** - دقیقاً مطابق dashboard.css
+2. **Data Density** - حداکثر اطلاعات در حداقل فضا
+3. **Typography حرفه‌ای** - `-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Vazirmatn'`
+4. **Micro-Interactions** - انیمیشن‌های ظریف
+5. **Mobile-First** - واکنش‌گرا از 320px تا 4K
+6. **Performance** - CSS سبک و بهینه
+7. **Accessibility** - مطابق WCAG 2.1
+
+---
+
+## 🎨 **سیستم رنگ حرفه‌ای**
+
+### **متغیرهای الزامی در هر صفحه (دقیقاً مطابق dashboard.css):**
+```css
+:root {
+    /* Professional Color Palette - دقیقاً مطابق dashboard */
+    --primary: #5E3AEE;
+    --primary-light: #7C5CFF;
+    --primary-dark: #4527A0;
+    
+    --gray-50: #FAFAFA;
+    --gray-100: #F4F4F5;
+    --gray-200: #E4E4E7;
+    --gray-300: #D4D4D8;
+    --gray-400: #A1A1AA;
+    --gray-500: #71717A;
+    --gray-600: #52525B;
+    --gray-700: #3F3F46;
+    --gray-800: #27272A;
+    --gray-900: #18181B;
+    
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --info: #3B82F6;
+    
+    /* Spacing System - دقیقاً مطابق dashboard */
+    --space-0: 0;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    
+    /* Typography - دقیقاً مطابق dashboard */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Vazirmatn', sans-serif;
+    --font-mono: 'SF Mono', Monaco, monospace;
+    
+    /* Shadows - دقیقاً مطابق dashboard */
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    
+    /* Border Radius - دقیقاً مطابق dashboard */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    
+    /* Transitions - دقیقاً مطابق dashboard */
+    --transition: all 150ms ease;
+}
+
+/* Dark Mode Variables - دقیقاً مطابق dashboard */
+[data-theme="dark"] {
+    --gray-50: #18181B;
+    --gray-100: #27272A;
+    --gray-200: #3F3F46;
+    --gray-300: #52525B;
+    --gray-400: #71717A;
+    --gray-500: #A1A1AA;
+    --gray-600: #D4D4D8;
+    --gray-700: #E4E4E7;
+    --gray-800: #F4F4F5;
+    --gray-900: #FAFAFA;
+}
+
+/* Reset & Base - دقیقاً مطابق dashboard */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--gray-900);
+    background: var(--gray-50);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+```
+
+---
+
+## 🧩 **کلاس‌های الزامی داشبورد حرفه‌ای**
+
+### **1. Wrapper داشبورد (الزامی):**
+```css
+.dashboard-pro {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+```
+
+### **2. Header حرفه‌ای (الزامی - 60px):**
+```css
+.dashboard-header {
+    height: 60px;
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-6);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* Theme Toggle Button - دقیقاً مطابق dashboard */
+.theme-toggle,
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover,
+.btn-icon:hover {
+    background: var(--gray-200);
+    color: var(--gray-900);
+}
+
+/* User Profile - دقیقاً مطابق dashboard */
+.user-profile {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.dashboard-content {
+    flex: 1;
+    padding: var(--space-6);
+    max-width: 1440px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Main Grid Layout - دقیقاً مطابق dashboard */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
+}
+
+.main-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.side-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+```
+
+### **3. کارت‌های آمار حرفه‌ای (الزامی):**
+```css
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.stat-card-pro {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    transition: var(--transition);
+}
+
+.stat-card-pro:hover {
+    border-color: var(--gray-300);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-1);
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.2;
+}
+
+.stat-change {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+    font-size: 12px;
+}
+
+.stat-change.positive {
+    color: var(--success);
+}
+
+.stat-change.negative {
+    color: var(--danger);
+}
+```
+
+### **4. جداول حرفه‌ای (الزامی):**
+```css
+.table-container {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.table-header {
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    text-align: right;
+    padding: var(--space-3) var(--space-4);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.data-table td {
+    padding: var(--space-3) var(--space-4);
+    font-size: 14px;
+    color: var(--gray-900);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.data-table tbody tr {
+    transition: var(--transition);
+}
+
+.data-table tbody tr:hover {
+    background: var(--gray-50);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+```
+
+### **5. پنل‌های جانبی حرفه‌ای (الزامی):**
+```css
+.panel {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.panel-badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+}
+
+.panel-body {
+    padding: var(--space-3);
+}
+
+/* Tasks Panel - دقیقاً مطابق dashboard */
+.task-item {
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-item:hover {
+    padding-right: var(--space-2);
+}
+
+.task-text {
+    font-size: 13px;
+    color: var(--gray-700);
+}
+```
+
+---
+
+## 📋 **ساختار الزامی داشبورد**
+
+### **الگوی HTML (الزامی):**
+```html
+<div class="dashboard-pro">
+    <!-- Header حرفه‌ای -->
+    <header class="dashboard-header">
+        <div class="header-content">
+            <h1 class="header-title">داشبورد سامانت</h1>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" onclick="toggleTheme()" title="تغییر تم">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
+            <div class="user-profile" title="نام کاربر">
+                ک
+            </div>
+        </div>
+    </header>
+
+    <!-- محتوای اصلی -->
+    <div class="dashboard-content">
+        <!-- ردیف آمارهای فشرده -->
+        <div class="stats-row">
+            <div class="stat-card-pro">
+                <div class="stat-label">کل مبلغ</div>
+                <div class="stat-value">12,500<span class="text-muted">M</span></div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>12% از ماه قبل</span>
+                </div>
+            </div>
+            <!-- سایر کارت‌های آمار -->
+        </div>
+
+        <!-- Grid اصلی -->
+        <div class="dashboard-grid">
+            <!-- ستون اصلی -->
+            <div class="main-column">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2 class="table-title">آخرین درخواست‌ها</h2>
+                        <button class="btn-icon" title="فیلتر">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                    </div>
+
+                    <!-- جدول دسکتاپ -->
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>شماره</th>
+                                <th>عنوان</th>
+                                <th>مبلغ</th>
+                                <th>وضعیت</th>
+                                <th>تاریخ</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- ردیف‌های جدول -->
+                        </tbody>
+                    </table>
+
+                    <!-- لیست موبایل -->
+                    <div class="mobile-list">
+                        <div class="mobile-list-item">
+                            <div class="mobile-item-main">
+                                <div class="mobile-item-title">عنوان</div>
+                                <div class="mobile-item-meta">توضیحات</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ستون جانبی -->
+            <div class="side-column">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-tasks"></i>
+                            وظایف در انتظار
+                        </div>
+                        <span class="panel-badge">۵</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="task-item">
+                            <span class="task-text">وظیفه نمونه</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+---
+
+## 🌙 **پشتیبانی کامل از حالت شب**
+
+### **بهبودهای Dark Mode (الزامی):**
+```css
+/* تم تاریک برای header */
+[data-theme="dark"] .dashboard-header {
+    background: var(--gray-100);
+    border-color: var(--gray-200);
+}
+
+/* تم تاریک برای کارت‌ها */
+[data-theme="dark"] .stat-card-pro,
+[data-theme="dark"] .table-container,
+[data-theme="dark"] .panel {
+    background: var(--gray-100);
+    border-color: var(--gray-200);
+}
+
+/* تم تاریک برای جداول */
+[data-theme="dark"] .data-table th {
+    background: var(--gray-200);
+}
+
+[data-theme="dark"] .data-table tbody tr:hover {
+    background: var(--gray-200);
+}
+
+/* تم تاریک برای پنل‌ها - خوانایی بهتر */
+[data-theme="dark"] .panel-title {
+    color: var(--gray-800);
+}
+
+[data-theme="dark"] .panel-badge {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+/* تم تاریک برای متن وظایف - تیره‌تر برای خوانایی */
+[data-theme="dark"] .task-text {
+    color: var(--gray-800) !important;
+}
+
+[data-theme="dark"] .task-item {
+    border-color: var(--gray-200);
+}
+
+[data-theme="dark"] .task-item:hover {
+    background: var(--gray-200);
+}
+```
+
+---
+
+## 📱 **طراحی واکنش‌گرا حرفه‌ای**
+
+### **Mobile-First Approach (الزامی):**
+```css
+/* تبلت (768px - 1024px) */
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .side-column {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-4);
+    }
+    
+    .dashboard-content {
+        padding: var(--space-4);
+    }
+}
+
+/* موبایل (< 768px) */
+@media (max-width: 767px) {
+    .dashboard-header {
+        height: 56px;
+        padding: 0 var(--space-4);
+    }
+    
+    .header-title {
+        font-size: 16px;
+    }
+    
+    .dashboard-content {
+        padding: var(--space-3);
+    }
+    
+    .dashboard-grid {
+        gap: var(--space-4);
+    }
+    
+    .side-column {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+    
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+    
+    .stat-card-pro {
+        padding: var(--space-3);
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    /* مخفی کردن جدول دسکتاپ در موبایل */
+    .data-table {
+        display: none;
+    }
+    
+    /* نمایش لیست موبایل */
+    .mobile-list {
+        display: block;
+    }
+    
+    .mobile-list-item {
+        padding: var(--space-3);
+        border-bottom: 1px solid var(--gray-100);
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: var(--space-3);
+    }
+    
+    .mobile-item-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+    }
+    
+    .mobile-item-meta {
+        font-size: 12px;
+        color: var(--gray-500);
+    }
+}
+
+/* دسکتاپ - مخفی کردن لیست موبایل */
+@media (min-width: 768px) {
+    .mobile-list {
+        display: none;
+    }
+}
+```
+
+---
+
+## 🎯 **چک‌لیست اجباری برای هر داشبورد**
+
+### **✅ موارد الزامی:**
+- [ ] استفاده از `.dashboard-pro` wrapper
+- [ ] Header با ارتفاع 60px و sticky positioning
+- [ ] کارت‌های آمار با `.stat-card-pro` و grid layout
+- [ ] جداول با `.table-container` و mobile fallback
+- [ ] پنل‌های جانبی با `.panel` و styling مناسب
+- [ ] متن حالت شب با `var(--gray-800)` برای خوانایی
+- [ ] responsive موبایل با grid دو ستونه آمار
+- [ ] انیمیشن‌های تدریجی برای کارت‌های آمار
+- [ ] افکت‌های hover برای جداول
+- [ ] دکمه تغییر تم با سایز 40px (دایره‌ای)
+- [ ] پروفایل کاربر با دایره 40px
+- [ ] hover states برای همه المان‌های تعاملی
+- [ ] بهینه‌سازی عملکرد با CSS variables
+- [ ] ویژگی‌های accessibility
+
+### **الزامات کنترلر:**
+```php
+// الزامی در هر کنترلر داشبورد
+$this->render('dashboard/index', [
+    'title' => 'داشبورد سامانت',
+    'data' => $data,
+    'additional_css' => ['css/dashboard.css'] // الزامی
+]);
+```
+
+### **الزامات JavaScript:**
+```javascript
+// الزامی در هر داشبورد
+document.addEventListener('DOMContentLoaded', function() {
+    // انیمیشن تدریجی کارت‌های آمار
+    const statCards = document.querySelectorAll('.stat-card-pro');
+    statCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.style.animation = 'fadeInUp 0.6s ease-out forwards';
+    });
+    
+    // افکت‌های hover برای ردیف‌های جدول
+    const tableRows = document.querySelectorAll('.data-table tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.01)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+    
+    // تست localStorage برای theme persistence
+    try {
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+        console.log('✅ localStorage کار می‌کند');
+    } catch (error) {
+        console.error('❌ localStorage در دسترس نیست:', error);
+    }
+});
+```
+
+---
+
+## 🎨 **استانداردهای کیفیت Enterprise**
+
+### **الزامات کیفیت:**
+1. **کیفیت طراحی**: دقیقاً مطابق dashboard.css و users.css
+2. **Data Density**: حداکثر اطلاعات، حداقل فضا
+3. **Typography**: سلسله مراتب حرفه‌ای با فونت `-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Vazirmatn'`
+4. **Performance**: سبک و سریع
+5. **Accessibility**: مطابق WCAG 2.1
+6. **Mobile**: طراحی واکنش‌گرای کامل
+7. **Themes**: حالت روز/شب بی‌نقص
+
+### **ویژگی‌های الزامی:**
+- **Header**: 60px sticky، طراحی minimal
+- **آمار**: Grid 4 ستونه فشرده
+- **جداول**: حرفه‌ای با کارت‌های موبایل
+- **پنل‌ها**: وظایف، فعالیت‌ها، موارد فوری
+- **تم**: دکمه 40px تغییر تم (دایره‌ای)
+- **پروفایل**: دایره 40px کاربر
+- **انیمیشن‌ها**: micro-interactions نرم
+
+---
+
+**🎨 وضعیت سیستم طراحی:** ✅ فعال - اعمال خودکار  
+**📅 نسخه:** 5.0 Enterprise Grade  
+**🎯 دامنه:** اعمال جهانی به همه داشبوردها و صفحات
+
+**💡 نکته مهم:** هر داشبورد باید دقیقاً مطابق dashboard.css و users.css باشد.

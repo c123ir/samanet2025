@@ -20,6 +20,9 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="<?= $csrf_token ?>">
     
+    <!-- Theme Management handled by theme-system.js -->
+    <script src="<?= asset('js/theme-system.js') ?>"></script>
+    
     <title><?= isset($page_title) ? $page_title . ' - ' . $app_name : $app_name ?></title>
     
     <!-- Favicon -->
@@ -959,6 +962,13 @@
                                 </a>
                             </li>
                             
+                            <li class="nav-item">
+                                <a class="nav-link <?= strpos($current_route, 'tags') === 0 ? 'active' : '' ?>" href="<?= url('tags') ?>">
+                                    <i class="fas fa-tags"></i>
+                                    مدیریت تگ‌ها
+                                </a>
+                            </li>
+                            
                             <?php if (Security::checkPermission('manager')): ?>
                                 <li class="nav-item">
                                     <a class="nav-link <?= strpos($current_route, 'users') === 0 ? 'active' : '' ?>" href="<?= url('users') ?>">
@@ -1006,7 +1016,7 @@
             <main class="content-wrapper flex-grow-1">
                 <div class="container-fluid px-4">
                     <!-- Flash Messages -->
-                    <?php $flash = $this->getFlash(); if ($flash): ?>
+                    <?php if (isset($flash) && $flash): ?>
                         <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : $flash['type'] ?> alert-dismissible fade show" role="alert">
                             <?= $flash['message'] ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -1046,7 +1056,6 @@
 
     <!-- JavaScript Files -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= asset('js/theme-system.js') ?>"></script>
     <script src="<?= asset('js/app.js') ?>"></script>
     
     <!-- Debug Helper (فقط در development) -->

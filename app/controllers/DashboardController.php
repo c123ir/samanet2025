@@ -180,8 +180,17 @@ class DashboardController extends BaseController
                 'amounts' => [150, 280, 95, 420, 210, 350, 180]
             ];
 
-            // نمایش داشبورد
-            $this->view('dashboard/index');
+            // Render view
+            $this->render('dashboard/index', [
+                'title' => 'داشبورد سامانت',
+                'stats' => $this->data['stats'],
+                'recent_requests' => $this->data['recent_requests'],
+                'urgent_requests' => $this->data['urgent_requests'],
+                'user_tasks' => $this->data['user_tasks'],
+                'notifications' => $this->data['notifications'],
+                'weekly_chart_data' => $this->data['weekly_chart_data'],
+                'additional_css' => ['css/dashboard.css'] // نام استاندارد جدید
+            ]);
 
         } catch (Exception $e) {
             writeLog("خطا در نمایش داشبورد: " . $e->getMessage(), 'ERROR');

@@ -296,6 +296,7 @@ class Database
                 'from' => $offset + 1,
                 'to' => min($offset + $perPage, $totalRecords)
             ];
+            
         } catch (PDOException $e) {
             writeLog("خطا در صفحه‌بندی: " . $e->getMessage(), 'ERROR');
             return false;

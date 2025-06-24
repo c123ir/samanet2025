@@ -37,16 +37,21 @@ class UserController extends BaseController
             // آمار کاربران
             $stats = $this->userModel->getUserStats();
             
-            $this->renderView('users/index', [
+            $this->render('users/index', [
+                'title' => 'مدیریت کاربران',
                 'users' => $users,
                 'stats' => $stats,
-                'roles' => USER_ROLES
-            ], 'مدیریت کاربران');
+                'roles' => USER_ROLES,
+                'additional_css' => ['css/users.css'] // CSS جدید حرفه‌ای
+            ]);
             
         } catch (Exception $e) {
             error_log("خطا در نمایش لیست کاربران: " . $e->getMessage());
             $this->setFlash('error', 'خطا در بارگذاری لیست کاربران');
-            $this->renderView('users/index', [], 'مدیریت کاربران');
+            $this->render('users/index', [
+                'title' => 'مدیریت کاربران',
+                'additional_css' => ['css/users.css']
+            ]);
         }
     }
 

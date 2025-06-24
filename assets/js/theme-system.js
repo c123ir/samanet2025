@@ -250,7 +250,7 @@
             }
             
             themeUsage[currentTheme]++;
-            localStorage.setItem('samanet_theme_stats', JSON.stringify(themeUsage));
+            localStorage.setItem('samanat_theme_stats', JSON.stringify(themeUsage));
             
             return themeUsage;
         }
@@ -284,6 +284,20 @@
     window.isDarkMode = function() {
         return window.SamanetTheme.isDarkMode();
     };
+
+    /**
+     * فوری اعمال کردن تم برای جلوگیری از flash
+     */
+    (function() {
+        try {
+            const savedTheme = localStorage.getItem('samanat_theme') || window.SamanetTheme.getSystemTheme();
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            console.log('⚡ Theme applied immediately:', savedTheme);
+        } catch (error) {
+            console.error('❌ Error applying immediate theme:', error);
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    })();
 
     /**
      * Event listeners برای DOM ready

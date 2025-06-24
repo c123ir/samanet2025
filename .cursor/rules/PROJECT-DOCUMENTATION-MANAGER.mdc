@@ -1,0 +1,453 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 📚 PROJECT DOCUMENTATION MANAGER
+## Automatic Documentation Maintenance & Standards
+
+**Version:** 1.0  
+**Status:** ✅ ACTIVE - Auto-Maintain All Project Documentation  
+**Purpose:** Ensure complete, up-to-date documentation for seamless project understanding and development
+
+---
+
+## 🎯 **CRITICAL MISSION**
+
+**MANDATORY:** Whenever ANY interaction occurs with this project:
+1. ✅ **Automatically update** all documentation files
+2. ✅ **Maintain consistency** across all documentation
+3. ✅ **Ensure completeness** for new developers/AI assistants
+4. ✅ **Follow international standards** for technical documentation
+5. ✅ **Keep everything in `/Docs` folder** organized and accessible
+
+---
+
+## 📋 **MANDATORY DOCUMENTATION FILES**
+
+### **Core Documentation (ALWAYS MAINTAIN):**
+1. **`README.md`** - Project overview and quick start
+2. **`CHANGELOG.md`** - Version history and updates
+3. **`01-پروپوزال اولیه.md`** - Project proposal and scope
+4. **`02-samanat-coding-standards.md`** - Development standards
+5. **`database_import_guide.md`** - Database setup and structure
+6. **`VERSION-4-CHECKLIST.md`** - Current phase checklist
+
+### **Technical Documentation:**
+1. **API Documentation** - All endpoints and usage
+2. **Database Schema** - Complete structure and relationships
+3. **Installation Guide** - Step-by-step setup
+4. **Development Guide** - How to contribute and develop
+5. **Deployment Guide** - Production deployment steps
+6. **Troubleshooting Guide** - Common issues and solutions
+
+### **Project Management:**
+1. **Phase Documentation** - Each development phase
+2. **Feature Specifications** - Detailed feature descriptions
+3. **Architecture Documentation** - System design and structure
+4. **User Manuals** - End-user documentation
+5. **Testing Documentation** - Test plans and procedures
+
+---
+
+## 🔄 **AUTO-UPDATE TRIGGERS**
+
+### **When to Update Documentation:**
+- ✅ **New chat session** starts
+- ✅ **Code changes** are made
+- ✅ **New features** are added
+- ✅ **Database changes** occur
+- ✅ **Version releases** happen
+- ✅ **Dependencies** are updated
+- ✅ **Configuration** changes
+- ✅ **Bug fixes** are implemented
+
+### **What to Update:**
+```yaml
+Code Changes:
+  - Update API documentation
+  - Refresh code examples
+  - Update feature lists
+  - Modify troubleshooting guides
+
+Database Changes:
+  - Update schema documentation
+  - Refresh import guides
+  - Update migration steps
+  - Modify entity relationships
+
+New Features:
+  - Add to changelog
+  - Update README features
+  - Create feature documentation
+  - Update user manuals
+
+Version Changes:
+  - Update all version numbers
+  - Refresh compatibility info
+  - Update installation guides
+  - Modify deployment procedures
+```
+
+---
+
+## 📝 **DOCUMENTATION STANDARDS**
+
+### **1. File Structure Standards:**
+```
+Docs/
+├── 📄 README.md                     # Project overview
+├── 📄 CHANGELOG.md                  # Version history
+├── 📄 01-پروپوزال اولیه.md          # Project proposal
+├── 📄 02-samanat-coding-standards.md # Development standards
+├── 📄 database_import_guide.md      # Database guide
+├── 📄 VERSION-4-CHECKLIST.md        # Current phase
+├── 📁 api/                          # API documentation
+├── 📁 guides/                       # User and dev guides
+├── 📁 architecture/                 # System architecture
+├── 📁 phases/                       # Development phases
+└── 📁 assets/                       # Documentation assets
+```
+
+### **2. Content Standards:**
+```markdown
+# Document Title
+**Version:** X.X.X
+**Date:** YYYY/MM/DD
+**Status:** ✅ Active | 🔄 In Progress | ❌ Deprecated
+**Purpose:** Brief description
+
+## Table of Contents
+- [Section 1](mdc:#section-1)
+- [Section 2](mdc:#section-2)
+
+## Overview
+Brief project/feature overview
+
+## Detailed Information
+Comprehensive details with examples
+
+## Code Examples
+```language
+// Well-commented code examples
+```
+
+## Troubleshooting
+Common issues and solutions
+
+## Related Documents
+Links to related documentation
+```
+
+### **3. Language Standards:**
+- **Primary Language:** English for technical documentation
+- **Secondary Language:** Persian for user-facing content
+- **Code Comments:** Persian for Persian developers
+- **API Documentation:** English (international standard)
+- **User Manuals:** Persian for end users
+
+---
+
+## 🎨 **SAMANET PROJECT SPECIFICS**
+
+### **Current Project Status (Auto-Update):**
+```yaml
+Project Name: Samanet
+Version: 3.0.0 (Phase 3 Complete) - Production Ready
+Technology Stack:
+  Backend: PHP 8.0+ MVC Architecture
+  Frontend: HTML5, CSS3, Vanilla JavaScript ES6+
+  Database: MySQL 8.0+ with Optimized Indexes
+  Framework: Bootstrap 5.3.0 RTL + Custom Design System
+  
+Completed Phases:
+  - Phase 1: Core System & Authentication ✅
+  - Phase 2: Request Management System ✅
+  - Phase 3: Advanced Tag Management ✅
+  
+Current Phase: Ready for Phase 4 - Document Management
+Next Phase: Phase 5 - Approval Workflow System
+
+Key Features (Completed):
+  - Enterprise-Grade Professional Dashboard
+  - Advanced Tag Management with Gradient Colors
+  - Multi-word Real-time Search with Highlighting
+  - Perfect Dark/Light Theme System
+  - Mobile-First Responsive Design (320px-4K)
+  - Persian Language Support (RTL)
+  - Professional Documentation System
+  - Advanced Debugging & Error Handling
+```
+
+### **Database Schema (Auto-Update):**
+```sql
+-- ALWAYS maintain current schema
+Tables:
+  - users (4 records)
+  - user_groups (4 records)
+  - payment_requests (8 records)
+  - tags (15 records) -- New in Version 3.0
+
+Key Relationships:
+  - Users belong to Groups
+  - Requests belong to Users
+  - Tags created by Users
+  
+Indexes:
+  - Performance optimized
+  - Search optimized
+  - Foreign key constraints
+```
+
+### **API Endpoints (Auto-Update):**
+```yaml
+Current Endpoints:
+  GET  /api/tags              # List tags with search
+  POST /api/tags              # Create new tag
+  GET  /api/tags/{id}         # Get tag details
+  PUT  /api/tags/{id}         # Update tag
+  DELETE /api/tags/{id}       # Delete tag
+  POST /api/tags/random       # Generate random gradient
+  
+Planned Endpoints (Phase 4):
+  POST /api/documents/upload  # Upload documents
+  GET  /api/documents/{id}    # Get document
+  DELETE /api/documents/{id}  # Delete document
+```
+
+---
+
+## 🔧 **AUTO-MAINTENANCE PROCEDURES**
+
+### **1. README.md Maintenance:**
+```markdown
+# ALWAYS ensure README contains:
+- Current version and status
+- Complete feature list
+- Installation instructions
+- Usage examples
+- Contributing guidelines
+- License information
+- Contact information
+- Screenshots/demos
+
+# Auto-update sections:
+- Version badges
+- Feature completion status
+- Technology stack
+- Installation requirements
+- API endpoint list
+```
+
+### **2. CHANGELOG.md Maintenance:**
+```markdown
+# ALWAYS maintain in this format:
+## [Version] - Date
+
+### ✨ Added
+- New features
+
+### 🔧 Changed
+- Modified features
+
+### 🐛 Fixed
+- Bug fixes
+
+### 📚 Documentation
+- Documentation updates
+
+### 🗑️ Removed
+- Removed features
+```
+
+### **3. Database Documentation Maintenance:**
+```sql
+-- ALWAYS include:
+- Complete CREATE TABLE statements
+- Sample data INSERT statements
+- All indexes and constraints
+- Migration scripts
+- Performance considerations
+- Backup procedures
+```
+
+---
+
+## 📊 **QUALITY ASSURANCE CHECKLIST**
+
+### **Documentation Quality Standards:**
+- [ ] All files have proper headers with version/date
+- [ ] Table of contents for documents > 100 lines
+- [ ] Code examples are tested and work
+- [ ] Screenshots are current and high-quality
+- [ ] External links are valid and working
+- [ ] Grammar and spelling are correct
+- [ ] Formatting is consistent
+- [ ] All sections are complete
+
+### **Technical Accuracy:**
+- [ ] API documentation matches actual endpoints
+- [ ] Database schema reflects current structure
+- [ ] Installation steps work on fresh environment
+- [ ] Code examples execute without errors
+- [ ] Version numbers are consistent across files
+- [ ] Dependencies are current and available
+- [ ] Configuration examples are valid
+
+### **Completeness Check:**
+- [ ] New developer can set up project from docs
+- [ ] All features are documented
+- [ ] Troubleshooting covers common issues
+- [ ] Architecture is clearly explained
+- [ ] Deployment process is documented
+- [ ] Testing procedures are included
+
+---
+
+## 🚀 **AUTO-UPDATE IMPLEMENTATION**
+
+### **Whenever Project is Accessed:**
+```javascript
+// MANDATORY: Execute this documentation check
+class DocumentationManager {
+    constructor() {
+        this.checkAndUpdate();
+    }
+    
+    async checkAndUpdate() {
+        // 1. Check current project state
+        const projectState = await this.analyzeProject();
+        
+        // 2. Update version numbers
+        await this.updateVersions(projectState);
+        
+        // 3. Refresh feature lists
+        await this.updateFeatureLists(projectState);
+        
+        // 4. Update database documentation
+        await this.updateDatabaseDocs(projectState);
+        
+        // 5. Refresh API documentation
+        await this.updateApiDocs(projectState);
+        
+        // 6. Validate all documentation
+        await this.validateDocumentation();
+        
+        console.log('✅ Documentation updated successfully');
+    }
+}
+```
+
+### **Content Generation Rules:**
+```yaml
+README.md:
+  - Extract features from completed code
+  - Generate installation steps from current setup
+  - Update screenshots from latest UI
+  - Refresh performance metrics
+  
+CHANGELOG.md:
+  - Add new entries for recent changes
+  - Maintain chronological order
+  - Include all significant modifications
+  
+Technical Docs:
+  - Generate from actual code structure
+  - Include real working examples
+  - Update based on current implementation
+```
+
+---
+
+## 📱 **MOBILE & RESPONSIVE DOCUMENTATION**
+
+### **Ensure Documentation is Mobile-Friendly:**
+- ✅ Readable on mobile devices
+- ✅ Tables are responsive or scrollable
+- ✅ Code blocks are properly formatted
+- ✅ Images scale appropriately
+- ✅ Navigation works on touch devices
+
+---
+
+## 🔒 **SECURITY CONSIDERATIONS**
+
+### **Documentation Security:**
+- ❌ **NEVER include** sensitive credentials
+- ❌ **NEVER expose** production configurations
+- ❌ **NEVER share** private API keys
+- ✅ **ALWAYS use** example/placeholder values
+- ✅ **ALWAYS document** security requirements
+- ✅ **ALWAYS include** security best practices
+
+---
+
+## 🎯 **SUCCESS METRICS**
+
+### **Documentation Effectiveness:**
+- **New Developer Onboarding:** < 30 minutes to understand project
+- **Setup Time:** < 15 minutes from docs to running project
+- **Feature Discovery:** All features clearly documented
+- **Issue Resolution:** Common problems have documented solutions
+- **API Adoption:** Developers can use APIs from documentation alone
+
+### **Maintenance Quality:**
+- **Accuracy:** 100% match between docs and actual implementation
+- **Freshness:** Updated within 24 hours of code changes
+- **Completeness:** No undocumented features or endpoints
+- **Accessibility:** Readable by developers and AI assistants
+- **Standards Compliance:** Follows international documentation standards
+
+---
+
+## 🔄 **CONTINUOUS IMPROVEMENT**
+
+### **Regular Documentation Reviews:**
+- **Weekly:** Check for outdated information
+- **Monthly:** Review and update screenshots
+- **Quarterly:** Full documentation audit
+- **Per Release:** Complete refresh and validation
+
+### **Feedback Integration:**
+- Track documentation usage patterns
+- Identify frequently asked questions
+- Update based on user feedback
+- Improve clarity and completeness
+
+---
+
+## 📞 **EMERGENCY DOCUMENTATION PROCEDURES**
+
+### **If Documentation is Severely Outdated:**
+1. **Immediate Priority:** Update README.md and installation guide
+2. **High Priority:** Update CHANGELOG.md and database guide
+3. **Medium Priority:** Update API documentation
+4. **Low Priority:** Update detailed technical guides
+
+### **For New Major Features:**
+1. **Create feature documentation** immediately
+2. **Update relevant existing docs**
+3. **Add to changelog**
+4. **Update README feature list**
+5. **Create usage examples**
+
+---
+
+**📚 Documentation Manager Status:** ✅ ACTIVE - Auto-Maintaining All Project Docs  
+**📅 Last Updated:** Auto-updated on every interaction  
+**🎯 Goal:** 100% accurate, complete, and current documentation at all times  
+**🔄 Next Review:** Continuous monitoring and updates
+
+---
+
+## 📋 **IMPLEMENTATION NOTES**
+
+This documentation manager will:
+- **Automatically trigger** when any code interaction occurs
+- **Continuously monitor** project state changes
+- **Instantly update** relevant documentation files
+- **Maintain consistency** across all documentation
+- **Ensure accessibility** for developers and AI assistants
+- **Follow international standards** for technical documentation
+- **Preserve project history** while staying current
+- **Enable seamless onboarding** for new team members

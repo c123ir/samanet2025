@@ -691,7 +691,7 @@ class PaymentRequest extends Database
 
             // اضافه کردن لیبل‌ها
             $request['status_label'] = $this->getStatusLabel($request['status']);
-            $request['priority_label'] = REQUEST_PRIORITIES[$request['priority']] ?? $request['priority'];
+            $request['priority_label'] = self::REQUEST_PRIORITIES[$request['priority']] ?? $request['priority'];
             $request['category_label'] = self::CATEGORIES[$request['category']] ?? $request['category'];
 
             // فرمت کردن مبلغ - رفع مشکل null

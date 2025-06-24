@@ -1,0 +1,238 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 🐛 قوانین خطایابی و رفع مشکلات سامانت
+## راهنمای جلوگیری از خطاهای رایج
+
+**نسخه:** 1.0  
+**تاریخ:** 1404/10/15  
+**هدف:** جلوگیری از تکرار مشکلات رایج در توسعه
+
+---
+
+## 🚨 **مشکلات رایج و راه‌حل‌ها**
+
+### **1. مشکل Theme Management:**
+
+#### **🔍 علائم:**
+- حالت شب/روز از localStorage بارگذاری نمی‌شود
+- تم هنگام رفرش صفحه ریست می‌شود
+- خطای `Cannot redeclare function toggleTheme()`
+
+#### **✅ راه‌حل:**
+```javascript
+// ❌ NEVER DO - Don't create local theme functions
+function toggleTheme() {
+    // This conflicts with theme-system.js
+}
+
+// ✅ ALWAYS DO - Use central theme system
+// Theme system handled by theme-system.js - no local override needed
+```
+
+#### **🔧 چک‌لیست رفع مشکل:**
+- [ ] حذف توابع `toggleTheme()` محلی از views
+- [ ] استفاده از localStorage key `samanat_theme` فقط
+- [ ] بارگذاری `theme-system.js` در `<head>`
+- [ ] حذف کد theme management مضاعف
+
+---
+
+### **2. مشکل Function Redeclaration:**
+
+#### **🔍 علائم:**
+- خطای `Fatal error: Cannot redeclare function`
+- تداخل توابع بین فایل‌های مختلف
+
+#### **✅ راه‌حل:**
+```php
+// ❌ NEVER DO - Don't redefine functions in views
+function getStatusColor($status) {
+    // This function already exists in Utilities.php
+}
+
+// ✅ ALWAYS DO - Use existing helper functions
+// Functions loaded from app/helpers/Utilities.php
+```
+
+#### **🔧 چک‌لیست رفع مشکل:**
+- [ ] بررسی وجود تابع در `app/helpers/Utilities.php`
+- [ ] حذف تعریف مضاعف از views
+- [ ] اطمینان از بارگذاری helper files در `index.php`
+
+---
+
+### **3. مشکل CSS Variables:**
+
+#### **🔍 علائم:**
+- رنگ‌ها یکسان نیستند بین صفحات
+- فونت‌ها متفاوت هستند
+- Dark mode درست کار نمی‌کند
+
+#### **✅ راه‌حل:**
+```css
+/* ✅ ALWAYS include these variables in every page CSS */
+:root {
+    --primary: #5E3AEE;
+    --gray-50: #FAFAFA;
+    --gray-100: #F4F4F5;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Vazirmatn', sans-serif;
+}
+
+[data-theme="dark"] {
+    --gray-50: #18181B;
+    --gray-100: #27272A;
+}
+```
+
+#### **🔧 چک‌لیست رفع مشکل:**
+- [ ] کپی متغیرهای CSS از `dashboard.css`
+- [ ] اطمینان از وجود dark mode variables
+- [ ] استفاده از `var(--variable-name)` در همه جا
+
+---
+
+### **4. مشکل Database Model:**
+
+#### **🔍 علائم:**
+- خطای `Undefined constant REQUEST_PRIORITIES`
+- `Call to undefined method`
+
+#### **✅ راه‌حل:**
+```php
+// ❌ WRONG - Missing self::
+$request['priority_label'] = REQUEST_PRIORITIES[$request['priority']];
+
+// ✅ CORRECT - Use self:: for class constants
+$request['priority_label'] = self::REQUEST_PRIORITIES[$request['priority']];
+```
+
+#### **🔧 چک‌لیست رفع مشکل:**
+- [ ] استفاده از `self::` برای ثابت‌های کلاس
+- [ ] بررسی تعریف متدها در model
+- [ ] اطمینان از وجود ثابت‌های مورد نیاز
+
+---
+
+### **5. مشکل Responsive Design:**
+
+#### **🔍 علائم:**
+- صفحه در موبایل شکسته است
+- جدول‌ها قابل خواندن نیستند
+- دکمه‌ها کوچک هستند
+
+#### **✅ راه‌حل:**
+```css
+/* ✅ ALWAYS include mobile breakpoints */
+@media (max-width: 767px) {
+    .data-table {
+        display: none;
+    }
+    
+    .mobile-list {
+        display: block;
+    }
+    
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+```
+
+#### **🔧 چک‌لیست رفع مشکل:**
+- [ ] تست در اندازه‌های مختلف صفحه
+- [ ] اطمینان از وجود mobile list برای جداول
+- [ ] دکمه‌ها حداقل 45px ارتفاع داشته باشند
+
+---
+
+## 🔍 **روش‌های خطایابی**
+
+### **1. مرحله‌ای خطایابی:**
+1. **بررسی Console**: `F12 > Console` برای خطاهای JavaScript
+2. **بررسی Network**: بررسی درخواست‌های AJAX
+3. **بررسی localStorage**: `Application > Local Storage`
+4. **بررسی CSS**: `Elements > Styles`
+
+### **2. ابزارهای مفید:**
+```javascript
+// Debug theme system
+console.log('Current theme:', document.documentElement.getAttribute('data-theme'));
+console.log('Saved theme:', localStorage.getItem('samanat_theme'));
+
+// Debug CSS variables
+const computedStyle = getComputedStyle(document.documentElement);
+console.log('Primary color:', computedStyle.getPropertyValue('--primary'));
+```
+
+### **3. تست‌های سریع:**
+```bash
+# Test PHP syntax
+php -l app/views/requests/list.php
+
+# Test file permissions
+ls -la assets/css/requests-page.css
+
+# Test Apache errors
+tail -f /var/log/apache2/error.log
+```
+
+---
+
+## 📋 **چک‌لیست پیش از Deploy**
+
+### **✅ Theme System:**
+- [ ] فقط یک `toggleTheme()` در کل پروژه
+- [ ] localStorage key `samanat_theme` یکسان همه جا
+- [ ] `theme-system.js` در `<head>` بارگذاری شده
+- [ ] تست theme persistence در همه صفحات
+
+### **✅ CSS Consistency:**
+- [ ] متغیرهای CSS یکسان در همه صفحات
+- [ ] فونت‌ها یکسان (`--font-sans`)
+- [ ] رنگ‌ها مطابق `dashboard.css`
+- [ ] Dark mode کامل
+
+### **✅ JavaScript:**
+- [ ] بدون خطا در Console
+- [ ] Event listeners صحیح
+- [ ] AJAX calls با CSRF token
+- [ ] Error handling مناسب
+
+### **✅ PHP:**
+- [ ] بدون Parse Error
+- [ ] Helper functions بارگذاری شده
+- [ ] Model constants با `self::`
+- [ ] Exception handling
+
+### **✅ Responsive:**
+- [ ] تست در موبایل (< 768px)
+- [ ] تست در تبلت (768px - 1024px)
+- [ ] تست در دسکتاپ (> 1024px)
+- [ ] Mobile list برای جداول
+
+---
+
+## 🚀 **نکات بهینه‌سازی**
+
+### **1. Performance:**
+- CSS variables به جای hardcoded values
+- Lazy loading برای تصاویر
+- Minify CSS/JS در production
+
+### **2. Accessibility:**
+- `title` attribute برای دکمه‌ها
+- `aria-label` برای navigation
+- Contrast ratio مناسب
+
+### **3. SEO:**
+- Meta tags مناسب
+- Semantic HTML
+- Alt text برای تصاویر
+
+---
+
+**🎯 هدف:** جلوگیری از تکرار مشکلات و تسریع فرآیند خطایابی  
+**📝 بروزرسانی:** هر بار که مشکل جدیدی حل شد، به این فایل اضافه کنید

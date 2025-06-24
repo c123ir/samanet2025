@@ -1,12 +1,57 @@
-/**
- * نام فایل: requests-page.css
- * مسیر: /assets/css/requests-page.css
- * توضیح: استایل‌های صفحه درخواست‌های حواله - Enterprise Grade (دقیقاً مطابق dashboard.css)
- * تاریخ بازطراحی: 1404/10/15
- * نسخه: 5.0 حرفه‌ای (مطابق dashboard.css)
- */
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 🔥 MANDATORY: Professional Dashboard Design System
 
-/* متغیرهای CSS الزامی - دقیقاً مطابق dashboard.css */
+**CRITICAL: Apply to EVERY dashboard and page automatically**
+
+## 🌙 **THEME MANAGEMENT RULES (MANDATORY):**
+
+### **❌ NEVER DO:**
+- ❌ **NEVER** create local `toggleTheme()` functions in views
+- ❌ **NEVER** use different localStorage keys (only `samanat_theme`)
+- ❌ **NEVER** override theme-system.js functionality
+- ❌ **NEVER** include theme management code in individual pages
+- ❌ **NEVER** use `localStorage.setItem('theme', ...)` - wrong key!
+
+### **✅ ALWAYS DO:**
+- ✅ **ALWAYS** use central `theme-system.js` for theme management
+- ✅ **ALWAYS** use `localStorage.getItem('samanat_theme')` key only
+- ✅ **ALWAYS** rely on global `window.toggleTheme()` function
+- ✅ **ALWAYS** use `onclick="toggleTheme()"` for theme buttons
+- ✅ **ALWAYS** trust theme-system.js for persistence
+
+### **🔧 CORRECT THEME BUTTON:**
+```html
+<button class="theme-toggle" onclick="toggleTheme()" title="تغییر تم">
+    <i class="fas fa-moon" id="theme-icon"></i>
+</button>
+```
+
+### **❌ WRONG - Don't add this to views:**
+```javascript
+// ❌ NEVER add this to individual pages
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme); // ❌ Wrong key!
+}
+```
+
+### **✅ CORRECT - Let theme-system.js handle it:**
+```javascript
+// ✅ Only add this comment if needed
+// Theme system handled by theme-system.js - no local override needed
+```
+
+## When creating ANY dashboard/page/view/component:
+
+### 1. Professional Dashboard CSS (REQUIRED):
+```css
+/* MANDATORY CSS Variables - دقیقاً مطابق dashboard.css */
 :root {
     /* Professional Color Palette - دقیقاً مطابق dashboard */
     --primary: #5E3AEE;
@@ -97,7 +142,7 @@ body {
     flex-direction: column;
 }
 
-/* Professional Header - دقیقاً مطابق dashboard */
+/* Professional Header (60px) */
 .dashboard-header {
     height: 60px;
     background: white;
@@ -144,7 +189,6 @@ body {
     color: var(--gray-600);
     cursor: pointer;
     transition: var(--transition);
-    text-decoration: none;
 }
 
 .theme-toggle:hover,
@@ -195,7 +239,7 @@ body {
     gap: var(--space-4);
 }
 
-/* Professional Stats Cards - دقیقاً مطابق dashboard */
+/* Professional Stats Cards */
 .stats-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -249,7 +293,7 @@ body {
     color: var(--danger);
 }
 
-/* Professional Tables - دقیقاً مطابق dashboard */
+/* Professional Tables */
 .table-container {
     background: white;
     border: 1px solid var(--gray-200);
@@ -310,7 +354,7 @@ body {
     border-bottom: none;
 }
 
-/* Professional Side Panels - دقیقاً مطابق dashboard */
+/* Professional Side Panels */
 .panel {
     background: white;
     border: 1px solid var(--gray-200);
@@ -369,32 +413,7 @@ body {
     color: var(--gray-700);
 }
 
-/* Mobile List - مخصوص موبایل */
-.mobile-list {
-    display: none;
-}
-
-.mobile-list-item {
-    padding: var(--space-3);
-    border-bottom: 1px solid var(--gray-100);
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    gap: var(--space-3);
-}
-
-.mobile-item-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--gray-900);
-}
-
-.mobile-item-meta {
-    font-size: 12px;
-    color: var(--gray-500);
-}
-
-/* Dark Theme Enhancements - دقیقاً مطابق dashboard */
+/* Perfect Dark Mode */
 [data-theme="dark"] .dashboard-header {
     background: var(--gray-100);
     border-color: var(--gray-200);
@@ -436,11 +455,7 @@ body {
     background: var(--gray-200);
 }
 
-[data-theme="dark"] .mobile-list-item {
-    border-color: var(--gray-200);
-}
-
-/* Responsive Design - دقیقاً مطابق dashboard */
+/* Mobile Responsiveness - دقیقاً مطابق dashboard */
 @media (max-width: 1024px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
@@ -499,14 +514,32 @@ body {
         font-size: 20px;
     }
     
-    /* مخفی کردن جدول دسکتاپ در موبایل */
     .data-table {
         display: none;
     }
     
-    /* نمایش لیست موبایل */
     .mobile-list {
         display: block;
+    }
+    
+    .mobile-list-item {
+        padding: var(--space-3);
+        border-bottom: 1px solid var(--gray-100);
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: var(--space-3);
+    }
+    
+    .mobile-item-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+    }
+    
+    .mobile-item-meta {
+        font-size: 12px;
+        color: var(--gray-500);
     }
 }
 
@@ -515,112 +548,102 @@ body {
         display: none;
     }
 }
+```
 
-/* انیمیشن‌های حرفه‌ای */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+### 2. Professional HTML Structure (REQUIRED):
+```html
+<div class="dashboard-pro">
+    <header class="dashboard-header">
+        <div class="header-content">
+            <h1 class="header-title">عنوان صفحه</h1>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle" onclick="toggleTheme()" title="تغییر تم">
+                <i class="fas fa-moon" id="theme-icon"></i>
+            </button>
+            <div class="user-profile">ک</div>
+        </div>
+    </header>
 
-/* Filters Panel Styling */
-#filters-panel {
-    border-top: 1px solid var(--gray-200);
-}
+    <div class="dashboard-content">
+        <div class="stats-row">
+            <div class="stat-card-pro">
+                <div class="stat-label">برچسب</div>
+                <div class="stat-value">مقدار</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>تغییر</span>
+                </div>
+            </div>
+        </div>
 
-/* Button Styling */
-.btn {
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    transition: var(--transition);
-}
+        <div class="dashboard-grid">
+            <div class="main-column">
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">عنوان جدول</div>
+                        <button class="btn-icon">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                    </div>
+                    <table class="data-table">
+                        <!-- جدول حرفه‌ای -->
+                    </table>
+                    <div class="mobile-list">
+                        <!-- لیست موبایل -->
+                    </div>
+                </div>
+            </div>
+            <div class="side-column">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-tasks"></i>
+                            عنوان پنل
+                        </div>
+                        <span class="panel-badge">۵</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="task-item">
+                            <span class="task-text">متن وظیفه</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+```
 
-.btn-sm {
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-}
+### 3. Controller (REQUIRED):
+```php
+$this->render('dashboard/index', [
+    'additional_css' => ['css/dashboard.css']
+]);
+```
 
-.btn-primary {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-}
+### 4. JavaScript (REQUIRED):
+```javascript
+document.addEventListener('DOMContentLoaded', function() {
+    // Progressive animations for stats cards
+    const statCards = document.querySelectorAll('.stat-card-pro');
+    statCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.style.animation = 'fadeInUp 0.6s ease-out forwards';
+    });
+    
+    // Table hover effects
+    const tableRows = document.querySelectorAll('.data-table tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.01)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+```
 
-.btn-primary:hover {
-    background: var(--primary-dark);
-    border-color: var(--primary-dark);
-}
-
-.btn-outline-secondary {
-    border-color: var(--gray-300);
-    color: var(--gray-600);
-}
-
-.btn-outline-secondary:hover {
-    background: var(--gray-100);
-    border-color: var(--gray-400);
-    color: var(--gray-700);
-}
-
-/* Form Controls */
-.form-control,
-.form-select {
-    border-radius: var(--radius-md);
-    border: 1px solid var(--gray-300);
-    padding: 0.5rem 0.75rem;
-    font-size: 14px;
-    transition: var(--transition);
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 0.2rem rgba(94, 58, 238, 0.25);
-}
-
-.form-label {
-    font-weight: 500;
-    color: var(--gray-700);
-    margin-bottom: var(--space-1);
-}
-
-/* Badge Styling */
-.badge {
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    font-size: 0.75rem;
-}
-
-/* Pagination */
-.pagination {
-    --bs-pagination-border-radius: var(--radius-md);
-}
-
-.page-link {
-    border: 1px solid var(--gray-300);
-    color: var(--gray-600);
-    padding: 0.5rem 0.75rem;
-}
-
-.page-link:hover {
-    background: var(--gray-100);
-    border-color: var(--gray-400);
-    color: var(--gray-700);
-}
-
-.page-item.active .page-link {
-    background: var(--primary);
-    border-color: var(--primary);
-}
-
-/* Alert Styling */
-.alert {
-    border-radius: var(--radius-lg);
-    border: none;
-    box-shadow: var(--shadow-md);
-} 
+🎯 **RESULT:** Enterprise-grade dashboard matching dashboard.css and users.css exactly with perfect dark mode and mobile responsiveness.

@@ -127,8 +127,17 @@ function url($path = '')
         return BASE_URL . $path;
     }
     
-    // در غیر این صورت، route query parameter اضافه کن
-    return BASE_URL . 'index.php?route=' . $path;
+    // بررسی اینکه آیا path قبلاً پارامتر دارد یا نه
+    if (strpos($path, '?') !== false) {
+        // اگر پارامتر دارد، تبدیل کن
+        $pathParts = explode('?', $path, 2);
+        $route = $pathParts[0];
+        $params = $pathParts[1];
+        return BASE_URL . 'index.php?route=' . $route . '&' . $params;
+    } else {
+        // در غیر این صورت، route query parameter اضافه کن
+        return BASE_URL . 'index.php?route=' . $path;
+    }
 }
 
 /**

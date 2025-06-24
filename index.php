@@ -25,6 +25,15 @@ require_once 'app/controllers/BaseController.php';
 require_once 'app/helpers/Security.php';
 require_once 'app/helpers/PersianDate.php';
 require_once 'app/helpers/Utilities.php';
+require_once 'app/helpers/DateHelper.php';
+
+// بارگذاری مدل‌ها
+require_once 'app/models/Database.php';
+require_once 'app/models/User.php';
+require_once 'app/models/Group.php';
+require_once 'app/models/PaymentRequest.php';
+require_once 'app/models/Document.php';
+require_once 'app/models/Tag.php';
 
 // دریافت route از URL
 $route = $_GET['route'] ?? '';
@@ -134,6 +143,65 @@ if (isset($routes[$route])) {
                     $controller->complete();
                     $handled = true;
                 }
+                break;
+            case 'index':
+            default:
+                $controller->index();
+                $handled = true;
+        }
+    }
+    
+    // مسیریابی tags با پارامتر
+    if ($routeParts[0] === 'tags') {
+        $action = $_GET['action'] ?? 'index';
+        
+        require_once "app/controllers/TagController.php";
+        $controller = new TagController();
+        
+        switch ($action) {
+            case 'create':
+                if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+                    $controller->create();
+                    $handled = true;
+                }
+                break;
+            case 'store':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->store();
+                    $handled = true;
+                }
+                break;
+            case 'edit':
+                if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+                    $controller->edit();
+                    $handled = true;
+                }
+                break;
+            case 'update':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->update();
+                    $handled = true;
+                }
+                break;
+            case 'delete':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->delete();
+                    $handled = true;
+                }
+                break;
+            case 'api':
+                $controller->api();
+                $handled = true;
+                break;
+            case 'preview':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller->preview();
+                    $handled = true;
+                }
+                break;
+            case 'randomGradient':
+                $controller->randomGradient();
+                $handled = true;
                 break;
             case 'index':
             default:

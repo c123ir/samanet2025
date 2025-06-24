@@ -1,0 +1,759 @@
+/**
+ * Dashboard Professional CSS
+ * Design System: Enterprise-grade UI
+ * Version: 5.0 Professional
+ * Inspired by: Stripe, Linear, Vercel
+ */
+
+/* ============================= */
+/* 1. CSS VARIABLES & RESET     */
+/* ============================= */
+:root {
+    /* Professional Color Palette */
+    --primary: #5E3AEE;
+    --primary-light: #7C5CFF;
+    --primary-dark: #4527A0;
+    
+    --gray-50: #FAFAFA;
+    --gray-100: #F4F4F5;
+    --gray-200: #E4E4E7;
+    --gray-300: #D4D4D8;
+    --gray-400: #A1A1AA;
+    --gray-500: #71717A;
+    --gray-600: #52525B;
+    --gray-700: #3F3F46;
+    --gray-800: #27272A;
+    --gray-900: #18181B;
+    
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --info: #3B82F6;
+    
+    /* Spacing System */
+    --space-0: 0;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    
+    /* Typography */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Vazirmatn', sans-serif;
+    --font-mono: 'SF Mono', Monaco, monospace;
+    
+    /* Shadows */
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    
+    /* Border Radius */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    
+    /* Transitions */
+    --transition: all 150ms ease;
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+    --gray-50: #18181B;
+    --gray-100: #27272A;
+    --gray-200: #3F3F46;
+    --gray-300: #52525B;
+    --gray-400: #71717A;
+    --gray-500: #A1A1AA;
+    --gray-600: #D4D4D8;
+    --gray-700: #E4E4E7;
+    --gray-800: #F4F4F5;
+    --gray-900: #FAFAFA;
+}
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--gray-900);
+    background: var(--gray-50);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================= */
+/* 2. LAYOUT STRUCTURE          */
+/* ============================= */
+.dashboard-pro {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-header {
+    height: 60px;
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-6);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* Theme Toggle Button - Matching Profile Size */
+.theme-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover {
+    background: var(--gray-200);
+    color: var(--gray-900);
+}
+
+/* User Profile */
+.user-profile {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.dashboard-content {
+    flex: 1;
+    padding: var(--space-6);
+    max-width: 1440px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Main Grid Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
+}
+
+.main-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.side-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+/* ============================= */
+/* 3. STATS CARDS (Ultra Compact) */
+/* ============================= */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.stat-card-pro {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    transition: var(--transition);
+}
+
+.stat-card-pro:hover {
+    border-color: var(--gray-300);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--space-1);
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.2;
+}
+
+.stat-change {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+    font-size: 12px;
+}
+
+.stat-change.positive {
+    color: var(--success);
+}
+
+.stat-change.negative {
+    color: var(--danger);
+}
+
+/* ============================= */
+/* 4. DATA TABLE (Professional) */
+/* ============================= */
+.table-container {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.table-header {
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: between;
+    align-items: center;
+}
+
+.table-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th {
+    text-align: right;
+    padding: var(--space-3) var(--space-4);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.data-table td {
+    padding: var(--space-3) var(--space-4);
+    font-size: 14px;
+    color: var(--gray-900);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.data-table tbody tr {
+    transition: var(--transition);
+}
+
+.data-table tbody tr:hover {
+    background: var(--gray-50);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Status Badges */
+.status-badge-pro {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    text-transform: capitalize;
+}
+
+.status-badge-pro.completed {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.status-badge-pro.pending {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.status-badge-pro.processing {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.status-badge-pro.rejected {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* Table Actions */
+.table-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    background: white;
+    color: var(--gray-600);
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.btn-icon:hover {
+    border-color: var(--gray-300);
+    color: var(--gray-900);
+}
+
+/* ============================= */
+/* 5. RESPONSIVE DESIGN         */
+/* ============================= */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .side-column {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-4);
+    }
+    
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .dashboard-content {
+        padding: var(--space-4);
+    }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+    .dashboard-header {
+        height: 56px;
+        padding: 0 var(--space-4);
+    }
+    
+    .header-title {
+        font-size: 16px;
+    }
+    
+    .dashboard-content {
+        padding: var(--space-3);
+    }
+    
+    .dashboard-grid {
+        gap: var(--space-4);
+    }
+    
+    .side-column {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+    
+    /* Mobile Stats */
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+    
+    .stat-card-pro {
+        padding: var(--space-3);
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    /* Mobile Panels */
+    .panel {
+        border-radius: var(--radius-md);
+    }
+    
+    .panel-header {
+        padding: var(--space-3);
+    }
+    
+    .panel-title {
+        font-size: 13px;
+    }
+    
+    .panel-body {
+        padding: var(--space-2);
+    }
+    
+    /* Mobile Table */
+    .table-container {
+        border-radius: var(--radius-md);
+    }
+    
+    .table-header {
+        padding: var(--space-3) var(--space-4);
+    }
+    
+    .table-title {
+        font-size: 14px;
+    }
+    
+    /* Hide desktop table on mobile */
+    .data-table {
+        display: none;
+    }
+    
+    /* Mobile Cards List */
+    .mobile-list {
+        display: block;
+    }
+    
+    .mobile-list-item {
+        padding: var(--space-3);
+        border-bottom: 1px solid var(--gray-100);
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: var(--space-3);
+    }
+    
+    .mobile-list-item:last-child {
+        border-bottom: none;
+    }
+    
+    .mobile-item-main {
+        flex: 1;
+    }
+    
+    .mobile-item-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+        margin-bottom: var(--space-1);
+    }
+    
+    .mobile-item-meta {
+        font-size: 12px;
+        color: var(--gray-500);
+    }
+    
+    .mobile-item-amount {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+    }
+}
+
+/* Small Mobile (< 375px) */
+@media (max-width: 374px) {
+    .stat-card-pro {
+        padding: var(--space-2);
+    }
+    
+    .stat-label {
+        font-size: 11px;
+    }
+    
+    .stat-value {
+        font-size: 18px;
+    }
+}
+
+/* Desktop only styles */
+@media (min-width: 768px) {
+    .mobile-list {
+        display: none;
+    }
+}
+
+/* ============================= */
+/* 6. UTILITIES                 */
+/* ============================= */
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.text-muted { color: var(--gray-500); }
+.font-mono { font-family: var(--font-mono); }
+
+/* Dark Mode Support */
+[data-theme="dark"] .dashboard-header {
+    background: var(--gray-100);
+    border-color: var(--gray-200);
+}
+
+[data-theme="dark"] .stat-card-pro,
+[data-theme="dark"] .table-container {
+    background: var(--gray-100);
+    border-color: var(--gray-200);
+}
+
+[data-theme="dark"] .data-table th {
+    background: var(--gray-200);
+}
+
+[data-theme="dark"] .data-table tbody tr:hover {
+    background: var(--gray-200);
+}
+
+/* ============================= */
+/* 7. SIDE PANELS               */
+/* ============================= */
+.panel {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.panel-badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+}
+
+.panel-body {
+    padding: var(--space-3);
+}
+
+/* Urgent Requests Panel */
+.urgent-panel .panel-header {
+    background: #8b1200;
+    border-bottom: 1px solid #FDE68A;
+}
+
+.urgent-panel .panel-title {
+    color: #ffee00;
+}
+
+.urgent-item {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-2);
+    background: var(--gray-50);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.urgent-item:last-child {
+    margin-bottom: 0;
+}
+
+.urgent-item:hover {
+    background: var(--gray-100);
+    transform: translateX(-2px);
+}
+
+.urgent-item-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-900);
+    margin-bottom: 2px;
+}
+
+.urgent-item-meta {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+.urgent-item-icon {
+    color: var(--warning);
+    font-size: 14px;
+}
+
+/* Tasks Panel */
+.task-item {
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-item:hover {
+    padding-right: var(--space-2);
+}
+
+.task-checkbox {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    display: inline-block;
+    margin-left: var(--space-2);
+    vertical-align: middle;
+}
+
+.task-text {
+    font-size: 13px;
+    color: var(--gray-700);
+}
+
+/* Show All Link */
+.show-all {
+    display: block;
+    text-align: center;
+    padding: var(--space-3);
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.show-all:hover {
+    background: var(--gray-50);
+}
+
+/* ============================= */
+/* 8. DARK MODE ENHANCEMENTS    */
+/* ============================= */
+
+/* Dark mode for side panels */
+[data-theme="dark"] .panel {
+    background: var(--gray-100);
+    border-color: var(--gray-200);
+}
+
+[data-theme="dark"] .panel-header {
+    border-color: var(--gray-200);
+}
+
+[data-theme="dark"] .panel-title {
+    color: var(--gray-800);
+}
+
+[data-theme="dark"] .panel-badge {
+    background: var(--gray-200);
+    color: var(--gray-700);
+}
+
+/* Dark mode for task items */
+[data-theme="dark"] .task-text {
+    color: var(--gray-800) !important;
+}
+
+[data-theme="dark"] .task-item {
+    border-color: var(--gray-200);
+}
+
+[data-theme="dark"] .task-item:hover {
+    background: var(--gray-200);
+}
+
+[data-theme="dark"] .task-checkbox {
+    border-color: var(--gray-400);
+}
+
+/* Dark mode for urgent items */
+[data-theme="dark"] .urgent-item {
+    background: var(--gray-200);
+}
+
+[data-theme="dark"] .urgent-item:hover {
+    background: var(--gray-300);
+}
+
+[data-theme="dark"] .urgent-item-title {
+    color: var(--gray-800) !important;
+}
+
+[data-theme="dark"] .urgent-item-meta {
+    color: var(--gray-600) !important;
+}
+
+/* Dark mode for show all links */
+[data-theme="dark"] .show-all {
+    color: var(--primary);
+}
+
+[data-theme="dark"] .show-all:hover {
+    background: var(--gray-200);
+} 

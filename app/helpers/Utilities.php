@@ -51,12 +51,12 @@ function getStatusColor($status) {
 function getPriorityColor($priority) {
     $colors = [
         'low' => 'success',
-        'normal' => 'info',
+        'normal' => 'secondary',
         'high' => 'warning',
         'urgent' => 'danger'
     ];
     
-    return $colors[$priority] ?? 'info';
+    return $colors[$priority] ?? 'secondary';
 }
 
 /**

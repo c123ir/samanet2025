@@ -1,0 +1,37 @@
+# 🎨 SAMANET DESIGN SYSTEM - MANDATORY AUTO-APPLY
+
+When creating/editing ANY PHP view, CSS file, or controller:
+
+## ALWAYS APPLY THESE CLASSES:
+- `.glass-card` for all containers (glassmorphism effect)
+- `.btn-modern` for all buttons (modern styling)
+- `.stat-card` for statistics cards
+- `.animate-fade-in-up` for page wrapper
+- `.hover-lift` for interactive elements
+
+## REQUIRED CSS VARIABLES:
+```css
+:root {
+    --glass-bg: rgba(255,255,255,0.15);
+    --backdrop-blur: blur(16px);
+    --border-radius-xl: 20px;
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+```
+
+## MANDATORY HTML STRUCTURE:
+```html
+<div class="page-name-page animate-fade-in-up">
+    <div class="page-header glass-card hover-lift">
+        <h1>Page Title</h1>
+    </div>
+    <div class="main-content glass-card">
+        <!-- Content -->
+    </div>
+</div>
+```
+
+## CONTROLLER REQUIREMENT:
+Always add: `'additional_css' => ['css/page-name.css']`
+
+🎯 **GOAL:** Professional glassmorphism UI with smooth animations and perfect responsiveness. 

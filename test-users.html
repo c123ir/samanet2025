@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست صفحه مدیریت کاربران - سامانت</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="assets/css/users.css" rel="stylesheet">
+</head>
+<body>
+<div class="dashboard-pro">
+    <header class="dashboard-header">
+        <div class="header-content">
+            <h1 class="header-title">مدیریت کاربران</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon">
+                <i class="fas fa-moon"></i>
+            </button>
+            <div class="user-profile">م</div>
+        </div>
+    </header>
+    <div class="dashboard-content">
+        <div class="stats-row">
+            <div class="stat-card-pro">
+                <div class="stat-label">کل کاربران</div>
+                <div class="stat-value">۱۲۴</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-users"></i>
+                    <span>ثبت‌نام‌شده</span>
+                </div>
+            </div>
+            <div class="stat-card-pro">
+                <div class="stat-label">کاربران فعال</div>
+                <div class="stat-value">۹۸</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-user-check"></i>
+                    <span>دارای دسترسی</span>
+                </div>
+            </div>
+            <div class="stat-card-pro">
+                <div class="stat-label">غیرفعال</div>
+                <div class="stat-value">۲۶</div>
+                <div class="stat-change negative">
+                    <i class="fas fa-user-times"></i>
+                    <span>تعلیق شده</span>
+                </div>
+            </div>
+            <div class="stat-card-pro">
+                <div class="stat-label">مدیران</div>
+                <div class="stat-value">۸</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-user-shield"></i>
+                    <span>مدیر و ادمین</span>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-grid">
+            <div class="main-column">
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">
+                            <i class="fas fa-filter me-2"></i>
+                            جستجو و فیلتر
+                        </div>
+                        <button class="btn-icon">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div style="padding: var(--space-4);">
+                        <div class="filters-grid">
+                            <div class="form-group">
+                                <label class="form-label">جستجو</label>
+                                <input type="text" class="form-control" placeholder="نام کاربری، نام کامل یا ایمیل...">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">نقش</label>
+                                <select class="form-control">
+                                    <option>همه نقش‌ها</option>
+                                    <option>مدیر</option>
+                                    <option>کاربر</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">وضعیت</label>
+                                <select class="form-control">
+                                    <option>همه وضعیت‌ها</option>
+                                    <option>فعال</option>
+                                    <option>غیرفعال</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">&nbsp;</label>
+                                <button class="btn btn-primary btn-modern">
+                                    <i class="fas fa-search me-2"></i>
+                                    جستجو
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <div class="table-header">
+                        <div class="table-title">
+                            <i class="fas fa-list me-2"></i>
+                            لیست کاربران
+                            <span class="badge bg-primary ms-2">۱۲۴</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary btn-modern">
+                                <i class="fas fa-plus me-2"></i>
+                                کاربر جدید
+                            </button>
+                            <button class="btn-icon">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>شناسه</th>
+                                <th>کاربر</th>
+                                <th>ایمیل</th>
+                                <th>نقش</th>
+                                <th>وضعیت</th>
+                                <th>آخرین ورود</th>
+                                <th>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>۱</code></td>
+                                <td>
+                                    <div class="user-cell">
+                                        <div class="user-avatar">ا</div>
+                                        <div class="user-info">
+                                            <div class="user-name">احمد محمدی</div>
+                                            <div class="user-username">@ahmad.mohammadi</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="mailto:ahmad@example.com" class="text-decoration-none">
+                                        <i class="fas fa-envelope me-2 text-muted"></i>
+                                        ahmad@example.com
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="status-badge-pro admin">
+                                        <i class="fas fa-crown"></i>
+                                        مدیر
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge-pro active">
+                                        <i class="fas fa-check-circle"></i>
+                                        فعال
+                                    </span>
+                                </td>
+                                <td class="text-muted font-mono">۱۴۰۴/۱۰/۱۵ ۱۰:۳۰</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary btn-sm btn-modern">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-warning btn-sm btn-modern">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                        <button class="btn btn-info btn-sm btn-modern">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm btn-modern">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>۲</code></td>
+                                <td>
+                                    <div class="user-cell">
+                                        <div class="user-avatar">س</div>
+                                        <div class="user-info">
+                                            <div class="user-name">سارا احمدی</div>
+                                            <div class="user-username">@sara.ahmadi</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="mailto:sara@example.com" class="text-decoration-none">
+                                        <i class="fas fa-envelope me-2 text-muted"></i>
+                                        sara@example.com
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="status-badge-pro user">
+                                        <i class="fas fa-user"></i>
+                                        کاربر
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge-pro active">
+                                        <i class="fas fa-check-circle"></i>
+                                        فعال
+                                    </span>
+                                </td>
+                                <td class="text-muted font-mono">۱۴۰۴/۱۰/۱۴ ۱۶:۲۰</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-primary btn-sm btn-modern">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-warning btn-sm btn-modern">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                        <button class="btn btn-info btn-sm btn-modern">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="mobile-list">
+                        <div class="mobile-list-item">
+                            <div class="mobile-item-main">
+                                <div class="mobile-item-title">احمد محمدی</div>
+                                <div class="mobile-item-meta">@ahmad.mohammadi</div>
+                            </div>
+                            <div class="status-badge-pro active">
+                                <i class="fas fa-check-circle"></i>
+                                فعال
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-column">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-bolt"></i>
+                            عملیات سریع
+                        </div>
+                        <span class="panel-badge">۴</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="task-item">
+                            <span class="task-text">ایجاد کاربر جدید</span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-text">خروجی لیست کاربران</span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-text">به‌روزرسانی لیست</span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-text">عملیات گروهی</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-history"></i>
+                            فعالیت‌های اخیر
+                        </div>
+                        <span class="panel-badge">۳</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="task-item">
+                            <span class="task-text">کاربر جدید ثبت‌نام کرد</span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-text">نقش کاربر تغییر یافت</span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-text">کاربر غیرفعال شد</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <i class="fas fa-info-circle"></i>
+                            اطلاعات سیستم
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="task-item">
+                            <span class="task-text">آخرین ورود: ۱۴۰۴/۱۰/۱۵ ۱۰:۳۰</span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-text">کاربران آنلاین: ۵</span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-text">حافظه استفاده شده: ۶۷%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

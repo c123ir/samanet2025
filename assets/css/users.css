@@ -1,14 +1,15 @@
 /**
- * نام فایل: requests-page.css
- * مسیر: /assets/css/requests-page.css
- * توضیح: استایل‌های صفحه درخواست‌های حواله - Enterprise Grade (دقیقاً مطابق dashboard.css)
- * تاریخ بازطراحی: 1404/10/15
- * نسخه: 5.0 حرفه‌ای (مطابق dashboard.css)
+ * Users Management Professional CSS
+ * Design System: Enterprise-grade UI (مطابق با dashboard.css)
+ * Version: 5.0 Professional
+ * Inspired by: dashboard.css
  */
 
-/* متغیرهای CSS الزامی - دقیقاً مطابق dashboard.css */
+/* ============================= */
+/* 1. CSS VARIABLES & RESET     */
+/* ============================= */
 :root {
-    /* Professional Color Palette - دقیقاً مطابق dashboard */
+    /* Professional Color Palette - مطابق dashboard */
     --primary: #5E3AEE;
     --primary-light: #7C5CFF;
     --primary-dark: #4527A0;
@@ -29,7 +30,7 @@
     --danger: #EF4444;
     --info: #3B82F6;
     
-    /* Spacing System - دقیقاً مطابق dashboard */
+    /* Spacing System - مطابق dashboard */
     --space-0: 0;
     --space-1: 0.25rem;
     --space-2: 0.5rem;
@@ -39,27 +40,27 @@
     --space-6: 1.5rem;
     --space-8: 2rem;
     
-    /* Typography - دقیقاً مطابق dashboard */
+    /* Typography - مطابق dashboard */
     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Vazirmatn', sans-serif;
     --font-mono: 'SF Mono', Monaco, monospace;
     
-    /* Shadows - دقیقاً مطابق dashboard */
+    /* Shadows - مطابق dashboard */
     --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
     
-    /* Border Radius - دقیقاً مطابق dashboard */
+    /* Border Radius - مطابق dashboard */
     --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius-lg: 0.75rem;
     --radius-xl: 1rem;
     
-    /* Transitions - دقیقاً مطابق dashboard */
+    /* Transitions - مطابق dashboard */
     --transition: all 150ms ease;
 }
 
-/* Dark Mode Variables - دقیقاً مطابق dashboard */
+/* Dark Mode Variables - مطابق dashboard */
 [data-theme="dark"] {
     --gray-50: #18181B;
     --gray-100: #27272A;
@@ -73,7 +74,7 @@
     --gray-900: #FAFAFA;
 }
 
-/* Reset & Base - دقیقاً مطابق dashboard */
+/* Reset & Base - مطابق dashboard */
 * {
     margin: 0;
     padding: 0;
@@ -90,14 +91,15 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Professional Dashboard Wrapper */
+/* ============================= */
+/* 2. LAYOUT STRUCTURE          */
+/* ============================= */
 .dashboard-pro {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
-/* Professional Header - دقیقاً مطابق dashboard */
 .dashboard-header {
     height: 60px;
     background: white;
@@ -130,7 +132,7 @@ body {
     gap: var(--space-3);
 }
 
-/* Theme Toggle Button - دقیقاً مطابق dashboard */
+/* Theme Toggle Button - مطابق dashboard */
 .theme-toggle,
 .btn-icon {
     width: 40px;
@@ -144,7 +146,6 @@ body {
     color: var(--gray-600);
     cursor: pointer;
     transition: var(--transition);
-    text-decoration: none;
 }
 
 .theme-toggle:hover,
@@ -153,7 +154,7 @@ body {
     color: var(--gray-900);
 }
 
-/* User Profile - دقیقاً مطابق dashboard */
+/* User Profile - مطابق dashboard */
 .user-profile {
     width: 40px;
     height: 40px;
@@ -175,7 +176,7 @@ body {
     width: 100%;
 }
 
-/* Main Grid Layout - دقیقاً مطابق dashboard */
+/* Main Grid Layout - مطابق dashboard */
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 360px;
@@ -195,7 +196,9 @@ body {
     gap: var(--space-4);
 }
 
-/* Professional Stats Cards - دقیقاً مطابق dashboard */
+/* ============================= */
+/* 3. STATS CARDS - مطابق dashboard */
+/* ============================= */
 .stats-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -249,7 +252,9 @@ body {
     color: var(--danger);
 }
 
-/* Professional Tables - دقیقاً مطابق dashboard */
+/* ============================= */
+/* 4. DATA TABLE - مطابق dashboard */
+/* ============================= */
 .table-container {
     background: white;
     border: 1px solid var(--gray-200);
@@ -310,7 +315,205 @@ body {
     border-bottom: none;
 }
 
-/* Professional Side Panels - دقیقاً مطابق dashboard */
+/* ============================= */
+/* 5. USER COMPONENTS           */
+/* ============================= */
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-900);
+    margin-bottom: var(--space-1);
+}
+
+.user-username {
+    font-size: 12px;
+    color: var(--gray-500);
+    font-family: var(--font-mono);
+}
+
+/* Status Badges - مطابق dashboard */
+.status-badge-pro {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    text-transform: capitalize;
+    gap: 4px;
+}
+
+.status-badge-pro.completed,
+.status-badge-pro.active {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.status-badge-pro.pending,
+.status-badge-pro.inactive {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.status-badge-pro.processing {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.status-badge-pro.rejected {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+/* Role-specific badges */
+.status-badge-pro.admin {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.status-badge-pro.manager {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.status-badge-pro.accountant {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.status-badge-pro.user {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+.btn-modern {
+    border: none;
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+    font-size: 12px;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    text-decoration: none;
+}
+
+.btn-modern:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    text-decoration: none;
+}
+
+.btn-primary.btn-modern {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-success.btn-modern {
+    background: var(--success);
+    color: white;
+}
+
+.btn-warning.btn-modern {
+    background: var(--warning);
+    color: white;
+}
+
+.btn-danger.btn-modern {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-info.btn-modern {
+    background: var(--info);
+    color: white;
+}
+
+.btn-sm.btn-modern {
+    padding: var(--space-1) var(--space-2);
+    font-size: 11px;
+    min-width: 28px;
+    min-height: 28px;
+}
+
+/* ============================= */
+/* 6. FILTERS SECTION           */
+/* ============================= */
+.filters-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: var(--space-4);
+    align-items: end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.form-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.form-control {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    background: white;
+    transition: var(--transition);
+    color: var(--gray-900);
+    min-height: 36px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(94, 58, 238, 0.1);
+}
+
+/* ============================= */
+/* 7. SIDE PANELS - مطابق dashboard */
+/* ============================= */
 .panel {
     background: white;
     border: 1px solid var(--gray-200);
@@ -348,7 +551,7 @@ body {
     padding: var(--space-3);
 }
 
-/* Tasks Panel - دقیقاً مطابق dashboard */
+/* Tasks Panel - مطابق dashboard */
 .task-item {
     padding: var(--space-2) 0;
     border-bottom: 1px solid var(--gray-100);
@@ -369,9 +572,13 @@ body {
     color: var(--gray-700);
 }
 
-/* Mobile List - مخصوص موبایل */
+/* ============================= */
+/* 8. MOBILE LIST VIEW          */
+/* ============================= */
 .mobile-list {
     display: none;
+    flex-direction: column;
+    gap: 0;
 }
 
 .mobile-list-item {
@@ -383,10 +590,19 @@ body {
     gap: var(--space-3);
 }
 
+.mobile-list-item:last-child {
+    border-bottom: none;
+}
+
+.mobile-item-main {
+    flex: 1;
+}
+
 .mobile-item-title {
     font-size: 14px;
     font-weight: 500;
     color: var(--gray-900);
+    margin-bottom: var(--space-1);
 }
 
 .mobile-item-meta {
@@ -394,7 +610,130 @@ body {
     color: var(--gray-500);
 }
 
-/* Dark Theme Enhancements - دقیقاً مطابق dashboard */
+.mobile-item-actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+/* ============================= */
+/* 9. EMPTY STATE               */
+/* ============================= */
+.empty-state {
+    text-align: center;
+    padding: var(--space-8);
+    color: var(--gray-500);
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: var(--gray-300);
+    margin-bottom: var(--space-4);
+}
+
+.empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: var(--space-2);
+}
+
+.empty-text {
+    font-size: 14px;
+    color: var(--gray-500);
+    margin-bottom: var(--space-6);
+}
+
+/* ============================= */
+/* 10. RESPONSIVE DESIGN - مطابق dashboard */
+/* ============================= */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .side-column {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-4);
+    }
+    
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .dashboard-content {
+        padding: var(--space-4);
+    }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 767px) {
+    .dashboard-header {
+        height: 56px;
+        padding: 0 var(--space-4);
+    }
+    
+    .header-title {
+        font-size: 16px;
+    }
+    
+    .dashboard-content {
+        padding: var(--space-3);
+    }
+    
+    .dashboard-grid {
+        gap: var(--space-4);
+    }
+    
+    .side-column {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+    
+    /* Mobile Stats */
+    .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+    
+    .stat-card-pro {
+        padding: var(--space-3);
+    }
+    
+    .stat-value {
+        font-size: 20px;
+    }
+    
+    /* Mobile Table */
+    .data-table {
+        display: none;
+    }
+    
+    .mobile-list {
+        display: flex;
+    }
+    
+    .filters-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+}
+
+/* Desktop only styles */
+@media (min-width: 768px) {
+    .mobile-list {
+        display: none;
+    }
+}
+
+/* ============================= */
+/* 11. DARK MODE - مطابق dashboard */
+/* ============================= */
 [data-theme="dark"] .dashboard-header {
     background: var(--gray-100);
     border-color: var(--gray-200);
@@ -436,191 +775,30 @@ body {
     background: var(--gray-200);
 }
 
-[data-theme="dark"] .mobile-list-item {
-    border-color: var(--gray-200);
-}
+/* ============================= */
+/* 12. UTILITIES                */
+/* ============================= */
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.text-muted { color: var(--gray-500); }
+.font-mono { font-family: var(--font-mono); }
 
-/* Responsive Design - دقیقاً مطابق dashboard */
-@media (max-width: 1024px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .side-column {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-4);
-    }
-    
-    .stats-row {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .dashboard-content {
-        padding: var(--space-4);
-    }
-}
+.d-flex { display: flex; }
+.gap-2 { gap: var(--space-2); }
+.align-items-center { align-items: center; }
+.justify-content-between { justify-content: space-between; }
 
-@media (max-width: 767px) {
-    .dashboard-header {
-        height: 56px;
-        padding: 0 var(--space-4);
-    }
-    
-    .header-title {
-        font-size: 16px;
-    }
-    
-    .dashboard-content {
-        padding: var(--space-3);
-    }
-    
-    .dashboard-grid {
-        gap: var(--space-4);
-    }
-    
-    .side-column {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-3);
-    }
-    
-    .stats-row {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-3);
-        margin-bottom: var(--space-4);
-    }
-    
-    .stat-card-pro {
-        padding: var(--space-3);
-    }
-    
-    .stat-value {
-        font-size: 20px;
-    }
-    
-    /* مخفی کردن جدول دسکتاپ در موبایل */
-    .data-table {
-        display: none;
-    }
-    
-    /* نمایش لیست موبایل */
-    .mobile-list {
-        display: block;
-    }
-}
-
-@media (min-width: 768px) {
-    .mobile-list {
-        display: none;
-    }
-}
-
-/* انیمیشن‌های حرفه‌ای */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Filters Panel Styling */
-#filters-panel {
-    border-top: 1px solid var(--gray-200);
-}
-
-/* Button Styling */
-.btn {
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    transition: var(--transition);
-}
-
-.btn-sm {
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-}
-
-.btn-primary {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: var(--primary-dark);
-    border-color: var(--primary-dark);
-}
-
-.btn-outline-secondary {
-    border-color: var(--gray-300);
-    color: var(--gray-600);
-}
-
-.btn-outline-secondary:hover {
-    background: var(--gray-100);
-    border-color: var(--gray-400);
-    color: var(--gray-700);
-}
-
-/* Form Controls */
-.form-control,
-.form-select {
-    border-radius: var(--radius-md);
-    border: 1px solid var(--gray-300);
-    padding: 0.5rem 0.75rem;
-    font-size: 14px;
-    transition: var(--transition);
-}
-
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 0.2rem rgba(94, 58, 238, 0.25);
-}
-
-.form-label {
-    font-weight: 500;
-    color: var(--gray-700);
-    margin-bottom: var(--space-1);
-}
-
-/* Badge Styling */
 .badge {
+    font-size: 12px;
+    padding: 2px 8px;
     border-radius: var(--radius-sm);
     font-weight: 500;
-    font-size: 0.75rem;
 }
 
-/* Pagination */
-.pagination {
-    --bs-pagination-border-radius: var(--radius-md);
+.bg-primary {
+    background: var(--primary) !important;
+    color: white !important;
 }
 
-.page-link {
-    border: 1px solid var(--gray-300);
-    color: var(--gray-600);
-    padding: 0.5rem 0.75rem;
-}
-
-.page-link:hover {
-    background: var(--gray-100);
-    border-color: var(--gray-400);
-    color: var(--gray-700);
-}
-
-.page-item.active .page-link {
-    background: var(--primary);
-    border-color: var(--primary);
-}
-
-/* Alert Styling */
-.alert {
-    border-radius: var(--radius-lg);
-    border: none;
-    box-shadow: var(--shadow-md);
-} 
+.ms-2 { margin-right: var(--space-2); }
+.me-2 { margin-left: var(--space-2); }

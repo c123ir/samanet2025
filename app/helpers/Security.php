@@ -413,5 +413,48 @@ class Security
         
         return $term;
     }
+
+    /**
+     * بررسی معتبر بودن session
+     */
+    public static function isValidSession(): bool 
+    {
+        // شروع session اگر هنوز شروع نشده
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        // بررسی وجود کاربر در session
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['username'])) {
+            return false;
+        }
+
+        // بررسی timeout - افزایش timeout به 2 ساعت
+        $timeout = 7200; // 2 ساعت = 7200 ثانیه (قبلاً احتمالاً کمتر بوده)
+        
+        if (isset($_SESSION['last_activity'])) {
+            if (time() - $_SESSION['last_activity'] > $timeout) {
+                // Session expired
+                self::destroySession();
+                return false;
+            }
+        }
+
+        // تمدید last_activity برای هر درخواست معتبر
+        $_SESSION['last_activity'] = time();
+
+        return true;
+    }
+
+    /**
+     * حذف کامل session
+     */
+    public static function destroySession(): void 
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION = [];
+            session_destroy();
+        }
+    }
 }
 ?>
