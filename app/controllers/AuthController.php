@@ -59,7 +59,7 @@ class AuthController extends BaseController
             $this->data['lockout_time'] = LOGIN_LOCKOUT_TIME / 60; // تبدیل به دقیقه
         }
 
-        $this->view('auth/login');
+        $this->render('auth/login', $this->data);
     }
 
     /**
@@ -218,7 +218,7 @@ class AuthController extends BaseController
     {
         $this->data['page_title'] = 'ثبت‌نام در سامانت';
         $this->data['flash'] = $this->getFlash();
-        $this->view('auth/register');
+        $this->render('auth/register', $this->data);
     }
 
     /**
@@ -353,7 +353,7 @@ class AuthController extends BaseController
     {
         $this->data['page_title'] = 'بازیابی رمز عبور';
         $this->data['flash'] = $this->getFlash();
-        $this->view('auth/forgot-password');
+        $this->render('auth/forgot-password', $this->data);
     }
 
     /**

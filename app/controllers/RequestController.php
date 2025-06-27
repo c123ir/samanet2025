@@ -27,6 +27,105 @@ class RequestController extends BaseController
     }
 
     /**
+     * API جستجوی پیشرفته درخواست‌ها
+     */
+    public function api()
+    {
+        try {
+            $this->requireAuth();
+            
+            // بررسی درخواست AJAX
+            if (!$this->isAjaxRequest()) {
+                throw new Exception('درخواست غیرمجاز');
+            }
+            
+            header('Content-Type: application/json; charset=utf-8');
+            
+            $user = $this->getCurrentUser();
+            $groupId = $user['group_id'];
+            
+            // دریافت پارامترهای جستجو
+            $search = $this->input('search', '');
+            $page = (int)($this->input('page', 1));
+            $perPage = min((int)($this->input('per_page', 20)), 50); // حداکثر 50 آیتم
+            
+            // فیلترهای اضافی
+            $filters = [
+                'status' => $this->input('status', ''),
+                'priority' => $this->input('priority', ''),
+                'date_from' => $this->input('date_from', ''),
+                'date_to' => $this->input('date_to', ''),
+                'page' => $page,
+                'per_page' => $perPage
+            ];
+            
+            // اعتبارسنجی ورودی
+            require_once APP_PATH . 'helpers/AdvancedSearch.php';
+            $validation = AdvancedSearch::validateSearchParams(
+                $search,
+                ['status', 'priority', 'date_from', 'date_to', 'page', 'per_page'],
+                $filters
+            );
+            
+            if (!$validation['valid']) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => implode(', ', $validation['errors']),
+                    'errors' => $validation['errors']
+                ]);
+                exit;
+            }
+            
+            // اجرای جستجو
+            if (!empty($search)) {
+                $results = $this->paymentRequestModel->searchWithFilters($search, $groupId, $filters);
+            } else {
+                $results = $this->paymentRequestModel->getGroupRequests($groupId, $filters);
+            }
+            
+            // تولید پاسخ API
+            if ($results) {
+                $response = AdvancedSearch::generateApiResponse(
+                    $results['data'] ?? [],
+                    $search,
+                    [
+                        'page' => $results['current_page'] ?? 1,
+                        'per_page' => $perPage,
+                        'total' => $results['total'] ?? 0,
+                        'last_page' => $results['last_page'] ?? 1,
+                        'from' => $results['from'] ?? 0,
+                        'to' => $results['to'] ?? 0,
+                        'has_search' => !empty($search),
+                        'filters_applied' => array_filter($filters, function($v) { return !empty($v); })
+                    ]
+                );
+            } else {
+                $response = [
+                    'success' => false,
+                    'message' => 'خطا در دریافت داده‌ها',
+                    'data' => [],
+                    'total' => 0
+                ];
+            }
+            
+            echo json_encode($response);
+            exit;
+            
+        } catch (Exception $e) {
+            writeLog("خطا در API جستجوی درخواست‌ها: " . $e->getMessage(), 'ERROR');
+            
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'success' => false,
+                'message' => 'خطای سیستمی در جستجو',
+                'data' => [],
+                'total' => 0
+            ]);
+            exit;
+        }
+    }
+
+    /**
      * نمایش لیست درخواست‌ها
      */
     public function index()
@@ -108,7 +207,7 @@ class RequestController extends BaseController
                 'statuses' => PaymentRequest::getStatuses(),
                 'priorities' => PaymentRequest::getPriorities(),
                 'csrf_token' => $this->getCSRFToken(),
-                'additional_css' => ['css/requests-page.css'] // CSS حرفه‌ای مطابق dashboard.css
+                'additional_css' => ['css/bootstrap-dashboard.css'] // Bootstrap 5 استاندارد
             ]);
 
         } catch (Exception $e) {

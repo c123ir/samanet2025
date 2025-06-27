@@ -384,10 +384,102 @@ class PaymentRequest extends Database
     }
 
     /**
-     * دریافت درخواست‌های گروه
+     * جستجوی پیشرفته درخواست‌ها با فیلتر - سازگار با AdvancedSearch Component
+     */
+    public function searchWithFilters($searchTerm = '', $groupId = null, $filters = [])
+    {
+        try {
+            require_once APP_PATH . 'helpers/AdvancedSearch.php';
+            
+            // فیلدهای قابل جستجو
+            $searchFields = [
+                'title',
+                'description', 
+                'reference_number',
+                'account_holder',
+                'bank_name',
+                'tags'
+            ];
+            
+            // آماده کردن فیلترهای اضافی
+            $additionalFilters = [];
+            
+            // فیلتر گروه
+            if ($groupId) {
+                $additionalFilters['group_id'] = $groupId;
+            }
+            
+            // فیلتر وضعیت
+            if (!empty($filters['status'])) {
+                $additionalFilters['status'] = $filters['status'];
+            }
+            
+            // فیلتر اولویت
+            if (!empty($filters['priority'])) {
+                $additionalFilters['priority'] = $filters['priority'];
+            }
+            
+            // اجرای جستجو
+            $results = AdvancedSearch::performSearch(
+                $this,                                           // Model object
+                $this->table,                                   // Table name
+                $searchTerm,                                    // Search term
+                $searchFields,                                  // Search fields
+                $additionalFilters,                             // Additional filters
+                [],                                             // Joins (empty for now)
+                'created_at',                                   // Order by
+                'DESC'                                          // Order direction
+            );
+            
+            // پردازش نتایج با highlighting
+            $processedResults = AdvancedSearch::processSearchResults(
+                $results,
+                $searchTerm,
+                ['title', 'description', 'account_holder']
+            );
+            
+            // اضافه کردن اطلاعات تکمیلی
+            $enrichedResults = [];
+            foreach ($processedResults as $request) {
+                $enrichedResults[] = $this->enrichRequestData($request);
+            }
+            
+            // تبدیل به فرمت مناسب برای صفحه‌بندی
+            $page = $filters['page'] ?? 1;
+            $perPage = $filters['per_page'] ?? 20;
+            $total = count($enrichedResults);
+            
+            $paginatedResults = array_slice(
+                $enrichedResults, 
+                ($page - 1) * $perPage, 
+                $perPage
+            );
+            
+            return [
+                'data' => $paginatedResults,
+                'total' => $total,
+                'current_page' => $page,
+                'last_page' => ceil($total / $perPage),
+                'from' => ($page - 1) * $perPage + 1,
+                'to' => min($page * $perPage, $total)
+            ];
+            
+        } catch (Exception $e) {
+            writeLog("خطا در جستجوی پیشرفته درخواست‌ها: " . $e->getMessage(), 'ERROR');
+            return false;
+        }
+    }
+
+    /**
+     * دریافت درخواست‌های گروه - نسخه سازگار با عقب
      */
     public function getGroupRequests($groupId, $filters = []) 
     {
+        // در صورت وجود جستجو، از متد پیشرفته استفاده کن
+        if (!empty($filters['search'])) {
+            return $this->searchWithFilters($filters['search'], $groupId, $filters);
+        }
+        
         try {
             $conditions = ['group_id = ?'];
             $params = [$groupId];
@@ -424,13 +516,6 @@ class PaymentRequest extends Database
             if (!empty($filters['amount_max'])) {
                 $conditions[] = 'amount <= ?';
                 $params[] = $filters['amount_max'];
-            }
-
-            // فیلتر جستجو
-            if (!empty($filters['search'])) {
-                $searchTerm = '%' . Security::sanitizeSearchTerm($filters['search']) . '%';
-                $conditions[] = '(title LIKE ? OR description LIKE ? OR account_holder LIKE ? OR reference_number LIKE ?)';
-                $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm]);
             }
 
             // ترتیب‌بندی

@@ -95,6 +95,41 @@ function getPriorityLabel($priority) {
 }
 
 /**
+ * دریافت ایکون وضعیت درخواست
+ * @param string $status
+ * @return string
+ */
+function getStatusIcon($status) {
+    $icons = [
+        'pending' => 'fas fa-clock',
+        'processing' => 'fas fa-sync-alt',
+        'approved' => 'fas fa-check',
+        'completed' => 'fas fa-check-circle',
+        'cancelled' => 'fas fa-ban',
+        'rejected' => 'fas fa-times-circle',
+        'expired' => 'fas fa-hourglass-end'
+    ];
+    
+    return $icons[$status] ?? 'fas fa-circle';
+}
+
+/**
+ * دریافت ایکون اولویت
+ * @param string $priority
+ * @return string
+ */
+function getPriorityIcon($priority) {
+    $icons = [
+        'low' => 'fas fa-arrow-down',
+        'normal' => 'fas fa-minus',
+        'high' => 'fas fa-arrow-up',
+        'urgent' => 'fas fa-exclamation-triangle'
+    ];
+    
+    return $icons[$priority] ?? 'fas fa-minus';
+}
+
+/**
  * کوتاه کردن متن
  * @param string $text
  * @param int $length

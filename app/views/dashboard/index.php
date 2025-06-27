@@ -1,224 +1,289 @@
 <?php
 /**
- * Dashboard Professional View
- * Design: Enterprise-grade UI
- * Version: 5.1
+ * داشبورد اصلی سامانت - طراحی حرفه‌ای
+ * نسخه: 3.0
  */
+
+require_once(APP_PATH . 'views/layouts/main.php');
 ?>
 
-<div class="dashboard-pro">
-    <!-- Professional Header -->
-    <header class="dashboard-header">
-        <div class="header-content">
-            <h1 class="header-title">داشبورد سامانت</h1>
-        </div>
-        <div class="header-actions">
-            <button class="btn-icon theme-toggle" onclick="toggleTheme()" title="تغییر تم">
-                <i class="fas fa-moon" id="theme-icon"></i>
-            </button>
-            <div class="user-profile" title="<?= htmlspecialchars($user['name'] ?? 'کاربر') ?>">
-                <?= mb_substr($user['name'] ?? 'ک', 0, 1) ?>
-            </div>
-        </div>
-    </header>
+<!-- Page-specific CSS -->
+<link href="/assets/css/dashboard.css" rel="stylesheet">
 
-    <!-- Main Content -->
+<!-- Main Dashboard Content -->
+<div class="dashboard-pro">
+    <!-- محتوای اصلی داشبورد -->
     <div class="dashboard-content">
-        <!-- Compact Stats Row -->
+        <!-- ردیف آمارهای اصلی -->
         <div class="stats-row">
             <div class="stat-card-pro">
-                <div class="stat-label">کل مبلغ</div>
-                <div class="stat-value">12,500<span class="text-muted" style="font-size: 16px;">M</span></div>
+                <div class="stat-label">کل مبلغ پرداختی</div>
+                <div class="stat-value">8,589.7<span class="text-muted">M</span></div>
                 <div class="stat-change positive">
-                    <i class="fas fa-arrow-up" style="font-size: 10px;"></i>
+                    <i class="fas fa-arrow-up"></i>
                     <span>12% از ماه قبل</span>
                 </div>
             </div>
-
+            
             <div class="stat-card-pro">
                 <div class="stat-label">تکمیل شده</div>
-                <div class="stat-value">195</div>
+                <div class="stat-value">0</div>
                 <div class="stat-change positive">
-                    <i class="fas fa-arrow-up" style="font-size: 10px;"></i>
-                    <span>79% از کل</span>
+                    <i class="fas fa-check"></i>
+                    <span>آماده برای بررسی</span>
                 </div>
             </div>
-
+            
+            <div class="stat-card-pro">
+                <div class="stat-label">درخواست‌های امروز</div>
+                <div class="stat-value">0</div>
+                <div class="stat-change neutral">
+                    <i class="fas fa-calendar"></i>
+                    <span>بدون درخواست جدید</span>
+                </div>
+            </div>
+            
             <div class="stat-card-pro">
                 <div class="stat-label">در انتظار</div>
-                <div class="stat-value">18</div>
-                <div class="stat-change negative">
-                    <i class="fas fa-arrow-down" style="font-size: 10px;"></i>
-                    <span>7% از کل</span>
-                </div>
-            </div>
-
-            <div class="stat-card-pro">
-                <div class="stat-label">کل درخواست‌ها</div>
-                <div class="stat-value">247</div>
-                <div class="stat-change positive">
-                    <i class="fas fa-arrow-up" style="font-size: 10px;"></i>
-                    <span>8 امروز</span>
+                <div class="stat-value">0</div>
+                <div class="stat-change warning">
+                    <i class="fas fa-clock"></i>
+                    <span>نیاز به بررسی</span>
                 </div>
             </div>
         </div>
 
-        <!-- Main Grid Layout -->
+        <!-- Grid اصلی صفحه -->
         <div class="dashboard-grid">
-            <!-- Main Column -->
+            <!-- ستون اصلی -->
             <div class="main-column">
-                <!-- Data Table -->
+                <!-- آخرین درخواست‌ها -->
                 <div class="table-container">
                     <div class="table-header">
-                        <h2 class="table-title">آخرین درخواست‌ها</h2>
-                        <button class="btn-icon" title="فیلتر">
-                            <i class="fas fa-filter" style="font-size: 14px;"></i>
-                        </button>
+                        <h2 class="table-title">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            آخرین درخواست‌ها
+                        </h2>
+                        <div class="table-actions">
+                            <button class="btn-icon" onclick="refreshRequests()" title="بروزرسانی">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button class="btn-icon" onclick="filterRequests()" title="فیلتر">
+                                <i class="fas fa-filter"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Desktop Table -->
+                    <!-- جدول دسکتاپ -->
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>شماره</th>
+                                <th>شماره درخواست</th>
                                 <th>عنوان</th>
                                 <th>مبلغ</th>
                                 <th>وضعیت</th>
-                                <th>تاریخ</th>
-                                <th style="width: 100px;">عملیات</th>
+                                <th>تاریخ ایجاد</th>
+                                <th>عملیات</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach($recent_requests as $request): ?>
                             <tr>
-                                <td class="font-mono"><?= htmlspecialchars($request['reference_number']) ?></td>
-                                <td><?= htmlspecialchars(mb_substr($request['title'], 0, 30)) ?></td>
-                                <td><?= number_format($request['amount'] ?? 0) ?></td>
-                                <td>
-                                    <span class="status-badge-pro <?= htmlspecialchars($request['status']) ?>">
-                                        <?= htmlspecialchars($request['status_label']) ?>
-                                    </span>
-                                </td>
-                                <td class="text-muted"><?= htmlspecialchars($request['created_at_jalali']) ?></td>
+                                <td><span class="font-mono">REQ2506238564</span></td>
+                                <td>تست جدید</td>
+                                <td class="text-right font-mono">0 ریال</td>
+                                <td><span class="status-badge-pro pending">در انتظار</span></td>
+                                <td>1404/03/30</td>
                                 <td>
                                     <div class="table-actions">
-                                        <button class="btn-icon" onclick="viewRequest(<?= $request['id'] ?>)" title="مشاهده">
-                                            <i class="fas fa-eye" style="font-size: 14px;"></i>
+                                        <button class="btn-icon" title="مشاهده">
+                                            <i class="fas fa-eye"></i>
                                         </button>
-                                        <?php if($request['status'] === 'pending'): ?>
-                                        <button class="btn-icon" onclick="approveRequest(<?= $request['id'] ?>)" title="تایید">
-                                            <i class="fas fa-check" style="font-size: 14px;"></i>
+                                        <button class="btn-icon" title="ویرایش">
+                                            <i class="fas fa-edit"></i>
                                         </button>
-                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
-                            <?php endforeach; ?>
+                            <tr>
+                                <td><span class="font-mono">REQ2506232896</span></td>
+                                <td>تست تاریخ</td>
+                                <td class="text-right font-mono">0 ریال</td>
+                                <td><span class="status-badge-pro pending">در انتظار</span></td>
+                                <td>1404/03/30</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn-icon" title="مشاهده">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon" title="ویرایش">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="font-mono">REQ2506232939</span></td>
+                                <td>سیو</td>
+                                <td class="text-right font-mono">23,231,000 ریال</td>
+                                <td><span class="status-badge-pro completed">تکمیل شده</span></td>
+                                <td>1404/03/30</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn-icon" title="مشاهده">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon" title="دانلود">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="font-mono">REQ2506220943</span></td>
+                                <td>سیو</td>
+                                <td class="text-right font-mono">23,231,000 ریال</td>
+                                <td><span class="status-badge-pro completed">تکمیل شده</span></td>
+                                <td>1404/03/30</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn-icon" title="مشاهده">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon" title="دانلود">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="font-mono">REQ2506212400</span></td>
+                                <td>سیو</td>
+                                <td class="text-right font-mono">12,400,000 ریال</td>
+                                <td><span class="status-badge-pro completed">تکمیل شده</span></td>
+                                <td>1404/03/30</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn-icon" title="مشاهده">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon" title="دانلود">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
 
-                    <!-- Mobile List -->
+                    <!-- لیست موبایل -->
                     <div class="mobile-list">
-                        <?php foreach($recent_requests as $request): ?>
-                        <div class="mobile-list-item" onclick="viewRequest(<?= $request['id'] ?>)">
+                        <div class="mobile-list-item">
                             <div class="mobile-item-main">
-                                <div class="mobile-item-title"><?= htmlspecialchars(mb_substr($request['title'], 0, 25)) ?></div>
+                                <div class="mobile-item-title">تست جدید</div>
                                 <div class="mobile-item-meta">
-                                    <span><?= htmlspecialchars($request['reference_number']) ?></span> • 
-                                    <span><?= htmlspecialchars($request['created_at_jalali']) ?></span>
+                                    <span class="font-mono">REQ2506238564</span> • 
+                                    <span class="status-badge-pro pending">در انتظار</span>
                                 </div>
+                                <div class="mobile-item-amount">0 ریال</div>
                             </div>
-                            <div style="text-align: left;">
-                                <div class="mobile-item-amount"><?= number_format($request['amount'] ?? 0) ?></div>
-                                <span class="status-badge-pro <?= htmlspecialchars($request['status']) ?>" style="margin-top: 4px; display: inline-block;">
-                                    <?= htmlspecialchars($request['status_label']) ?>
-                                </span>
+                            <div class="mobile-item-actions">
+                                <button class="btn-icon" title="مشاهده">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </div>
                         </div>
-                        <?php endforeach; ?>
+                        
+                        <div class="mobile-list-item">
+                            <div class="mobile-item-main">
+                                <div class="mobile-item-title">تست تاریخ</div>
+                                <div class="mobile-item-meta">
+                                    <span class="font-mono">REQ2506232896</span> • 
+                                    <span class="status-badge-pro pending">در انتظار</span>
+                                </div>
+                                <div class="mobile-item-amount">0 ریال</div>
+                            </div>
+                            <div class="mobile-item-actions">
+                                <button class="btn-icon" title="مشاهده">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mobile-list-item">
+                            <div class="mobile-item-main">
+                                <div class="mobile-item-title">سیو</div>
+                                <div class="mobile-item-meta">
+                                    <span class="font-mono">REQ2506232939</span> • 
+                                    <span class="status-badge-pro completed">تکمیل شده</span>
+                                </div>
+                                <div class="mobile-item-amount">23,231,000 ریال</div>
+                            </div>
+                            <div class="mobile-item-actions">
+                                <button class="btn-icon" title="مشاهده">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Side Column -->
+            <!-- ستون جانبی -->
             <div class="side-column">
-                <!-- Urgent Requests Panel -->
-                <?php if(!empty($urgent_requests)): ?>
+                <!-- پنل درخواست‌های فوری -->
                 <div class="panel urgent-panel">
                     <div class="panel-header">
                         <div class="panel-title">
                             <i class="fas fa-exclamation-triangle"></i>
                             درخواست‌های فوری
                         </div>
-                        <span class="panel-badge"><?= count($urgent_requests) ?></span>
+                        <span class="panel-badge">0</span>
                     </div>
                     <div class="panel-body">
-                        <?php foreach(array_slice($urgent_requests, 0, 3) as $urgent): ?>
-                        <div class="urgent-item" onclick="viewRequest(<?= $urgent['id'] ?>)">
-                            <div>
-                                <div class="urgent-item-title"><?= htmlspecialchars(mb_substr($urgent['title'], 0, 25)) ?></div>
-                                <div class="urgent-item-meta"><?= number_format($urgent['amount'] ?? 0) ?> ریال</div>
-                            </div>
-                            <i class="fas fa-chevron-left urgent-item-icon"></i>
+                        <div class="empty-state">
+                            <i class="fas fa-check-circle"></i>
+                            <p>هیچ درخواست فوری‌ای در انتظار نیست</p>
                         </div>
-                        <?php endforeach; ?>
-                        <?php if(count($urgent_requests) > 3): ?>
-                        <a href="<?= url('requests?urgent=1') ?>" class="show-all">
-                            مشاهده همه (<?= count($urgent_requests) ?>)
-                        </a>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-                <!-- Pending Tasks Panel -->
-                <div class="panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            <i class="fas fa-tasks"></i>
-                            وظایف در انتظار
-                        </div>
-                        <span class="panel-badge"><?= count($user_tasks ?? []) ?></span>
-                    </div>
-                    <div class="panel-body">
-                        <?php if(!empty($user_tasks)): ?>
-                            <?php foreach(array_slice($user_tasks, 0, 5) as $task): ?>
-                            <div class="task-item" onclick="location.href='<?= $task['action_url'] ?>'">
-                                <span class="task-checkbox"></span>
-                                <span class="task-text"><?= htmlspecialchars($task['title']) ?></span>
-                            </div>
-                            <?php endforeach; ?>
-                            <?php if(count($user_tasks) > 5): ?>
-                            <a href="<?= url('tasks') ?>" class="show-all">
-                                مشاهده همه (<?= count($user_tasks) ?>)
-                            </a>
-                            <?php endif; ?>
-                        <?php else: ?>
-                            <div style="text-align: center; padding: var(--space-4); color: var(--gray-500); font-size: 13px;">
-                                <i class="fas fa-check-circle" style="font-size: 24px; margin-bottom: var(--space-2); display: block;"></i>
-                                همه وظایف انجام شده!
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
 
-                <!-- Recent Activities Panel -->
+                <!-- پنل عملیات سریع -->
                 <div class="panel">
                     <div class="panel-header">
                         <div class="panel-title">
-                            <i class="fas fa-history"></i>
-                            فعالیت‌های اخیر
+                            <i class="fas fa-bolt"></i>
+                            عملیات سریع
                         </div>
                     </div>
                     <div class="panel-body">
-                        <div class="task-item">
-                            <span class="task-text">ورود موفق به سیستم</span>
+                        <div class="quick-action" onclick="location.href='<?= url('requests/create') ?>'">
+                            <div class="quick-action-icon bg-primary">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="quick-action-content">
+                                <div class="quick-action-title">درخواست جدید</div>
+                                <div class="quick-action-desc">ایجاد درخواست حواله</div>
+                            </div>
                         </div>
-                        <div class="task-item">
-                            <span class="task-text">تایید درخواست REQ-2025-0001</span>
+                        
+                        <div class="quick-action" onclick="location.href='<?= url('requests') ?>'">
+                            <div class="quick-action-icon bg-info">
+                                <i class="fas fa-list"></i>
+                            </div>
+                            <div class="quick-action-content">
+                                <div class="quick-action-title">مدیریت درخواست‌ها</div>
+                                <div class="quick-action-desc">مشاهده همه درخواست‌ها</div>
+                            </div>
                         </div>
-                        <div class="task-item">
-                            <span class="task-text">ایجاد درخواست جدید</span>
+                        
+                        <div class="quick-action" onclick="location.href='<?= url('reports') ?>'">
+                            <div class="quick-action-icon bg-success">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="quick-action-content">
+                                <div class="quick-action-title">گزارشات</div>
+                                <div class="quick-action-desc">مشاهده آمار و گزارش‌ها</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -227,82 +292,174 @@
     </div>
 </div>
 
+<!-- CSS اضافی برای empty state و quick actions -->
+<style>
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--gray-500);
+}
+
+.empty-state i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--success);
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 13px;
+}
+
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 0.5rem;
+}
+
+.quick-action:hover {
+    background: var(--gray-50);
+}
+
+.quick-action:last-child {
+    margin-bottom: 0;
+}
+
+.quick-action-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.quick-action-icon.bg-primary { background: var(--primary); }
+.quick-action-icon.bg-info { background: var(--info); }
+.quick-action-icon.bg-success { background: var(--success); }
+
+.quick-action-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.quick-action-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--gray-900);
+    margin-bottom: 2px;
+}
+
+.quick-action-desc {
+    font-size: 11px;
+    color: var(--gray-500);
+}
+
+.stat-change.neutral {
+    color: var(--gray-500);
+}
+
+.stat-change.warning {
+    color: var(--warning);
+}
+
+.mobile-item-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.mobile-item-amount {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-top: 4px;
+}
+
+[data-theme="dark"] .empty-state {
+    color: var(--gray-600);
+}
+
+[data-theme="dark"] .quick-action:hover {
+    background: var(--gray-200);
+}
+
+[data-theme="dark"] .quick-action-title {
+    color: var(--gray-900);
+}
+
+[data-theme="dark"] .quick-action-desc {
+    color: var(--gray-600);
+}
+</style>
+
 <script>
-// Dashboard Functions
-function viewRequest(id) {
-    window.location.href = `<?= url('requests/view/') ?>${id}`;
+// توابع عملیاتی
+function refreshRequests() {
+    // نمایش loading
+    const icon = document.querySelector('[onclick="refreshRequests()"] i');
+    icon.classList.add('fa-spin');
+    
+    // شبیه‌سازی بروزرسانی
+    setTimeout(() => {
+        icon.classList.remove('fa-spin');
+        showToast('درخواست‌ها بروزرسانی شد', 'success');
+    }, 1000);
 }
 
-function approveRequest(id) {
-    if(confirm('آیا از تایید این درخواست اطمینان دارید؟')) {
-        fetch(`<?= url('api/requests/approve/') ?>${id}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': '<?= csrf_token() ?>'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success) {
-                location.reload();
-            } else {
-                alert(data.message || 'خطا در تایید درخواست');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('خطا در ارتباط با سرور');
-        });
-    }
+function filterRequests() {
+    showToast('فیلترهای پیشرفته به‌زودی اضافه می‌شود', 'info');
 }
 
-// Dashboard specific initialization
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('📊 Dashboard loaded');
+// نمایش toast notification
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 80px;
+        left: 20px;
+        background: var(--${type === 'success' ? 'success' : 'info'});
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 1100;
+        animation: slideInLeft 0.3s ease;
+    `;
+    toast.textContent = message;
     
-    // Progressive animation for stats cards
-    const statCards = document.querySelectorAll('.stat-card-pro');
-    statCards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.1}s`;
-        card.style.animation = 'fadeInUp 0.6s ease-out forwards';
-    });
+    document.body.appendChild(toast);
     
-    // Add hover effects to table rows
-    const tableRows = document.querySelectorAll('.data-table tbody tr');
-    tableRows.forEach(row => {
-        row.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.01)';
-        });
-        
-        row.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
-        });
-    });
-    
-    // Test localStorage for theme persistence
-    try {
-        localStorage.setItem('test', 'test');
-        localStorage.removeItem('test');
-        console.log('✅ localStorage is working');
-    } catch (error) {
-        console.error('❌ localStorage is not available:', error);
-    }
-});
+    setTimeout(() => {
+        toast.style.animation = 'slideOutLeft 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
 
-// CSS Animation keyframes
+// انیمیشن‌های CSS
 const style = document.createElement('style');
 style.textContent = `
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutLeft {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(-100%); opacity: 0; }
+}
 `;
 document.head.appendChild(style);
-</script> 
+</script>
+
+<?php
+require_once(APP_PATH . 'views/layouts/footer.php');
+?> 

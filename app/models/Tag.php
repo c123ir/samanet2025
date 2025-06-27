@@ -72,6 +72,64 @@ class Tag extends Database
         $stmt = $this->query($query, $params);
         return $stmt->fetchAll();
     }
+
+    /**
+     * جستجوی پیشرفته چندکلمه‌ای تگ‌ها با استفاده از AdvancedSearch Helper
+     * @param string $search عبارت جستجو
+     * @param array $filters فیلترهای اضافی
+     * @return array
+     */
+    public function searchWithFilters(string $search = '', array $filters = []): array 
+    {
+        // تعریف فیلدهای قابل جستجو
+        $searchFields = [
+            't.title',
+            't.id',
+            't.created_at',
+            'CASE WHEN t.created_by = 1 THEN \'سیستم\' ELSE COALESCE(u.full_name, \'نامشخص\') END',
+            'CASE WHEN t.usage_count = 0 THEN \'استفاده نشده\' WHEN t.usage_count = 1 THEN \'1 بار\' ELSE CONCAT(t.usage_count, \' بار\') END'
+        ];
+        
+        // تعریف joins
+        $joins = [
+            [
+                'type' => 'LEFT',
+                'table' => 'users u',
+                'condition' => 't.created_by = u.id',
+                'select' => 'u.full_name as creator_name'
+            ]
+        ];
+        
+        // استفاده از AdvancedSearch Helper
+        require_once __DIR__ . '/../helpers/AdvancedSearch.php';
+        return AdvancedSearch::performSearch(
+            $this,
+            $this->table . ' t',
+            $search,
+            $searchFields,
+            $filters,
+            $joins,
+            'created_at',
+            'DESC'
+        );
+    }
+
+    /**
+     * پردازش نتایج جستجو برای highlighting با استفاده از AdvancedSearch Helper
+     * @param array $item آیتم نتیجه
+     * @param string $search عبارت جستجو
+     * @return array
+     */
+    public function processSearchResult(array $item, string $search): array 
+    {
+        // استفاده از AdvancedSearch Helper برای highlighting
+        require_once __DIR__ . '/../helpers/AdvancedSearch.php';
+        return AdvancedSearch::processSearchResults(
+            [$item],
+            $search,
+            ['title', 'creator_name']
+        )[0] ?? $item;
+    }
     
     /**
      * دریافت تگ بر اساس شناسه

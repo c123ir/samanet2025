@@ -144,6 +144,10 @@ if (isset($routes[$route])) {
                     $handled = true;
                 }
                 break;
+            case 'api':
+                $controller->api();
+                $handled = true;
+                break;
             case 'index':
             default:
                 $controller->index();

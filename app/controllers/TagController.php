@@ -9,6 +9,9 @@
 
 declare(strict_types=1);
 
+// Load AdvancedSearch Helper
+require_once __DIR__ . '/../helpers/AdvancedSearch.php';
+
 /**
  * کنترلر مدیریت تگ‌ها
  */
@@ -48,6 +51,7 @@ class TagController extends BaseController
             
             // داده‌های view
             $data = [
+                'title' => 'مدیریت تگ‌ها',
                 'page_title' => 'مدیریت تگ‌ها',
                 'tags' => $tags,
                 'stats' => $stats,
@@ -57,7 +61,7 @@ class TagController extends BaseController
                 'used_tags' => $stats['used_tags'] ?? 0,
                 'unused_tags' => $stats['unused_tags'] ?? 0,
                 'max_usage' => $stats['max_usage'] ?? 0,
-                'additional_css' => ['css/tags-page.css']
+                'additional_css' => ['css/bootstrap-dashboard.css']
             ];
             
             $this->render('tags/list', $data);
@@ -80,7 +84,7 @@ class TagController extends BaseController
             $this->render('tags/create', [
                 'title' => 'ایجاد تگ جدید',
                 'random_gradient' => $randomGradient,
-                'additional_css' => ['css/tags-page.css']
+                'additional_css' => ['css/bootstrap-dashboard.css']
             ]);
             
         } catch (Exception $e) {
@@ -148,7 +152,7 @@ class TagController extends BaseController
             $this->render('tags/edit', [
                 'title' => 'ویرایش تگ',
                 'tag' => $tag,
-                'additional_css' => ['css/tags-page.css']
+                'additional_css' => ['css/bootstrap-dashboard.css']
             ]);
             
         } catch (Exception $e) {
@@ -215,21 +219,67 @@ class TagController extends BaseController
     }
     
     /**
-     * API دریافت تگ‌ها
+     * API جستجوی پیشرفته تگ‌ها با استفاده از AdvancedSearch Helper
      */
     public function api(): void
     {
-        $filters = [
-            'search' => $this->input('search', ''),
-            'limit' => (int)$this->input('limit', 20)
-        ];
+        header('Content-Type: application/json');
         
-        $tags = $this->tagModel->getAllTags($filters);
-        
-        $this->sendJSON([
-            'success' => true,
-            'data' => $tags
-        ]);
+        try {
+            $search = trim($_GET['search'] ?? '');
+            $filters = [
+                'status' => $_GET['status'] ?? 'all'
+            ];
+            
+            // اعتبارسنجی پارامترها
+            $validation = AdvancedSearch::validateSearchParams(
+                $search,
+                ['status'],
+                $filters
+            );
+            
+            if (!$validation['valid']) {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'error' => implode(', ', $validation['errors'])
+                ]);
+                return;
+            }
+            
+            // جستجو
+            $results = $this->tagModel->searchWithFilters(
+                $validation['sanitized_search'],
+                $validation['sanitized_filters']
+            );
+            
+            // پردازش نتایج برای highlighting
+            $processedResults = AdvancedSearch::processSearchResults(
+                $results,
+                $search,
+                ['title', 'creator_name']
+            );
+            
+            // تولید پاسخ استاندارد
+            $response = AdvancedSearch::generateApiResponse(
+                $processedResults,
+                $search,
+                [
+                    'page_type' => 'tags',
+                    'filters_applied' => array_filter($filters, function($v) { return $v !== 'all'; })
+                ]
+            );
+            
+            echo json_encode($response);
+            
+        } catch (Exception $e) {
+            error_log("Tags API Error: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'error' => 'خطا در جستجو'
+            ]);
+        }
     }
     
     /**

@@ -15,8 +15,11 @@ define('APP_DEBUG', true);
 define('APP_TIMEZONE', 'Asia/Tehran');
 define('APP_LANG', 'fa');
 
-// تنظیمات URL
-define('BASE_URL', 'http://localhost:3110/');
+// Dynamic URL Settings
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+define('BASE_URL', $protocol . $host . '/');
+
 define('ASSETS_URL', BASE_URL . 'assets/');
 define('UPLOAD_URL', BASE_URL . 'upld/');
 define('API_URL', BASE_URL . 'api/');

@@ -145,29 +145,29 @@ class BaseController
     }
 
     /**
-     * نمایش صفحه
+     * Renders a view file with data and wraps it in the main layout.
+     *
+     * @param string $view The view file to render (e.g., 'dashboard/index').
+     * @param array $data Data to be extracted and made available to the view.
      */
-    protected function view($viewPath, $data = []) 
+    protected function render(string $view, array $data = [])
     {
-        // ترکیب داده‌های پیش‌فرض با داده‌های ارسالی
-        $viewData = array_merge($this->data, $data);
-        
-        // استخراج متغیرها به global scope
-        foreach ($viewData as $key => $value) {
-            $GLOBALS[$key] = $value;
+        $viewFile = APP_PATH . "views/{$view}.php";
+
+        if (file_exists($viewFile)) {
+            // Make all protected data and argument data available to the view and layout
+            extract($this->data);
+            extract($data);
+
+            // This variable holds the path to the view file
+            // and the main layout will include it.
+            $content_view = $viewFile;
+            
+            require APP_PATH . 'views/layouts/main.php';
+        } else {
+            // Handle view not found error
+            $this->sendError("View not found: {$viewFile}", 404);
         }
-        
-        // استخراج متغیرها در local scope نیز
-        extract($viewData);
-        
-        // بررسی وجود فایل view
-        $viewFile = APP_PATH . 'views/' . $viewPath . '.php';
-        if (!file_exists($viewFile)) {
-            $this->sendError("فایل view یافت نشد: {$viewPath}", 404);
-        }
-        
-        // بارگذاری layout
-        include APP_PATH . 'views/layouts/main.php';
     }
 
     /**
@@ -471,14 +471,6 @@ class BaseController
             $this->loadUser();
         }
         return $this->user;
-    }
-
-    /**
-     * Alias برای view method
-     */
-    protected function render($viewPath, $data = []) 
-    {
-        return $this->view($viewPath, $data);
     }
 
     /**

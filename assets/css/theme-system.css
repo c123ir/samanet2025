@@ -108,10 +108,10 @@ body {
     width: 50px !important;
     height: 50px !important;
     border-radius: 50% !important;
-    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    border: 2px solid rgba(255, 255, 255, 0.484) !important;
     background: var(--glass-bg) !important;
     backdrop-filter: var(--backdrop-blur) !important;
-    color: white !important;
+    color: rgb(118, 118, 118) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;

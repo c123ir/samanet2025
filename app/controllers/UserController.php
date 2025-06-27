@@ -42,7 +42,7 @@ class UserController extends BaseController
                 'users' => $users,
                 'stats' => $stats,
                 'roles' => USER_ROLES,
-                'additional_css' => ['css/users.css'] // CSS جدید حرفه‌ای
+                'additional_css' => ['css/bootstrap-dashboard.css'] // Bootstrap 5 استاندارد
             ]);
             
         } catch (Exception $e) {
@@ -50,7 +50,7 @@ class UserController extends BaseController
             $this->setFlash('error', 'خطا در بارگذاری لیست کاربران');
             $this->render('users/index', [
                 'title' => 'مدیریت کاربران',
-                'additional_css' => ['css/users.css']
+                'additional_css' => ['css/bootstrap-dashboard.css']
             ]);
         }
     }

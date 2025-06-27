@@ -1,0 +1,56 @@
+/* =================================================================
+   Main Layout Styles - Samanat V4
+   ================================================================= */
+:root {
+    --sidebar-width: 260px;
+    --header-height: 60px;
+    --content-padding: 1.5rem;
+    
+    /* اضافه کردن متغیرها از dashboard.css */
+    --primary: #5E3AEE;
+    --gray-50: #FAFAFA;
+    --gray-100: #F4F4F5;
+    --gray-200: #E4E4E7;
+    --gray-300: #D4D4D8;
+    --gray-400: #A1A1AA;
+    --gray-500: #71717A;
+    --gray-600: #52525B;
+    --gray-700: #3F3F46;
+    --gray-800: #27272A;
+    --gray-900: #18181B;
+    --transition: all 150ms ease;
+    --danger: #EF4444;
+    --success: #10B981;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    overflow-x: hidden;
+}
+
+.main-container {
+    display: flex;
+}
+
+/* Sidebar styles moved to sidebar.css */
+
+.content-wrapper {
+    flex-grow: 1;
+    margin-right: 280px;
+    padding-top: 60px;
+    min-height: 100vh;
+    background: var(--gray-50);
+    transition: margin-right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Header styles moved to @header.css */
+
+/* Mobile Responsive */
+@media (max-width: 991.98px) {
+    .content-wrapper {
+        margin-right: 0;
+        width: 100%;
+        right: 0;
+    }
+} 
