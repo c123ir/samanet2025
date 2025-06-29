@@ -1,168 +1,157 @@
-/*
- * نام فایل: theme-system.js
- * مسیر فایل: /assets/js/theme-system.js
- * توضیح: سیستم جامع تم (شب/روز) سامانت
- * تاریخ ایجاد: 1404/03/31
+/**
+ * SAMANET THEME SYSTEM - ENTERPRISE GRADE
+ * نسخه: 3.0 حرفه‌ای
+ * تاریخ: 1404/10/17
+ * مطابق: استانداردهای MANDATORY Theme Management
  */
 
 (function() {
     'use strict';
-
-    /**
-     * کلاس مدیریت تم
-     */
-    class ThemeManager {
+    
+    const THEME_STORAGE_KEY = 'samanat_theme';
+    const THEME_STATS_KEY = 'samanat_theme_stats';
+    const DEFAULT_THEME = 'light';
+    
+    class ThemeSystem {
         constructor() {
-            this.currentTheme = 'light';
-            this.themes = {
-                light: {
-                    name: 'روز',
-                    icon: 'fas fa-moon'
-                },
-                dark: {
-                    name: 'شب', 
-                    icon: 'fas fa-sun'
-                }
-            };
-            
+            this.currentTheme = this.getSavedTheme();
+            this.stats = this.getThemeStats();
             this.init();
         }
-
+        
         /**
-         * راه‌اندازی اولیه
+         * راه‌اندازی اولیه سیستم تم
          */
         init() {
-            this.loadTheme();
-            this.setupToggleButton();
-            this.setupSystemThemeDetection();
-            this.setupKeyboardShortcut();
+            this.applyTheme(this.currentTheme);
+            this.updateThemeIcon(this.currentTheme);
+            this.bindEvents();
+            this.setupSystemListeners();
             
-            console.log('🎨 Theme System initialized');
+            console.log(`✅ Theme System initialized: ${this.currentTheme}`);
         }
-
+        
         /**
-         * بارگذاری تم ذخیره شده
+         * دریافت تم ذخیره شده
          */
-        loadTheme() {
-            const savedTheme = localStorage.getItem('samanat_theme');
-            const systemTheme = this.getSystemTheme();
-            
-            // اگر تمی ذخیره نشده، از تم سیستم استفاده کن
-            const themeToApply = savedTheme || systemTheme;
-            
-            this.setTheme(themeToApply, false);
-            
-            console.log(`📱 Theme loaded: ${themeToApply}`);
-        }
-
-        /**
-         * دریافت تم سیستم
-         */
-        getSystemTheme() {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                return 'dark';
+        getSavedTheme() {
+            try {
+                return localStorage.getItem(THEME_STORAGE_KEY) || DEFAULT_THEME;
+            } catch (error) {
+                console.warn('localStorage not available, using default theme');
+                return DEFAULT_THEME;
             }
-            return 'light';
         }
-
+        
         /**
-         * تنظیم تم
+         * ذخیره تم
          */
-        setTheme(theme, saveToStorage = true) {
-            if (!this.themes[theme]) {
-                console.warn(`❌ Invalid theme: ${theme}`);
-                return;
+        saveTheme(theme) {
+            try {
+                localStorage.setItem(THEME_STORAGE_KEY, theme);
+                this.updateThemeStats(theme);
+            } catch (error) {
+                console.warn('Could not save theme to localStorage');
             }
-
+        }
+        
+        /**
+         * اعمال تم
+         */
+        applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
             this.currentTheme = theme;
             
-            // اعمال تم به HTML element
-            document.documentElement.setAttribute('data-theme', theme);
+            // بروزرسانی meta theme-color برای موبایل
+            this.updateMetaThemeColor(theme);
             
-            // به‌روزرسانی آیکون
-            this.updateThemeIcon();
-            
-            // ذخیره در localStorage
-            if (saveToStorage) {
-                localStorage.setItem('samanat_theme', theme);
-            }
-            
-            // انیمیشن transition
-            this.addThemeTransition();
-            
-            // ارسال event
-            document.dispatchEvent(new CustomEvent('themeChanged', {
-                detail: { theme: theme, previousTheme: this.currentTheme }
-            }));
-            
-            console.log(`🎨 Theme changed to: ${theme}`);
+            // ارسال event سفارشی
+            this.dispatchThemeChangeEvent(theme);
         }
-
+        
         /**
          * تغییر تم
          */
         toggleTheme() {
-            const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+            const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
             
-            // انیمیشن چرخش برای button
-            this.animateToggleButton();
-            
-            // تغییر تم با تاخیر برای انیمیشن
-            setTimeout(() => {
-                this.setTheme(newTheme);
-            }, 150);
-        }
-
-        /**
-         * به‌روزرسانی آیکون تم
-         */
-        updateThemeIcon() {
-            const themeIcon = document.getElementById('theme-icon');
-            const themeButtons = document.querySelectorAll('.theme-toggle');
-            
-            if (themeIcon) {
-                themeIcon.className = this.themes[this.currentTheme].icon;
-            }
-            
-            // به‌روزرسانی تمام دکمه‌های theme toggle
-            themeButtons.forEach(button => {
-                const icon = button.querySelector('i');
-                if (icon) {
-                    icon.className = this.themes[this.currentTheme].icon;
-                }
-                
-                const title = `تغییر به حالت ${this.currentTheme === 'light' ? 'شب' : 'روز'}`;
-                button.setAttribute('title', title);
-                button.setAttribute('aria-label', title);
+            // انیمیشن تبدیل نرم
+            this.animateThemeTransition(() => {
+                this.applyTheme(newTheme);
+                this.saveTheme(newTheme);
+                this.updateThemeIcon(newTheme);
             });
         }
-
+        
         /**
-         * انیمیشن دکمه toggle
+         * بروزرسانی آیکون تم
          */
-        animateToggleButton() {
-            const themeButtons = document.querySelectorAll('.theme-toggle');
-            
-            themeButtons.forEach(button => {
-                button.classList.add('rotating');
+        updateThemeIcon(theme) {
+            const themeIcon = document.getElementById('theme-icon');
+            if (themeIcon) {
+                // تغییر آیکون با انیمیشن
+                themeIcon.style.transform = 'scale(0.8)';
                 
                 setTimeout(() => {
-                    button.classList.remove('rotating');
-                }, 600);
-            });
+                    if (theme === 'dark') {
+                        themeIcon.className = 'fas fa-sun';
+                        themeIcon.style.color = '#F59E0B';
+                    } else {
+                        themeIcon.className = 'fas fa-moon';
+                        themeIcon.style.color = '#6B7280';
+                    }
+                    
+                    themeIcon.style.transform = 'scale(1)';
+                }, 150);
+            }
         }
-
+        
         /**
-         * تنظیم دکمه toggle
+         * انیمیشن تبدیل تم
          */
-        setupToggleButton() {
-            // حذف event listener های قبلی
-            const existingButtons = document.querySelectorAll('.theme-toggle');
-            existingButtons.forEach(button => {
-                button.removeEventListener('click', this.handleToggleClick);
-            });
+        animateThemeTransition(callback) {
+            // اضافه کردن کلاس انیمیشن
+            document.body.style.transition = 'all 0.3s ease';
             
-            // اضافه کردن event listener جدید
+            // اجرای callback پس از شروع انیمیشن
+            setTimeout(callback, 50);
+            
+            // حذف transition پس از تکمیل انیمیشن
+            setTimeout(() => {
+                document.body.style.transition = '';
+            }, 350);
+        }
+        
+        /**
+         * بروزرسانی meta theme-color
+         */
+        updateMetaThemeColor(theme) {
+            let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+            
+            if (!metaThemeColor) {
+                metaThemeColor = document.createElement('meta');
+                metaThemeColor.name = 'theme-color';
+                document.head.appendChild(metaThemeColor);
+            }
+            
+            metaThemeColor.content = theme === 'dark' ? '#27272A' : '#FFFFFF';
+        }
+        
+        /**
+         * ارسال event تغییر تم
+         */
+        dispatchThemeChangeEvent(theme) {
+            const event = new CustomEvent('themeChanged', {
+                detail: { theme, timestamp: Date.now() }
+            });
+            document.dispatchEvent(event);
+        }
+        
+        /**
+         * اتصال event listener ها
+         */
+        bindEvents() {
+            // کلیک روی دکمه تم
             document.addEventListener('click', (e) => {
                 if (e.target.closest('.theme-toggle')) {
                     e.preventDefault();
@@ -170,152 +159,179 @@
                 }
             });
             
-            // تنظیم آیکون اولیه
-            this.updateThemeIcon();
-        }
-
-        /**
-         * تشخیص تغییرات تم سیستم
-         */
-        setupSystemThemeDetection() {
-            if (window.matchMedia) {
-                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-                
-                mediaQuery.addEventListener('change', (e) => {
-                    // فقط اگر کاربر تم خاصی انتخاب نکرده باشد
-                    const savedTheme = localStorage.getItem('samanat_theme');
-                    if (!savedTheme) {
-                        this.setTheme(e.matches ? 'dark' : 'light', false);
-                    }
-                });
-            }
-        }
-
-        /**
-         * میانبر کیبورد برای تغییر تم
-         */
-        setupKeyboardShortcut() {
+            // کلید میانبر (Ctrl/Cmd + D)
             document.addEventListener('keydown', (e) => {
-                // Ctrl + Shift + T برای تغییر تم
-                if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 't') {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
                     e.preventDefault();
                     this.toggleTheme();
                 }
             });
         }
-
+        
         /**
-         * اضافه کردن انیمیشن transition
+         * شنودهای سیستم
          */
-        addThemeTransition() {
-            document.documentElement.style.transition = 'all 0.3s ease';
+        setupSystemListeners() {
+            // شناسایی تغییر ترجیح سیستم
+            if (window.matchMedia) {
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                
+                mediaQuery.addEventListener('change', (e) => {
+                    // فقط در صورتی که کاربر تم خاصی انتخاب نکرده
+                    if (!localStorage.getItem(THEME_STORAGE_KEY)) {
+                        const systemTheme = e.matches ? 'dark' : 'light';
+                        this.applyTheme(systemTheme);
+                        this.updateThemeIcon(systemTheme);
+                    }
+                });
+            }
             
-            // حذف transition پس از اتمام انیمیشن
-            setTimeout(() => {
-                document.documentElement.style.transition = '';
-            }, 300);
+            // listener برای visibility change
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    // بررسی همگام‌سازی تم هنگام بازگشت به صفحه
+                    const savedTheme = this.getSavedTheme();
+                    if (savedTheme !== this.currentTheme) {
+                        this.applyTheme(savedTheme);
+                        this.updateThemeIcon(savedTheme);
+                    }
+                }
+            });
         }
-
+        
+        /**
+         * دریافت آمار استفاده از تم
+         */
+        getThemeStats() {
+            try {
+                const stats = localStorage.getItem(THEME_STATS_KEY);
+                return stats ? JSON.parse(stats) : {
+                    light: 0,
+                    dark: 0,
+                    lastChanged: Date.now()
+                };
+            } catch (error) {
+                return { light: 0, dark: 0, lastChanged: Date.now() };
+            }
+        }
+        
+        /**
+         * بروزرسانی آمار تم
+         */
+        updateThemeStats(theme) {
+            try {
+                this.stats[theme] = (this.stats[theme] || 0) + 1;
+                this.stats.lastChanged = Date.now();
+                
+                localStorage.setItem(THEME_STATS_KEY, JSON.stringify(this.stats));
+            } catch (error) {
+                console.warn('Could not update theme stats');
+            }
+        }
+        
         /**
          * دریافت تم فعلی
          */
         getCurrentTheme() {
             return this.currentTheme;
         }
-
+        
         /**
-         * بررسی حالت dark mode
+         * تنظیم تم خاص
          */
-        isDarkMode() {
-            return this.currentTheme === 'dark';
+        setTheme(theme) {
+            if (['light', 'dark'].includes(theme)) {
+                this.applyTheme(theme);
+                this.saveTheme(theme);
+                this.updateThemeIcon(theme);
+            }
         }
-
+        
         /**
-         * ری‌ست کردن تم به حالت سیستم
+         * بازنشانی تم به پیش‌فرض سیستم
          */
         resetToSystemTheme() {
-            localStorage.removeItem('samanat_theme');
-            this.setTheme(this.getSystemTheme(), false);
-        }
-
-        /**
-         * دریافت آمار استفاده از تم
-         */
-        getThemeStats() {
-            const themeUsage = JSON.parse(localStorage.getItem('samanat_theme_stats') || '{}');
-            const currentTheme = this.currentTheme;
-            
-            if (!themeUsage[currentTheme]) {
-                themeUsage[currentTheme] = 0;
+            try {
+                localStorage.removeItem(THEME_STORAGE_KEY);
+                
+                const systemTheme = window.matchMedia && 
+                    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                
+                this.applyTheme(systemTheme);
+                this.updateThemeIcon(systemTheme);
+            } catch (error) {
+                this.setTheme(DEFAULT_THEME);
             }
-            
-            themeUsage[currentTheme]++;
-            localStorage.setItem('samanat_theme_stats', JSON.stringify(themeUsage));
-            
-            return themeUsage;
         }
     }
-
-    /**
-     * نمونه سراسری Theme Manager
-     */
-    window.SamanetTheme = new ThemeManager();
-
-    // Export برای compatibility
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = ThemeManager;
-    }
-
-    /**
-     * تابع های سراسری برای backward compatibility
-     */
-    window.toggleTheme = function() {
-        window.SamanetTheme.toggleTheme();
-    };
-
-    window.setTheme = function(theme) {
-        window.SamanetTheme.setTheme(theme);
-    };
-
-    window.getCurrentTheme = function() {
-        return window.SamanetTheme.getCurrentTheme();
-    };
-
-    window.isDarkMode = function() {
-        return window.SamanetTheme.isDarkMode();
-    };
-
-    /**
-     * فوری اعمال کردن تم برای جلوگیری از flash
-     */
-    (function() {
-        try {
-            const savedTheme = localStorage.getItem('samanat_theme') || window.SamanetTheme.getSystemTheme();
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            console.log('⚡ Theme applied immediately:', savedTheme);
-        } catch (error) {
-            console.error('❌ Error applying immediate theme:', error);
-            document.documentElement.setAttribute('data-theme', 'light');
-        }
-    })();
-
-    /**
-     * Event listeners برای DOM ready
-     */
+    
+    // راه‌اندازی سیستم تم
+    let themeSystem;
+    
+    // اطمینان از بارگذاری DOM
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Theme System ready');
-        });
+        document.addEventListener('DOMContentLoaded', initializeThemeSystem);
     } else {
-        console.log('🚀 Theme System ready');
+        initializeThemeSystem();
     }
-
-    /**
-     * پشتیبانی از Auto Theme Detection
-     */
-    if (window.matchMedia && !localStorage.getItem('samanat_theme')) {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-        window.SamanetTheme.setTheme(prefersDark.matches ? 'dark' : 'light', false);
+    
+    function initializeThemeSystem() {
+        themeSystem = new ThemeSystem();
+        
+        // اضافه کردن به window برای دسترسی global
+        window.themeSystem = themeSystem;
+        
+        // تابع global برای سازگاری
+        window.toggleTheme = function() {
+            themeSystem.toggleTheme();
+        };
+        
+        // تابع global برای تنظیم تم
+        window.setTheme = function(theme) {
+            themeSystem.setTheme(theme);
+        };
+        
+        // تابع global برای دریافت تم فعلی
+        window.getCurrentTheme = function() {
+            return themeSystem.getCurrentTheme();
+        };
     }
+    
+    // Export برای استفاده در modules
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = ThemeSystem;
+    }
+    
+})();
 
-})(); 
+/**
+ * CSS برای انیمیشن‌های تم
+ */
+const themeTransitionCSS = `
+    .theme-transition {
+        transition: background-color 0.3s ease,
+                    color 0.3s ease,
+                    border-color 0.3s ease,
+                    box-shadow 0.3s ease !important;
+    }
+    
+    .theme-toggle {
+        transition: all 0.2s ease !important;
+    }
+    
+    .theme-toggle:active {
+        transform: scale(0.95) !important;
+    }
+    
+    #theme-icon {
+        transition: all 0.15s ease !important;
+    }
+`;
+
+// اضافه کردن CSS انیمیشن به head
+if (document.head && !document.getElementById('theme-transition-styles')) {
+    const style = document.createElement('style');
+    style.id = 'theme-transition-styles';
+    style.textContent = themeTransitionCSS;
+    document.head.appendChild(style);
+} 
