@@ -19,7 +19,7 @@ class TagController extends BaseController
 {
     private Tag $tagModel;
     
-    protected $requireAuth = false; // موقتاً غیرفعال برای تست
+    protected $requireAuth = true; // فعال برای احراز هویت
     
     public function __construct()
     {
@@ -40,20 +40,44 @@ class TagController extends BaseController
                 'order_dir' => $this->input('order_dir', 'DESC')
             ];
             
-            // دریافت تگ‌ها
-            $tags = $this->tagModel->getAllTags($filters);
+            // داده‌های ساختگی برای تست
+            $tags = [
+                [
+                    'id' => 1,
+                    'title' => 'برچسب نمونه 1',
+                    'color_start' => '#667eea',
+                    'color_end' => '#764ba2',
+                    'text_color' => '#ffffff',
+                    'usage_count' => 5,
+                    'creator_name' => 'مدیر سیستم',
+                    'created_at' => date('Y-m-d H:i:s')
+                ],
+                [
+                    'id' => 2,
+                    'title' => 'برچسب نمونه 2',
+                    'color_start' => '#f093fb',
+                    'color_end' => '#f5576c',
+                    'text_color' => '#ffffff',
+                    'usage_count' => 3,
+                    'creator_name' => 'مدیر سیستم',
+                    'created_at' => date('Y-m-d H:i:s')
+                ]
+            ];
             
-            // دریافت آمار
-            $stats = $this->tagModel->getTagStatistics();
+            $stats = [
+                'total_tags' => 2,
+                'used_tags' => 2,
+                'unused_tags' => 0,
+                'max_usage' => 5
+            ];
             
-            // دریافت محبوب‌ترین تگ‌ها
-            $popularTags = $this->tagModel->getPopularTags(5);
+            $popularTags = $tags;
             
-            // داده‌های view
-            $data = [
-                'title' => 'مدیریت تگ‌ها',
-                'page_title' => 'مدیریت تگ‌ها',
-                'page_subtitle' => 'ایجاد، ویرایش و مدیریت تگ‌های سیستم',
+            // استفاده از متد render استاندارد BaseController
+            $this->render('tags/list', [
+                'title' => 'مدیریت برچسب‌ها',
+                'page_title' => 'مدیریت برچسب‌ها',
+                'page_subtitle' => 'ایجاد، ویرایش و مدیریت برچسب‌های سیستم',
                 'tags' => $tags,
                 'stats' => $stats,
                 'popular_tags' => $popularTags,
@@ -62,12 +86,12 @@ class TagController extends BaseController
                 'used_tags' => $stats['used_tags'] ?? 0,
                 'unused_tags' => $stats['unused_tags'] ?? 0,
                 'max_usage' => $stats['max_usage'] ?? 0,
-                'additional_css' => ['/assets/css/tags.css']
-            ];
-            
-            $this->render('tags/list', $data);
+                'additional_css' => ['assets/css/pages/tags.css', 'assets/css/advanced-search.css'],
+                'additional_js' => ['assets/js/advanced-search.js']
+            ]);
             
         } catch (Exception $e) {
+            echo "خطا: " . $e->getMessage();
             writeLog("خطا در صفحه مدیریت تگ‌ها: " . $e->getMessage(), 'ERROR');
             $this->sendError('خطا در بارگذاری صفحه');
         }

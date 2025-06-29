@@ -43,8 +43,48 @@ $user_avatar = $user_info['avatar'] ?? '';
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/assets/img/favicon.ico">
     
+    <!-- Persian Font - Vazirmatn (Critical Load + Preload) -->
+    <link rel="preload" href="/assets/fonts/webfonts/Vazirmatn-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/webfonts/Vazirmatn-Medium.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/fonts/webfonts/Vazirmatn-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
+    <link href="/assets/fonts/Vazirmatn-font-face.css?v=<?= time() ?>" rel="stylesheet">
+    
     <!-- Critical CSS - Dashboard System -->
     <link href="/assets/css/dashboard.css" rel="stylesheet">
+    
+    <!-- Persian Font Critical CSS - فونت فارسی ضروری -->
+    <style>
+        /* تضمین اعمال فونت وزیرمتن در همه المان‌ها */
+        html, body, * {
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'IRANSans', 'Vazir', 'Tahoma', Arial, sans-serif !important;
+        }
+        
+        /* رفع مشکل نمایش فونت در مرورگرهای مختلف */
+        body {
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-variant-ligatures: common-ligatures;
+        }
+        
+        /* تقویت فونت برای عناصر خاص فارسی */
+        .fa, .persian-text, [lang="fa"], [dir="rtl"] {
+            font-family: 'Vazirmatn', 'IRANSans', 'Vazir', sans-serif !important;
+            font-feature-settings: 'liga' 1, 'dlig' 1;
+        }
+        
+        /* تضمین اعمال در المان‌های مشکل‌دار */
+        input, textarea, select, button, .btn, .form-control, 
+        h1, h2, h3, h4, h5, h6, p, span, div, td, th, li {
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+        }
+        
+        /* مشکل خاص با sidebar و header */
+        .sidebar-menu-link, .header-title, .header-subtitle,
+        .stat-label, .stat-value, .table-title, .panel-title, .task-text {
+            font-family: 'Vazirmatn', sans-serif !important;
+        }
+    </style>
     
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -253,6 +293,22 @@ $user_avatar = $user_info['avatar'] ?? '';
                     setTimeout(() => alert.remove(), 300);
                 }, 5000);
             });
+            
+            // Font Loading Test
+            if (document.fonts && document.fonts.check) {
+                if (document.fonts.check('1em Vazirmatn')) {
+                    console.log('✅ فونت وزیرمتن با موفقیت لود شد');
+                } else {
+                    console.warn('⚠️ فونت وزیرمتن لود نشده - در حال fallback...');
+                    document.fonts.ready.then(() => {
+                        if (document.fonts.check('1em Vazirmatn')) {
+                            console.log('✅ فونت وزیرمتن با تاخیر لود شد');
+                        } else {
+                            console.error('❌ فونت وزیرمتن لود نشد - استفاده از fallback font');
+                        }
+                    });
+                }
+            }
             
             console.log('✅ Samanet Dashboard v3.0 loaded');
         });

@@ -2,15 +2,16 @@
 /**
  * نام فایل: DashboardController.php
  * مسیر فایل: /app/controllers/DashboardController.php
- * توضیح: کنترلر داشبورد اصلی سامانت - نسخه بهینه شده
- * تاریخ بازطراحی: 1404/10/17
- * نسخه: 3.0 یکپارچه
+ * توضیح: کنترلر داشبورد اصلی سامانت - نسخه بازسازی شده
+ * تاریخ بازطراحی: 1404/10/31
+ * نسخه: 4.0 کامل
  */
 
 require_once APP_PATH . 'controllers/BaseController.php';
 require_once APP_PATH . 'models/PaymentRequest.php';
 require_once APP_PATH . 'models/User.php';
 require_once APP_PATH . 'models/Group.php';
+require_once APP_PATH . 'models/Tag.php';
 
 class DashboardController extends BaseController 
 {
@@ -18,6 +19,7 @@ class DashboardController extends BaseController
     private $paymentRequestModel;
     private $userModel;
     private $groupModel;
+    private $tagModel;
     private $db;
 
     public function __construct() 
@@ -27,10 +29,11 @@ class DashboardController extends BaseController
         $this->paymentRequestModel = new PaymentRequest();
         $this->userModel = new User();
         $this->groupModel = new Group();
+        $this->tagModel = new Tag();
     }
 
     /**
-     * نمایش داشبورد اصلی
+     * نمایش داشبورد اصلی با داده‌های واقعی
      */
     public function index() 
     {
@@ -39,21 +42,29 @@ class DashboardController extends BaseController
         $groupId = $user['group_id'];
 
         try {
-            // دریافت آمار داشبورد
-            $stats = $this->paymentRequestModel->getRequestStats($groupId);
-            $recent_requests = $this->paymentRequestModel->getRecentRequests(5, $groupId);
-            $urgent_requests = $this->paymentRequestModel->getUrgentRequests($groupId);
+            // دریافت آمار واقعی از دیتابیس
+            $stats = $this->getActualDashboardStats($groupId, $user['role']);
+            $recentRequests = $this->getActualRecentRequests($groupId, $user['role']);
+            $urgentRequests = $this->getActualUrgentRequests($groupId, $user['role']);
+            $popularTags = $this->getPopularTags();
+            
+            writeLog("Dashboard data loaded for user: {$user['id']}, group: {$groupId}", 'INFO');
 
         } catch (Exception $e) {
             writeLog("Dashboard Error: " . $e->getMessage(), "ERROR");
+            
+            // Fallback data in case of error
             $stats = [
-                'total_amount' => 12500000, 
-                'completed_requests' => 5, 
-                'pending_requests' => 2, 
-                'today_requests' => 3
+                'totalUsers' => 0,
+                'totalRequests' => 0,
+                'pendingRequests' => 0,
+                'completedRequests' => 0,
+                'totalAmount' => 0,
+                'todayRequests' => 0
             ];
-            $recent_requests = [];
-            $urgent_requests = [];
+            $recentRequests = [];
+            $urgentRequests = [];
+            $popularTags = [];
         }
         
         $this->render('dashboard/index', [
@@ -63,10 +74,162 @@ class DashboardController extends BaseController
             'current_user' => $user,
             'user' => $user,
             'stats' => $stats,
-            'recent_requests' => $recent_requests,
-            'urgent_requests' => $urgent_requests,
+            'recent_requests' => $recentRequests,
+            'urgent_requests' => $urgentRequests,
+            'popular_tags' => $popularTags,
             'additional_css' => ['/assets/css/dashboard.css']
         ]);
+    }
+
+    /**
+     * دریافت آمار واقعی داشبورد
+     */
+    private function getActualDashboardStats($groupId, $userRole) 
+    {
+        try {
+            // آمار کل کاربران (برای مدیران)
+            if ($userRole === 'admin' || $userRole === 'manager') {
+                $totalUsers = $this->userModel->count();
+            } else {
+                $totalUsers = $this->userModel->getGroupMemberCount($groupId);
+            }
+
+            // آمار درخواست‌ها
+            $requestStats = $this->paymentRequestModel->getRequestStats($groupId);
+            
+            // آمار امروز
+            $todayStats = $this->getTodayStats($groupId);
+            
+            return [
+                'totalUsers' => $totalUsers,
+                'totalRequests' => $requestStats['total'] ?? 0,
+                'pendingRequests' => $requestStats['pending'] ?? 0,
+                'completedRequests' => $requestStats['completed'] ?? 0,
+                'processingRequests' => $requestStats['processing'] ?? 0,
+                'rejectedRequests' => $requestStats['rejected'] ?? 0,
+                'totalAmount' => $requestStats['total_amount'] ?? 0,
+                'completedAmount' => $requestStats['completed_amount'] ?? 0,
+                'todayRequests' => $todayStats['total'] ?? 0,
+                'todayCompleted' => $todayStats['completed'] ?? 0,
+                'todayAmount' => $todayStats['total_amount'] ?? 0
+            ];
+
+        } catch (Exception $e) {
+            writeLog("Error getting dashboard stats: " . $e->getMessage(), 'ERROR');
+            throw $e;
+        }
+    }
+
+    /**
+     * دریافت آخرین درخواست‌های واقعی
+     */
+    private function getActualRecentRequests($groupId, $userRole) 
+    {
+        try {
+            $limit = 5;
+            
+            if ($userRole === 'admin' || $userRole === 'manager') {
+                // مدیران تمام درخواست‌ها را می‌بینند
+                return $this->paymentRequestModel->getRecentRequests($limit);
+            } else {
+                // کاربران عادی فقط درخواست‌های گروه خود را می‌بینند
+                return $this->paymentRequestModel->getRecentRequests($limit, $groupId);
+            }
+
+        } catch (Exception $e) {
+            writeLog("Error getting recent requests: " . $e->getMessage(), 'ERROR');
+            return [];
+        }
+    }
+
+    /**
+     * دریافت درخواست‌های فوری واقعی
+     */
+    private function getActualUrgentRequests($groupId, $userRole) 
+    {
+        try {
+            if ($userRole === 'admin' || $userRole === 'manager') {
+                return $this->paymentRequestModel->getUrgentRequests();
+            } else {
+                return $this->paymentRequestModel->getUrgentRequests($groupId);
+            }
+
+        } catch (Exception $e) {
+            writeLog("Error getting urgent requests: " . $e->getMessage(), 'ERROR');
+            return [];
+        }
+    }
+
+    /**
+     * دریافت تگ‌های محبوب
+     */
+    private function getPopularTags() 
+    {
+        try {
+            return $this->tagModel->getPopular(6);
+        } catch (Exception $e) {
+            writeLog("Error getting popular tags: " . $e->getMessage(), 'ERROR');
+            return [];
+        }
+    }
+
+    /**
+     * دریافت آمار امروز
+     */
+    private function getTodayStats($groupId) 
+    {
+        try {
+            $today = date('Y-m-d');
+            return $this->paymentRequestModel->getRequestStats($groupId, $today, $today);
+
+        } catch (Exception $e) {
+            writeLog("Error getting today stats: " . $e->getMessage(), 'ERROR');
+            return ['total' => 0, 'completed' => 0, 'total_amount' => 0];
+        }
+    }
+
+    /**
+     * API برای دریافت آمار زنده
+     */
+    public function getLiveStats() 
+    {
+        try {
+            $user = $this->getCurrentUser();
+            $groupId = $user['group_id'];
+            
+            $stats = $this->getActualDashboardStats($groupId, $user['role']);
+            
+            $this->json([
+                'success' => true,
+                'data' => $stats,
+                'last_update' => jdate('Y/m/d H:i:s')
+            ]);
+
+        } catch (Exception $e) {
+            $this->sendError('خطا در دریافت آمار زنده', 500);
+        }
+    }
+
+    /**
+     * API برای بروزرسانی درخواست‌های اخیر
+     */
+    public function getRecentRequestsData() 
+    {
+        try {
+            $user = $this->getCurrentUser();
+            $groupId = $user['group_id'];
+            
+            $recentRequests = $this->getActualRecentRequests($groupId, $user['role']);
+            
+            $this->json([
+                'success' => true,
+                'data' => $recentRequests,
+                'count' => count($recentRequests)
+            ]);
+
+        } catch (Exception $e) {
+            $this->sendError('خطا در دریافت درخواست‌های اخیر', 500);
+        }
     }
 
     /**
@@ -137,331 +300,6 @@ class DashboardController extends BaseController
         } catch (Exception $e) {
             writeLog("خطا در دریافت آمار داشبورد: " . $e->getMessage(), 'ERROR');
             return [];
-        }
-    }
-
-    /**
-     * دریافت آخرین درخواست‌ها
-     */
-    private function getRecentRequests($userId, $userRole, $userGroupId) 
-    {
-        try {
-            $limit = 10;
-            
-            if ($userRole === 'admin' || $userRole === 'manager') {
-                // مدیران تمام درخواست‌ها را می‌بینند
-                return $this->paymentRequestModel->getRecentRequests($limit);
-            } else {
-                // کاربران عادی فقط درخواست‌های گروه خود را می‌بینند
-                return $this->paymentRequestModel->getRecentRequests($limit, $userGroupId);
-            }
-
-        } catch (Exception $e) {
-            writeLog("خطا در دریافت آخرین درخواست‌ها: " . $e->getMessage(), 'ERROR');
-            return [];
-        }
-    }
-
-    /**
-     * دریافت درخواست‌های فوری
-     */
-    private function getUrgentRequests($userId, $userRole, $userGroupId) 
-    {
-        try {
-            if ($userRole === 'admin' || $userRole === 'manager') {
-                return $this->paymentRequestModel->getUrgentRequests();
-            } else {
-                return $this->paymentRequestModel->getUrgentRequests($userGroupId);
-            }
-
-        } catch (Exception $e) {
-            writeLog("خطا در دریافت درخواست‌های فوری: " . $e->getMessage(), 'ERROR');
-            return [];
-        }
-    }
-
-    /**
-     * دریافت درخواست‌های منقضی
-     */
-    private function getExpiredRequests($userId, $userRole, $userGroupId) 
-    {
-        try {
-            if ($userRole === 'admin' || $userRole === 'manager') {
-                return $this->paymentRequestModel->getExpiredRequests();
-            } else {
-                return $this->paymentRequestModel->getExpiredRequests($userGroupId);
-            }
-
-        } catch (Exception $e) {
-            writeLog("خطا در دریافت درخواست‌های منقضی: " . $e->getMessage(), 'ERROR');
-            return [];
-        }
-    }
-
-    /**
-     * دریافت آمار گروه
-     */
-    private function getGroupStats($groupId) 
-    {
-        try {
-            $groupDetails = $this->groupModel->getGroupDetails($groupId);
-            
-            if (!$groupDetails) {
-                return null;
-            }
-
-            return [
-                'name' => $groupDetails['name'],
-                'member_count' => $groupDetails['member_count'],
-                'request_stats' => $groupDetails['request_stats'],
-                'color' => $groupDetails['color'],
-                'icon' => $groupDetails['icon']
-            ];
-
-        } catch (Exception $e) {
-            writeLog("خطا در دریافت آمار گروه: " . $e->getMessage(), 'ERROR');
-            return null;
-        }
-    }
-
-    /**
-     * دریافت آمار ماهانه
-     */
-    private function getMonthlyStats($userId, $userRole, $userGroupId) 
-    {
-        try {
-            $currentYear = (int)jdate('Y');
-            $currentMonth = (int)jdate('n');
-            
-            $groupFilter = null;
-            if ($userRole !== 'admin' && $userRole !== 'manager') {
-                $groupFilter = $userGroupId;
-            }
-
-            $monthlyReport = $this->paymentRequestModel->getMonthlyReport($currentYear, $currentMonth, $groupFilter);
-            
-            return $monthlyReport['summary'] ?? [];
-
-        } catch (Exception $e) {
-            writeLog("خطا در دریافت آمار ماهانه: " . $e->getMessage(), 'ERROR');
-            return [];
-        }
-    }
-
-    /**
-     * دریافت داده‌های نمودار هفتگی
-     */
-    private function getWeeklyChartData($userId, $userRole, $userGroupId) 
-    {
-        try {
-            $chartData = [
-                'labels' => [],
-                'requests' => [],
-                'amounts' => []
-            ];
-
-            // دریافت آمار 7 روز گذشته
-            for ($i = 6; $i >= 0; $i--) {
-                $date = date('Y-m-d', strtotime("-{$i} days"));
-                $jalaliDate = jdate('m/d', strtotime($date));
-                
-                $chartData['labels'][] = $jalaliDate;
-
-                // آمار روزانه
-                $dayStats = $this->getDayStats($date, $userRole, $userGroupId);
-                $chartData['requests'][] = $dayStats['count'];
-                $chartData['amounts'][] = $dayStats['amount'];
-            }
-
-            return $chartData;
-
-        } catch (Exception $e) {
-            writeLog("خطا در دریافت داده‌های نمودار: " . $e->getMessage(), 'ERROR');
-            return ['labels' => [], 'requests' => [], 'amounts' => []];
-        }
-    }
-
-    /**
-     * دریافت اعلان‌های مهم
-     */
-    private function getImportantNotifications($user) 
-    {
-        try {
-            $notifications = [];
-            $groupId = $user['group_id'];
-
-            // درخواست‌های در انتظار
-            $pendingRequests = $this->paymentRequestModel->getGroupRequests($groupId, ['status' => 'pending']);
-            $pendingCount = count($pendingRequests['data'] ?? []);
-            
-            if ($pendingCount > 0) {
-                $notifications[] = [
-                    'type' => 'warning',
-                    'icon' => 'fas fa-clock',
-                    'title' => 'درخواست‌های در انتظار',
-                    'message' => fa_num($pendingCount) . ' درخواست در انتظار بررسی است',
-                    'action_url' => url('requests?status=pending'),
-                    'created_at' => jdate('Y/m/d H:i')
-                ];
-            }
-
-            // درخواست‌های تکمیل شده امروز
-            $todayCompleted = $this->getTodayCompletedCount($groupId);
-            if ($todayCompleted > 0) {
-                $notifications[] = [
-                    'type' => 'success',
-                    'icon' => 'fas fa-check-circle',
-                    'title' => 'تکمیل موفق',
-                    'message' => fa_num($todayCompleted) . ' درخواست امروز تکمیل شد',
-                    'action_url' => url('requests?status=completed'),
-                    'created_at' => jdate('Y/m/d H:i')
-                ];
-            }
-
-            return array_slice($notifications, 0, 5);
-
-        } catch (Exception $e) {
-            writeLog("خطا در دریافت اعلان‌ها: " . $e->getMessage(), 'ERROR');
-            return [];
-        }
-    }
-
-    /**
-     * دریافت تعداد درخواست‌های تکمیل شده امروز
-     */
-    private function getTodayCompletedCount($groupId) 
-    {
-        try {
-            $today = date('Y-m-d');
-            $query = "SELECT COUNT(*) as count FROM payment_requests 
-                     WHERE group_id = ? AND status = 'completed' 
-                     AND DATE(created_at) = ? AND deleted_at IS NULL";
-            
-            $result = $this->db->fetchOne($query, [$groupId, $today]);
-            return $result['count'] ?? 0;
-
-        } catch (Exception $e) {
-            return 0;
-        }
-    }
-
-    /**
-     * دریافت وظایف کاربر
-     */
-    private function getUserTasks($userId, $userRole, $userGroupId) 
-    {
-        try {
-            $tasks = [];
-
-            // درخواست‌هایی که کاربر باید بررسی کند
-            if ($userRole === 'accountant' || $userRole === 'manager' || $userRole === 'admin') {
-                $pendingRequests = $this->paymentRequestModel->getGroupRequests($userGroupId, [
-                    'status' => 'pending',
-                    'per_page' => 5
-                ]);
-
-                foreach ($pendingRequests['data'] ?? [] as $request) {
-                    $tasks[] = [
-                        'type' => 'review',
-                        'icon' => 'fas fa-eye',
-                        'title' => 'بررسی درخواست',
-                        'description' => $request['title'],
-                        'priority' => $request['priority'],
-                        'due_date' => $request['due_date'],
-                        'action_url' => url("requests/view/{$request['id']}"),
-                        'reference' => $request['reference_number']
-                    ];
-                }
-            }
-
-            // درخواست‌های کاربر که نیاز به اقدام دارند
-            $userPendingRequests = $this->paymentRequestModel->getUserRequests($userId, [
-                'status' => 'processing',
-                'per_page' => 3
-            ]);
-
-            foreach ($userPendingRequests['data'] ?? [] as $request) {
-                $tasks[] = [
-                    'type' => 'follow_up',
-                    'icon' => 'fas fa-clock',
-                    'title' => 'پیگیری درخواست',
-                    'description' => $request['title'],
-                    'priority' => $request['priority'],
-                    'due_date' => $request['due_date'],
-                    'action_url' => url("requests/view/{$request['id']}"),
-                    'reference' => $request['reference_number']
-                ];
-            }
-
-            // مرتب‌سازی بر اساس اولویت
-            usort($tasks, function($a, $b) {
-                $priorityOrder = ['urgent' => 4, 'high' => 3, 'normal' => 2, 'low' => 1];
-                $aPriority = $priorityOrder[$a['priority']] ?? 0;
-                $bPriority = $priorityOrder[$b['priority']] ?? 0;
-                return $bPriority - $aPriority;
-            });
-
-            return array_slice($tasks, 0, 8); // حداکثر 8 وظیفه
-
-        } catch (Exception $e) {
-            writeLog("خطا در دریافت وظایف کاربر: " . $e->getMessage(), 'ERROR');
-            return [];
-        }
-    }
-
-    /**
-     * API برای دریافت آمار زنده
-     */
-    public function getLiveStats() 
-    {
-        try {
-            $user = $this->getCurrentUser();
-            $groupId = $user['group_id'];
-            
-            $stats = $this->paymentRequestModel->getRequestStats($groupId);
-            
-            $this->json([
-                'success' => true,
-                'data' => $stats,
-                'last_update' => jdate('Y/m/d H:i:s')
-            ]);
-
-        } catch (Exception $e) {
-            $this->sendError('خطا در دریافت آمار زنده', 500);
-        }
-    }
-
-    /**
-     * API برای دریافت اعلان‌های جدید
-     */
-    public function getNewNotifications() 
-    {
-        try {
-            $user = $this->getCurrentUser();
-            $notifications = $this->getImportantNotifications($user);
-            
-            $this->json([
-                'success' => true,
-                'data' => $notifications,
-                'count' => count($notifications)
-            ]);
-
-        } catch (Exception $e) {
-            $this->sendError('خطا در دریافت اعلان‌ها', 500);
-        }
-    }
-
-    /**
-     * دریافت آمار امروز
-     */
-    private function getTodayStats($groupFilter = null) 
-    {
-        try {
-            $today = date('Y-m-d');
-            return $this->paymentRequestModel->getRequestStats($groupFilter, $today, $today);
-
-        } catch (Exception $e) {
-            return ['total' => 0, 'completed' => 0, 'pending' => 0];
         }
     }
 

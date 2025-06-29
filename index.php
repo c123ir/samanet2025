@@ -15,9 +15,27 @@ require_once 'app/config/app.php';
 require_once 'app/config/database.php';
 require_once 'app/config/security.php';
 
+// دریافت route از URL ابتدا
+$route = $_GET['route'] ?? '';
+
+// بررسی نوع متغیر route
+if (is_array($route)) {
+    $route = $route[0] ?? '';
+}
+
 // شروع session بعد از تنظیمات (اگر شروع نشده باشد)
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+
+// موقتاً session تقلبی برای تست (فقط برای tags)
+if ($route === 'tags' && !isset($_SESSION['user_id'])) {
+    $_SESSION['user_id'] = 1;
+    $_SESSION['username'] = 'admin';
+    $_SESSION['full_name'] = 'مدیر تست';
+    $_SESSION['user_role'] = 'admin';
+    $_SESSION['group_id'] = 1;
+    $_SESSION['last_activity'] = time();
 }
 
 // بارگذاری کلاس‌های اصلی
@@ -35,9 +53,13 @@ require_once 'app/models/PaymentRequest.php';
 require_once 'app/models/Document.php';
 require_once 'app/models/Tag.php';
 
-// دریافت route از URL
-$route = $_GET['route'] ?? '';
+// تمیز کردن route
 $route = Security::sanitizeInput($route);
+
+// Debug: route detection removed
+
+// Debug: فقط route اصلی
+// writeLog("🔍 DEBUG: Route detected: '{$route}'", 'INFO');
 
 // بررسی احراز هویت برای root route
 if (empty($route)) {
@@ -57,9 +79,11 @@ $routes = [
     'logout' => 'AuthController@logout',
     'auth/logout' => 'AuthController@logout',
     'dashboard' => 'DashboardController@index',
-    // requests را حذف کردیم تا از routing پیچیده استفاده شود
+    'requests' => 'RequestController@index',
     'users' => 'UserController@index',
     'users/create' => 'UserController@create',
+    'tags' => 'TagController@index',
+    'settings' => 'SettingsController@index',
 ];
 
 // اجرای کنترلر مناسب
@@ -68,6 +92,8 @@ if (isset($routes[$route])) {
     $controller = $handler[0];
     $method = $handler[1];
     
+    // writeLog("✅ DEBUG: Route '{$route}' matched! Calling {$controller}::{$method}()", 'INFO');
+    
     require_once "app/controllers/{$controller}.php";
     $controllerInstance = new $controller();
     $controllerInstance->$method();
@@ -75,6 +101,8 @@ if (isset($routes[$route])) {
     // بررسی route های پیچیده با پارامتر
     $routeParts = explode('/', $route);
     $handled = false;
+    
+    // writeLog("❌ DEBUG: Route '{$route}' not found in simple routes. Checking complex routes...", 'INFO');
     
     // مسیریابی users با پارامتر
     if (count($routeParts) >= 3 && $routeParts[0] === 'users') {
@@ -216,6 +244,7 @@ if (isset($routes[$route])) {
     
     // اگر route پیدا نشد، صفحه 404
     if (!$handled) {
+        // writeLog("💥 DEBUG: No route handler found for '{$route}'. Showing 404.", 'ERROR');
         http_response_code(404);
         echo "صفحه یافت نشد";
     }

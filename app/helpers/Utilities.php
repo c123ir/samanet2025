@@ -320,6 +320,86 @@ function clean_html($html) {
 }
 
 /**
+ * فرمت کردن مبلغ با کوتاه‌سازی (K, M, B)
+ * @param int|float $amount
+ * @return string
+ */
+function formatAmount($amount) {
+    if ($amount >= 1000000000) {
+        return number_format($amount / 1000000000, 1) . 'B';
+    } elseif ($amount >= 1000000) {
+        return number_format($amount / 1000000, 1) . 'M';
+    } elseif ($amount >= 1000) {
+        return number_format($amount / 1000, 1) . 'K';
+    } else {
+        return number_format($amount);
+    }
+}
+
+/**
+ * دریافت کلاس رنگ badge براساس وضعیت
+ * @param string $status
+ * @return string
+ */
+function getBadgeClass($status) {
+    switch ($status) {
+        case 'completed':
+            return 'text-success';
+        case 'pending':
+            return 'text-warning';
+        case 'processing':
+            return 'text-info';
+        case 'approved':
+            return 'text-primary';
+        case 'rejected':
+        case 'cancelled':
+            return 'text-danger';
+        default:
+            return 'text-muted';
+    }
+}
+
+/**
+ * دریافت رنگ نقش کاربر
+ * @param string $role
+ * @return string
+ */
+function getRoleColor($role) {
+    switch ($role) {
+        case 'admin':
+            return 'danger';
+        case 'manager':
+            return 'warning';
+        case 'user':
+            return 'primary';
+        case 'guest':
+            return 'secondary';
+        default:
+            return 'info';
+    }
+}
+
+/**
+ * دریافت ایکون نقش کاربر
+ * @param string $role
+ * @return string
+ */
+function getRoleIcon($role) {
+    switch ($role) {
+        case 'admin':
+            return 'fas fa-crown';
+        case 'manager':
+            return 'fas fa-user-tie';
+        case 'user':
+            return 'fas fa-user';
+        case 'guest':
+            return 'fas fa-user-clock';
+        default:
+            return 'fas fa-user-circle';
+    }
+}
+
+/**
  * debug output
  * @param mixed $data
  * @param bool $die
@@ -355,4 +435,21 @@ function log_error($message, $level = 'ERROR') {
     $log_message = "[{$timestamp}] [{$level}] {$message}" . PHP_EOL;
     
     file_put_contents($log_file, $log_message, FILE_APPEND | LOCK_EX);
+}
+
+/**
+ * دریافت کلاس badge براساس تعداد استفاده
+ * @param int $usageCount
+ * @return string
+ */
+function getUsageBadgeClass($usageCount) {
+    if ($usageCount >= 10) {
+        return 'success';
+    } elseif ($usageCount >= 5) {
+        return 'primary';
+    } elseif ($usageCount >= 1) {
+        return 'warning';
+    } else {
+        return 'secondary';
+    }
 }

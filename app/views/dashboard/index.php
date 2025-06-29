@@ -1,135 +1,58 @@
 <?php
 /**
- * SAMANET DASHBOARD VIEW - ENTERPRISE GRADE
- * نسخه: 3.0 حرفه‌ای
- * تاریخ: 1404/10/17
+ * SAMANET DASHBOARD VIEW - ENTERPRISE GRADE with REAL DATA
+ * نسخه: 4.0 کامل با داده‌های واقعی
+ * تاریخ: 1404/10/31
  * مطابق: استانداردهای MANDATORY Dashboard Design
  */
 
-// داده‌های نمونه - در نسخه واقعی از دیتابیس دریافت می‌شود
-$total_amount = 8589700000; // 8.5 میلیارد
-$completed_requests = 5;
-$today_requests = 3;
-$pending_requests = 2;
-$urgent_requests = 0;
+// Helper functions از Utilities.php استفاده می‌شوند
 
-// فرمت مبلغ
-function formatAmount($amount) {
-    if ($amount >= 1000000000) {
-        return number_format($amount / 1000000000, 1) . 'B';
-    } elseif ($amount >= 1000000) {
-        return number_format($amount / 1000000, 1) . 'M';
-    } else {
-        return number_format($amount);
-    }
-}
-
-// آخرین درخواست‌ها - نمونه داده
-$latest_requests = [
-    [
-        'id' => 'REQ2506238564',
-        'title' => 'تست جدید',
-        'amount' => 0,
-        'status' => 'pending',
-        'status_label' => 'در انتظار',
-        'status_class' => 'warning',
-        'created_at' => '1404/03/30',
-        'created_by' => 'کاربر تست'
-    ],
-    [
-        'id' => 'REQ2506232896',
-        'title' => 'تست تاریخ',
-        'amount' => 0,
-        'status' => 'pending',
-        'status_label' => 'در انتظار',
-        'status_class' => 'warning',
-        'created_at' => '1404/03/30',
-        'created_by' => 'کاربر تست'
-    ],
-    [
-        'id' => 'REQ2506232939',
-        'title' => 'درخواست تکمیل شده',
-        'amount' => 23231000,
-        'status' => 'completed',
-        'status_label' => 'تکمیل شده',
-        'status_class' => 'success',
-        'created_at' => '1404/03/30',
-        'created_by' => 'مدیر سیستم'
-    ],
-    [
-        'id' => 'REQ2506220943',
-        'title' => 'پرداخت اول',
-        'amount' => 23231000,
-        'status' => 'completed',
-        'status_label' => 'تکمیل شده',
-        'status_class' => 'success',
-        'created_at' => '1404/03/30',
-        'created_by' => 'مدیر مالی'
-    ],
-    [
-        'id' => 'REQ2506212400',
-        'title' => 'پرداخت دوم',
-        'amount' => 12400000,
-        'status' => 'completed',
-        'status_label' => 'تکمیل شده',
-        'status_class' => 'success',
-        'created_at' => '1404/03/30',
-        'created_by' => 'مدیر مالی'
-    ]
-];
-
-// تولید کلاس badge
-function getBadgeClass($status) {
-    switch ($status) {
-        case 'completed':
-            return 'text-success';
-        case 'pending':
-            return 'text-warning';
-        case 'processing':
-            return 'text-info';
-        case 'rejected':
-            return 'text-danger';
-        default:
-            return 'text-muted';
-    }
-}
+// استخراج داده‌ها از متغیرهای کنترلر
+$totalUsers = $stats['totalUsers'] ?? 0;
+$totalRequests = $stats['totalRequests'] ?? 0;
+$pendingRequests = $stats['pendingRequests'] ?? 0;
+$completedRequests = $stats['completedRequests'] ?? 0;
+$totalAmount = $stats['totalAmount'] ?? 0;
+$todayRequests = $stats['todayRequests'] ?? 0;
+$urgentCount = count($urgent_requests ?? []);
 ?>
 
 <!-- MANDATORY: Stats Row - دقیقاً مطابق استانداردها -->
 <div class="stats-row">
     <div class="stat-card-pro">
         <div class="stat-label">کل مبلغ پرداختی</div>
-        <div class="stat-value"><?= formatAmount($total_amount) ?><span style="color: var(--gray-500); font-size: 0.8em;">ریال</span></div>
+        <div class="stat-value"><?= formatAmount($totalAmount) ?><span style="color: var(--gray-500); font-size: 0.8em;">ریال</span></div>
         <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i>
-            <span>12% از ماه قبل</span>
+            <i class="fas fa-chart-line"></i>
+            <span>از ابتدای سال</span>
+        </div>
+    </div>
+    
+    <div class="stat-card-pro">
+        <div class="stat-label">کل درخواست‌ها</div>
+        <div class="stat-value"><?= number_format($totalRequests) ?></div>
+        <div class="stat-change neutral">
+            <i class="fas fa-file-alt"></i>
+            <span>در سیستم</span>
         </div>
     </div>
     
     <div class="stat-card-pro">
         <div class="stat-label">تکمیل شده</div>
-        <div class="stat-value"><?= number_format($completed_requests) ?></div>
+        <div class="stat-value"><?= number_format($completedRequests) ?></div>
         <div class="stat-change positive">
             <i class="fas fa-check-circle"></i>
-            <span>درخواست تایید شده</span>
-        </div>
-    </div>
-    
-    <div class="stat-card-pro">
-        <div class="stat-label">درخواست‌های امروز</div>
-        <div class="stat-value"><?= number_format($today_requests) ?></div>
-        <div class="stat-change neutral">
-            <i class="fas fa-calendar-day"></i>
-            <span>درخواست جدید</span>
+            <span>موفق</span>
         </div>
     </div>
     
     <div class="stat-card-pro">
         <div class="stat-label">در انتظار بررسی</div>
-        <div class="stat-value"><?= number_format($pending_requests) ?></div>
-        <div class="stat-change <?= $pending_requests > 0 ? 'negative' : 'positive' ?>">
-            <i class="fas fa-<?= $pending_requests > 0 ? 'clock' : 'check' ?>"></i>
-            <span><?= $pending_requests > 0 ? 'نیاز به بررسی' : 'همه بررسی شده' ?></span>
+        <div class="stat-value"><?= number_format($pendingRequests) ?></div>
+        <div class="stat-change <?= $pendingRequests > 0 ? 'negative' : 'positive' ?>">
+            <i class="fas fa-<?= $pendingRequests > 0 ? 'clock' : 'check' ?>"></i>
+            <span><?= $pendingRequests > 0 ? 'نیاز به بررسی' : 'همه بررسی شده' ?></span>
         </div>
     </div>
 </div>
@@ -149,12 +72,13 @@ function getBadgeClass($status) {
                     <button class="btn-icon" onclick="refreshRequests()" title="بروزرسانی">
                         <i class="fas fa-sync-alt"></i>
                     </button>
-                    <button class="btn-icon" onclick="filterRequests()" title="فیلتر">
-                        <i class="fas fa-filter"></i>
-                    </button>
+                    <a href="/?route=requests" class="btn-icon" title="همه درخواست‌ها">
+                        <i class="fas fa-list"></i>
+                    </a>
                 </div>
             </div>
 
+            <?php if (!empty($recent_requests)): ?>
             <!-- جدول دسکتاپ -->
             <table class="data-table">
                 <thead>
@@ -168,42 +92,38 @@ function getBadgeClass($status) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($latest_requests as $request): ?>
+                    <?php foreach ($recent_requests as $request): ?>
                     <tr>
                         <td>
                             <code style="background: var(--gray-100); padding: 2px 6px; border-radius: 4px; font-size: 11px;">
-                                <?= htmlspecialchars($request['id']) ?>
+                                <?= htmlspecialchars($request['reference_number'] ?? $request['id']) ?>
                             </code>
                         </td>
                         <td>
                             <div style="font-weight: 500;"><?= htmlspecialchars($request['title']) ?></div>
-                            <small style="color: var(--gray-500);">توسط <?= htmlspecialchars($request['created_by']) ?></small>
+                            <small style="color: var(--gray-500);">توسط <?= htmlspecialchars($request['created_by_name'] ?? 'نامشخص') ?></small>
                         </td>
                         <td style="text-align: left; font-family: var(--font-mono);">
-                            <?= $request['amount'] > 0 ? number_format($request['amount']) . ' ریال' : '-' ?>
+                            <?= isset($request['amount']) && $request['amount'] > 0 ? number_format($request['amount']) . ' ریال' : '-' ?>
                         </td>
                         <td>
                             <span class="<?= getBadgeClass($request['status']) ?>" style="font-weight: 500;">
                                 <i class="fas fa-circle" style="font-size: 8px; margin-left: 4px;"></i>
-                                <?= htmlspecialchars($request['status_label']) ?>
+                                <?= getStatusLabel($request['status']) ?>
                             </span>
                         </td>
                         <td style="color: var(--gray-600); font-size: 13px;">
-                            <?= htmlspecialchars($request['created_at']) ?>
+                            <?= isset($request['created_at']) ? jdate('j M Y', strtotime($request['created_at'])) : '-' ?>
                         </td>
                         <td>
                             <div style="display: flex; gap: 4px;">
-                                <button class="btn-icon" title="مشاهده" onclick="viewRequest('<?= $request['id'] ?>')">
+                                <a href="/?route=requests&action=show&id=<?= $request['id'] ?>" class="btn-icon" title="مشاهده">
                                     <i class="fas fa-eye"></i>
-                                </button>
+                                </a>
                                 <?php if ($request['status'] === 'pending'): ?>
-                                <button class="btn-icon" title="ویرایش" onclick="editRequest('<?= $request['id'] ?>')">
+                                <a href="/?route=requests&action=edit&id=<?= $request['id'] ?>" class="btn-icon" title="ویرایش">
                                     <i class="fas fa-edit"></i>
-                                </button>
-                                <?php else: ?>
-                                <button class="btn-icon" title="دانلود" onclick="downloadRequest('<?= $request['id'] ?>')">
-                                    <i class="fas fa-download"></i>
-                                </button>
+                                </a>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -214,37 +134,49 @@ function getBadgeClass($status) {
 
             <!-- لیست موبایل -->
             <div class="mobile-list">
-                <?php foreach ($latest_requests as $request): ?>
+                <?php foreach ($recent_requests as $request): ?>
                 <div class="mobile-list-item">
                     <div class="mobile-item-main">
                         <div class="mobile-item-title"><?= htmlspecialchars($request['title']) ?></div>
                         <div class="mobile-item-meta">
                             <code style="background: var(--gray-100); padding: 2px 4px; border-radius: 2px; font-size: 10px;">
-                                <?= htmlspecialchars($request['id']) ?>
+                                <?= htmlspecialchars($request['reference_number'] ?? $request['id']) ?>
                             </code>
                             •
                             <span class="<?= getBadgeClass($request['status']) ?>" style="font-weight: 500; font-size: 11px;">
-                                <?= htmlspecialchars($request['status_label']) ?>
+                                <?= getStatusLabel($request['status']) ?>
                             </span>
                             •
                             <span style="color: var(--gray-500); font-size: 11px;">
-                                <?= htmlspecialchars($request['created_at']) ?>
+                                <?= isset($request['created_at']) ? jdate('j M', strtotime($request['created_at'])) : '-' ?>
                             </span>
                         </div>
-                        <?php if ($request['amount'] > 0): ?>
+                        <?php if (isset($request['amount']) && $request['amount'] > 0): ?>
                         <div style="font-weight: 600; color: var(--primary); font-size: 12px; margin-top: 4px;">
                             <?= number_format($request['amount']) ?> ریال
                         </div>
                         <?php endif; ?>
                     </div>
                     <div class="mobile-item-actions">
-                        <button class="btn-icon" title="مشاهده" onclick="viewRequest('<?= $request['id'] ?>')">
+                        <a href="/?route=requests&action=show&id=<?= $request['id'] ?>" class="btn-icon" title="مشاهده">
                             <i class="fas fa-eye"></i>
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <?php endforeach; ?>
             </div>
+            <?php else: ?>
+            <!-- پیام خالی -->
+            <div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
+                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.5;"></i>
+                <h5>هنوز درخواستی ثبت نشده است</h5>
+                <p>اولین درخواست خود را ایجاد کنید</p>
+                <a href="/?route=requests&action=create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    ایجاد درخواست جدید
+                </a>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -257,24 +189,61 @@ function getBadgeClass($status) {
                     <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
                     درخواست‌های فوری
                 </div>
-                <span class="panel-badge" style="background: <?= $urgent_requests > 0 ? 'var(--danger)' : 'var(--success)' ?>; color: white;">
-                    <?= $urgent_requests ?>
+                <span class="panel-badge" style="background: <?= $urgentCount > 0 ? 'var(--danger)' : 'var(--success)' ?>; color: white;">
+                    <?= $urgentCount ?>
                 </span>
             </div>
             <div class="panel-body">
-                <?php if ($urgent_requests === 0): ?>
-                <div style="text-align: center; padding: var(--space-8) var(--space-4); color: var(--gray-500);">
+                <?php if (empty($urgent_requests)): ?>
+                <div style="text-align: center; padding: var(--space-6) var(--space-4); color: var(--gray-500);">
                     <i class="fas fa-check-circle" style="font-size: 2rem; color: var(--success); margin-bottom: var(--space-2);"></i>
                     <p style="margin: 0; font-size: 13px;">هیچ درخواست فوری‌ای در انتظار نیست</p>
                 </div>
                 <?php else: ?>
-                <!-- لیست درخواست‌های فوری -->
-                <div class="task-item">
-                    <span class="task-text">درخواست فوری نمونه</span>
+                <?php foreach ($urgent_requests as $urgentRequest): ?>
+                <div class="task-item" onclick="location.href='/?route=requests&action=show&id=<?= $urgentRequest['id'] ?>'" style="cursor: pointer;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <span class="task-text" style="flex: 1;"><?= htmlspecialchars($urgentRequest['title']) ?></span>
+                        <span style="background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-right: var(--space-2);">فوری</span>
+                    </div>
                 </div>
+                <?php endforeach; ?>
                 <?php endif; ?>
             </div>
         </div>
+
+        <!-- تگ‌های محبوب -->
+        <?php if (!empty($popular_tags)): ?>
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fas fa-tags" style="color: var(--info);"></i>
+                    تگ‌های محبوب
+                </div>
+                <a href="/?route=tags" class="panel-badge" style="text-decoration: none;">مشاهده همه</a>
+            </div>
+            <div class="panel-body">
+                <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                    <?php foreach ($popular_tags as $tag): ?>
+                    <span class="tag-badge" style="
+                        background: linear-gradient(135deg, <?= $tag['color_start'] ?>, <?= $tag['color_end'] ?>);
+                        color: <?= $tag['text_color'] ?>;
+                        padding: 4px 8px;
+                        border-radius: 12px;
+                        font-size: 11px;
+                        font-weight: 500;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 4px;
+                    ">
+                        <?= htmlspecialchars($tag['title']) ?>
+                        <small style="opacity: 0.8;"><?= $tag['usage_count'] ?></small>
+                    </span>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <!-- عملیات سریع -->
         <div class="panel">
@@ -285,28 +254,28 @@ function getBadgeClass($status) {
                 </div>
             </div>
             <div class="panel-body">
-                <div class="task-item" onclick="location.href='/requests/create'" style="cursor: pointer;">
+                <div class="task-item" onclick="location.href='/?route=requests&action=create'" style="cursor: pointer;">
                     <span class="task-text">
                         <i class="fas fa-plus" style="color: var(--primary); margin-left: var(--space-2);"></i>
                         ایجاد درخواست جدید
                     </span>
                 </div>
                 
-                <div class="task-item" onclick="location.href='/requests'" style="cursor: pointer;">
+                <div class="task-item" onclick="location.href='/?route=requests'" style="cursor: pointer;">
                     <span class="task-text">
                         <i class="fas fa-list" style="color: var(--info); margin-left: var(--space-2);"></i>
                         مدیریت درخواست‌ها
                     </span>
                 </div>
                 
-                <div class="task-item" onclick="location.href='/users'" style="cursor: pointer;">
+                <div class="task-item" onclick="location.href='/?route=users'" style="cursor: pointer;">
                     <span class="task-text">
                         <i class="fas fa-users" style="color: var(--success); margin-left: var(--space-2);"></i>
                         مدیریت کاربران
                     </span>
                 </div>
                 
-                <div class="task-item" onclick="location.href='/tags'" style="cursor: pointer;">
+                <div class="task-item" onclick="location.href='/?route=tags'" style="cursor: pointer;">
                     <span class="task-text">
                         <i class="fas fa-tags" style="color: var(--warning); margin-left: var(--space-2);"></i>
                         مدیریت برچسب‌ها
@@ -326,17 +295,17 @@ function getBadgeClass($status) {
             <div class="panel-body">
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-100);">
                     <span style="font-size: 12px; color: var(--gray-600);">درخواست‌های جدید</span>
-                    <span style="font-weight: 600; color: var(--primary);"><?= $today_requests ?></span>
+                    <span style="font-weight: 600; color: var(--primary);"><?= $todayRequests ?></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-100);">
                     <span style="font-size: 12px; color: var(--gray-600);">تکمیل شده</span>
-                    <span style="font-weight: 600; color: var(--success);"><?= $completed_requests ?></span>
+                    <span style="font-weight: 600; color: var(--success);"><?= $stats['todayCompleted'] ?? 0 ?></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0;">
                     <span style="font-size: 12px; color: var(--gray-600);">در انتظار</span>
-                    <span style="font-weight: 600; color: var(--warning);"><?= $pending_requests ?></span>
+                    <span style="font-weight: 600; color: var(--warning);"><?= $pendingRequests ?></span>
                 </div>
             </div>
         </div>
@@ -350,26 +319,24 @@ function refreshRequests() {
     const icon = document.querySelector('[onclick="refreshRequests()"] i');
     icon.classList.add('fa-spin');
     
-    setTimeout(() => {
+    // AJAX call to refresh data
+    fetch('/?route=dashboard&action=getRecentRequestsData', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Refresh the table content
+            location.reload(); // Simple reload for now
+        }
+    })
+    .catch(error => console.error('Error:', error))
+    .finally(() => {
         icon.classList.remove('fa-spin');
-        showAlert('درخواست‌ها بروزرسانی شد', 'success');
-    }, 1000);
-}
-
-function filterRequests() {
-    showAlert('فیلترهای پیشرفته به‌زودی اضافه می‌شود', 'info');
-}
-
-function viewRequest(id) {
-    window.location.href = `/requests/view/${id}`;
-}
-
-function editRequest(id) {
-    window.location.href = `/requests/edit/${id}`;
-}
-
-function downloadRequest(id) {
-    showAlert(`دانلود درخواست ${id} شروع شد`, 'info');
+    });
 }
 
 function showAlert(message, type = 'info') {
@@ -419,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    console.log('✅ Dashboard initialized successfully');
+    console.log('✅ Dashboard initialized with real data');
 });
 
 // CSS Animations

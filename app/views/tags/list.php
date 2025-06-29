@@ -2,14 +2,13 @@
 /**
  * نام فایل: list.php
  * مسیر فایل: /app/views/tags/list.php
- * توضیح: صفحه مدیریت تگ‌ها - نسخه بهینه شده
- * تاریخ بازطراحی: 1404/10/17
- * نسخه: 3.0 یکپارچه
+ * توضیح: صفحه مدیریت برچسب‌ها - طراحی Enterprise حرفه‌ای + ماژول جستجوی پیشرفته
+ * تاریخ بازطراحی: 1404/10/18
+ * نسخه: 4.2 Enterprise + Advanced Search - سازگار با layout اصلی
  */
 
-// تنظیم متغیرهای صفحه
-$page_title = 'مدیریت تگ‌ها';
-$page_subtitle = 'ایجاد، ویرایش و مدیریت تگ‌های سیستم';
+// Load helper functions
+require_once APP_PATH . 'helpers/Utilities.php';
 
 // دریافت پیام‌های flash
 $flash = $_SESSION['flash'] ?? null;
@@ -21,673 +20,632 @@ if ($flash) {
 $stats = $stats ?? [];
 $tags = $tags ?? [];
 $popularTags = $popular_tags ?? [];
+$filters = $filters ?? [];
 
-// Load main layout
-require_once(APP_PATH . 'views/layouts/main.php');
+// محاسبه آمار
+$totalTags = $stats['total_tags'] ?? count($tags);
+$usedTags = $stats['used_tags'] ?? array_filter($tags, fn($tag) => ($tag['usage_count'] ?? 0) > 0);
+$unusedTags = $stats['unused_tags'] ?? array_filter($tags, fn($tag) => ($tag['usage_count'] ?? 0) == 0);
+$maxUsage = $stats['max_usage'] ?? max(array_column($tags, 'usage_count') ?: [0]);
+
+// محاسبه آمار ماه جاری
+$currentMonth = date('Y-m');
+$monthlyTags = array_filter($tags, fn($tag) => date('Y-m', strtotime($tag['created_at'] ?? 'now')) === $currentMonth);
+$thisMonthCount = count($monthlyTags);
+$lastMonthCount = max(1, $totalTags - $thisMonthCount); // جلوگیری از تقسیم بر صفر
+$monthlyGrowth = round((($thisMonthCount - $lastMonthCount) / $lastMonthCount) * 100, 1);
 ?>
 
-<!-- Main Dashboard Content -->
-<div class="dashboard-pro">
-    <!-- محتوای اصلی -->
-    <div class="dashboard-content">
-        <!-- Flash Messages -->
-        <?php if (isset($flash) && $flash): ?>
-            <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : $flash['type'] ?> alert-dismissible fade show" 
-                 style="position: fixed; top: 80px; right: 20px; z-index: 9999; max-width: 400px;">
-                <i class="fas fa-<?= $flash['type'] === 'success' ? 'check-circle' : 'exclamation-triangle' ?> me-2"></i>
-                <?= htmlspecialchars($flash['message']) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        <?php endif; ?>
+<!-- Include CSS Files -->
+<link rel="stylesheet" href="<?= url('assets/css/pages/tags.css') ?>">
+<link rel="stylesheet" href="<?= url('assets/css/advanced-search.css') ?>">
 
-        <!-- ردیف آمارهای اصلی -->
-        <div class="stats-row">
-            <div class="stat-card-pro">
-                <div class="stat-label">کل تگ‌ها</div>
-                <div class="stat-value"><?= fa_num($stats['total_tags'] ?? 0) ?></div>
-                <div class="stat-change positive">
-                    <i class="fas fa-tags"></i>
-                    <span>ایجاد شده</span>
-                </div>
-            </div>
-            
-            <div class="stat-card-pro">
-                <div class="stat-label">در حال استفاده</div>
-                <div class="stat-value"><?= fa_num($stats['used_tags'] ?? 0) ?></div>
-                <div class="stat-change positive">
-                    <i class="fas fa-chart-line"></i>
-                    <span>فعال</span>
-                </div>
-            </div>
-            
-            <div class="stat-card-pro">
-                <div class="stat-label">بدون استفاده</div>
-                <div class="stat-value"><?= fa_num($stats['unused_tags'] ?? 0) ?></div>
-                <div class="stat-change neutral">
-                    <i class="fas fa-circle"></i>
-                    <span>غیرفعال</span>
-                </div>
-            </div>
-            
-            <div class="stat-card-pro">
-                <div class="stat-label">بیشترین استفاده</div>
-                <div class="stat-value"><?= fa_num($stats['max_usage'] ?? 0) ?></div>
-                <div class="stat-change positive">
-                    <i class="fas fa-crown"></i>
-                    <span>محبوب</span>
-                </div>
-            </div>
+<!-- Flash Messages -->
+<?php if ($flash): ?>
+    <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : $flash['type'] ?> alert-dismissible fade show" 
+         style="position: fixed; top: 80px; right: 20px; z-index: 9999; max-width: 400px;">
+        <i class="fas fa-<?= $flash['type'] === 'success' ? 'check-circle' : 'exclamation-triangle' ?> me-2"></i>
+        <?= htmlspecialchars($flash['message']) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<!-- Page Header Actions -->
+<div class="page-header-actions">
+    <a href="<?= url('tags?action=create') ?>" class="btn btn-primary btn-sm" title="برچسب جدید">
+        <i class="fas fa-plus"></i>
+        <span>جدید</span>
+    </a>
+</div>
+
+<!-- ردیف آمارهای فشرده -->
+<div class="stats-row">
+    <div class="stat-card-pro">
+        <div class="stat-label">کل برچسب‌ها</div>
+        <div class="stat-value"><?= number_format($totalTags) ?></div>
+        <div class="stat-change positive">
+            <i class="fas fa-tags"></i>
+            <span>ایجاد شده</span>
         </div>
+    </div>
+    
+    <div class="stat-card-pro">
+        <div class="stat-label">در حال استفاده</div>
+        <div class="stat-value"><?= is_array($usedTags) ? count($usedTags) : $usedTags ?></div>
+        <div class="stat-change positive">
+            <i class="fas fa-chart-line"></i>
+            <span>فعال</span>
+        </div>
+    </div>
+    
+    <div class="stat-card-pro">
+        <div class="stat-label">بدون استفاده</div>
+        <div class="stat-value"><?= is_array($unusedTags) ? count($unusedTags) : $unusedTags ?></div>
+        <div class="stat-change neutral">
+            <i class="fas fa-circle"></i>
+            <span>غیرفعال</span>
+        </div>
+    </div>
+    
+    <div class="stat-card-pro">
+        <div class="stat-label">بیشترین استفاده</div>
+        <div class="stat-value"><?= number_format($maxUsage) ?></div>
+        <div class="stat-change positive">
+            <i class="fas fa-crown"></i>
+            <span>محبوب</span>
+        </div>
+    </div>
+</div>
 
-        <!-- جستجوی پیشرفته -->
+<!-- ماژول جستجوی پیشرفته -->
+<div class="table-container mb-4">
+    <div class="table-header">
+        <h2 class="table-title">
+            <i class="fas fa-search"></i>
+            جستجوی پیشرفته
+        </h2>
+    </div>
+    <div class="card-body">
+        <div id="searchContainer">
+            <!-- AdvancedSearch Component اینجا ایجاد می‌شود -->
+        </div>
+    </div>
+</div>
+
+<!-- Grid اصلی -->
+<div class="dashboard-grid">
+    <!-- ستون اصلی -->
+    <div class="main-column">
         <div class="table-container">
             <div class="table-header">
                 <h2 class="table-title">
-                    <i class="fas fa-search"></i>
-                    جستجوی پیشرفته
+                    <i class="fas fa-tags"></i>
+                    لیست برچسب‌ها
+                    <span class="badge badge-primary ms-2" id="totalTagsCount"><?= count($tags) ?></span>
                 </h2>
+                <div class="table-actions">
+                    <a href="<?= url('tags?action=create') ?>" class="btn-icon btn-primary" title="برچسب جدید">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                    <button class="btn-icon" onclick="exportTags()" title="صادرات">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn-icon" onclick="refreshTagList()" title="بروزرسانی">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
             </div>
-            <div class="search-container">
-                <!-- Search input with live functionality -->
-                <div class="search-input-wrapper">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0">
-                            <i class="fas fa-search text-muted"></i>
-                        </span>
-                        <input type="text" 
-                               id="searchInput" 
-                               class="form-control border-start-0 ps-0" 
-                               placeholder="جستجو در تگ‌ها... (مثال: فوری قرمز، 19 استفاده، سیستم 1404)"
-                               autocomplete="off">
-                        <button class="btn btn-outline-secondary border-start-0" 
-                                id="clearSearch" 
-                                type="button" 
-                                style="display: none;"
-                                title="پاک کردن جستجو">
-                            <i class="fas fa-times"></i>
-                        </button>
+
+            <div id="searchResults">
+                <!-- نتایج جستجو اینجا نمایش داده می‌شوند -->
+                <!-- جدول دسکتاپ -->
+                <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>شناسه</th>
+                        <th>عنوان</th>
+                        <th>پیش‌نمایش</th>
+                        <th>تعداد استفاده</th>
+                        <th>وضعیت</th>
+                        <th>تاریخ ایجاد</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($tags)): ?>
+                        <?php foreach ($tags as $tag): ?>
+                            <tr>
+                                <td>
+                                    <code class="text-muted">#<?= $tag['id'] ?></code>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <div class="user-name"><?= htmlspecialchars($tag['title'] ?? '') ?></div>
+                                        <div class="user-email text-muted">
+                                            <?= htmlspecialchars($tag['creator_name'] ?? 'سیستم') ?>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="tag-preview-badge" 
+                                          style="background: linear-gradient(135deg, <?= $tag['color_start'] ?? '#667eea' ?>, <?= $tag['color_end'] ?? '#764ba2' ?>); 
+                                                 color: <?= $tag['text_color'] ?? '#ffffff' ?>;"
+                                          title="<?= htmlspecialchars($tag['title'] ?? '') ?>">
+                                        <?= htmlspecialchars(mb_substr($tag['title'] ?? '', 0, 10)) ?><?= mb_strlen($tag['title'] ?? '') > 10 ? '...' : '' ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-<?= getUsageBadgeClass($tag['usage_count'] ?? 0) ?>">
+                                        <?= number_format($tag['usage_count'] ?? 0) ?> استفاده
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-<?= ($tag['usage_count'] ?? 0) > 0 ? 'success' : 'secondary' ?>">
+                                        <?= ($tag['usage_count'] ?? 0) > 0 ? 'فعال' : 'غیرفعال' ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="date-info">
+                                        <div class="date-primary"><?= jdate('Y/m/d', strtotime($tag['created_at'] ?? 'now')) ?></div>
+                                        <div class="date-secondary text-muted"><?= jdate('H:i', strtotime($tag['created_at'] ?? 'now')) ?></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="table-actions">
+                                        <a href="<?= url('tags?action=edit&id=' . $tag['id']) ?>" 
+                                           class="btn-icon" title="ویرایش">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn-icon text-danger" 
+                                                onclick="deleteTag(<?= $tag['id'] ?>, '<?= htmlspecialchars($tag['title'] ?? '') ?>')" 
+                                                title="حذف">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <button class="btn-icon text-info" 
+                                                onclick="duplicateTag(<?= $tag['id'] ?>)" 
+                                                title="کپی">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="7" class="text-center py-4">
+                                <div class="empty-state">
+                                    <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">هنوز برچسبی ایجاد نشده</h5>
+                                    <p class="text-muted">برای شروع، اولین برچسب خود را ایجاد کنید</p>
+                                    <a href="<?= url('tags?action=create') ?>" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-plus me-1"></i>
+                                        ایجاد برچسب جدید
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <!-- لیست موبایل -->
+            <div class="mobile-list">
+                <?php if (!empty($tags)): ?>
+                    <?php foreach ($tags as $tag): ?>
+                        <div class="mobile-list-item">
+                            <div class="mobile-item-main">
+                                <div class="mobile-item-title"><?= htmlspecialchars($tag['title'] ?? '') ?></div>
+                                <div class="mobile-item-meta">
+                                    <span class="tag-preview-badge small" 
+                                          style="background: linear-gradient(135deg, <?= $tag['color_start'] ?? '#667eea' ?>, <?= $tag['color_end'] ?? '#764ba2' ?>); 
+                                                 color: <?= $tag['text_color'] ?? '#ffffff' ?>;">
+                                        <?= htmlspecialchars(mb_substr($tag['title'] ?? '', 0, 8)) ?>
+                                    </span>
+                                    • <span class="badge badge-<?= getUsageBadgeClass($tag['usage_count'] ?? 0) ?>"><?= number_format($tag['usage_count'] ?? 0) ?></span>
+                                    • <?= htmlspecialchars($tag['creator_name'] ?? 'سیستم') ?>
+                                </div>
+                                <div class="mobile-item-date"><?= jdate('Y/m/d H:i', strtotime($tag['created_at'] ?? 'now')) ?></div>
+                            </div>
+                            <div class="mobile-item-actions">
+                                <a href="<?= url('tags?action=edit&id=' . $tag['id']) ?>" class="btn-icon" title="ویرایش">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn-icon text-danger" onclick="deleteTag(<?= $tag['id'] ?>, '<?= htmlspecialchars($tag['title'] ?? '') ?>')" title="حذف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">هنوز برچسبی ایجاد نشده</h5>
+                        <p class="text-muted">برای شروع، اولین برچسب خود را ایجاد کنید</p>
+                        <a href="<?= url('tags?action=create') ?>" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>
+                            ایجاد برچسب جدید
+                        </a>
                     </div>
-                    <div class="search-help-text">
-                        <small class="text-muted">
-                            <i class="fas fa-lightbulb me-1"></i>
-                            نکته: با فاصله بین کلمات جستجوی دقیق‌تری داشته باشید | ESC برای پاک کردن
-                        </small>
+                <?php endif; ?>
+            </div>
+            </div> <!-- End searchResults -->
+        </div>
+    </div>
+
+    <!-- ستون جانبی -->
+    <div class="side-column">
+        <!-- فیلترهای سریع -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fas fa-filter"></i>
+                    فیلترهای سریع
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary btn-sm filter-btn active" data-filter="all">
+                        همه برچسب‌ها
+                    </button>
+                    <button class="btn btn-outline-success btn-sm filter-btn" data-filter="used">
+                        در حال استفاده
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm filter-btn" data-filter="unused">
+                        بدون استفاده
+                    </button>
+                    <button class="btn btn-outline-info btn-sm filter-btn" data-filter="popular">
+                        محبوب‌ترین
+                    </button>
+                    <button class="btn btn-outline-warning btn-sm filter-btn" data-filter="recent">
+                        جدیدترین
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- عملیات سریع -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fas fa-bolt"></i>
+                    عملیات سریع
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="quick-action" onclick="location.href='<?= url('tags?action=create') ?>'">
+                    <div class="quick-action-icon bg-primary">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="quick-action-content">
+                        <div class="quick-action-title">ایجاد برچسب</div>
+                        <div class="quick-action-desc">افزودن برچسب جدید</div>
                     </div>
                 </div>
                 
-                <!-- Live search statistics -->
-                <div class="search-stats mt-2" id="searchStats" style="display: none;">
-                    <small class="text-info">
-                        <i class="fas fa-chart-bar me-1"></i>
-                        <span id="searchResultCount">0</span> نتیجه یافت شد
-                        <span id="searchTermsDisplay"></span>
-                    </small>
+                <div class="quick-action" onclick="exportTags()">
+                    <div class="quick-action-icon bg-success">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <div class="quick-action-content">
+                        <div class="quick-action-title">صادرات لیست</div>
+                        <div class="quick-action-desc">خروجی Excel</div>
+                    </div>
+                </div>
+                
+                <div class="quick-action" onclick="bulkOperations()">
+                    <div class="quick-action-icon bg-warning">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="quick-action-content">
+                        <div class="quick-action-title">عملیات گروهی</div>
+                        <div class="quick-action-desc">مدیریت چندگانه</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Loading indicator -->
-        <div id="loadingIndicator" class="text-center p-4" style="display: none;">
-            <div class="spinner-border spinner-border-sm text-primary me-2"></div>
-            در حال جستجو...
-        </div>
-
-        <!-- No results message -->
-        <div id="noResultsMessage" class="text-center p-5" style="display: none;">
-            <div class="empty-state">
-                <i class="fas fa-search-minus fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">نتیجه‌ای یافت نشد</h5>
-                <p class="text-muted">
-                    برای عبارت جستجوی شما هیچ نتیجه‌ای یافت نشد.<br>
-                    لطفاً کلمات کلیدی دیگری امتحان کنید.
-                </p>
+        <!-- آمار ماهانه -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fas fa-chart-line"></i>
+                    آمار این ماه
+                </div>
+                <span class="panel-badge"><?= $thisMonthCount ?></span>
+            </div>
+            <div class="panel-body">
+                <div class="stat-row">
+                    <div class="stat-item">
+                        <div class="stat-value text-primary"><?= number_format($thisMonthCount) ?></div>
+                        <div class="stat-label">برچسب ایجاد شده</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value text-<?= $monthlyGrowth >= 0 ? 'success' : 'danger' ?>">
+                            <?= $monthlyGrowth >= 0 ? '+' : '' ?><?= $monthlyGrowth ?>%
+                        </div>
+                        <div class="stat-label">رشد نسبت به ماه قبل</div>
+                    </div>
+                </div>
+                
+                <div class="activity-item">
+                    <i class="fas fa-calendar text-muted"></i>
+                    <span>ماه جاری: <?= jdate('F Y') ?></span>
+                </div>
             </div>
         </div>
 
-        <!-- Grid اصلی صفحه -->
-        <div class="dashboard-grid">
-            <!-- ستون اصلی -->
-            <div class="main-column">
-                <!-- لیست تگ‌ها -->
-                <div class="table-container" id="resultsContainer">
-                    <div class="table-header">
-                        <h2 class="table-title">
-                            <i class="fas fa-list"></i>
-                            لیست تگ‌ها
-                            <span class="badge badge-primary ms-2" id="totalTagsCount"><?= count($tags) ?></span>
-                        </h2>
-                        <div class="table-actions">
-                            <a href="<?= url('tags?action=create') ?>" class="btn-icon btn-primary" title="تگ جدید">
-                                <i class="fas fa-plus"></i>
-                            </a>
-                            <button class="btn-icon" onclick="exportTags()" title="دانلود لیست">
-                                <i class="fas fa-download"></i>
-                            </button>
-                            <button class="btn-icon" onclick="refreshTagList()" title="بروزرسانی">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- جدول دسکتاپ -->
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th class="text-center" style="width: 70px;">شناسه</th>
-                                <th>عنوان</th>
-                                <th style="width: 200px;">پیش‌نمایش</th>
-                                <th class="text-center" style="width: 120px;">تعداد استفاده</th>
-                                <th>ایجاد کننده</th>
-                                <th>تاریخ ایجاد</th>
-                                <th class="text-center" style="width: 100px;">عملیات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tagsTableBody">
-                            <?php foreach ($tags as $tag): ?>
-                                <tr>
-                                    <td class="text-center">
-                                        <code>#<?= $tag['id'] ?></code>
-                                    </td>
-                                    <td>
-                                        <strong><?= htmlspecialchars($tag['title']) ?></strong>
-                                    </td>
-                                    <td>
-                                        <span class="tag-preview" 
-                                              style="background: linear-gradient(135deg, <?= $tag['color_start'] ?>, <?= $tag['color_end'] ?>); 
-                                                     color: <?= $tag['text_color'] ?>;"
-                                              title="<?= htmlspecialchars($tag['title']) ?>">
-                                            <?= htmlspecialchars($tag['title']) ?>
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge badge-<?= $tag['usage_count'] > 0 ? 'success' : 'secondary' ?>">
-                                            <?= $tag['usage_count'] ?>
-                                        </span>
-                                    </td>
-                                    <td><?= htmlspecialchars($tag['creator_name'] ?? 'سیستم') ?></td>
-                                    <td><?= jdate('Y/m/d', strtotime($tag['created_at'])) ?></td>
-                                    <td class="text-center">
-                                        <div class="table-actions">
-                                            <a href="<?= url('tags?action=edit&id=' . $tag['id']) ?>" 
-                                               class="btn-icon" title="ویرایش">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button class="btn-icon text-danger" 
-                                                    onclick="deleteTag(<?= $tag['id'] ?>)" title="حذف">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-
-                    <!-- لیست موبایل -->
-                    <div class="mobile-list" id="mobileTagsList">
-                        <?php foreach ($tags as $tag): ?>
-                            <div class="mobile-list-item">
-                                <div class="mobile-item-main">
-                                    <div class="mobile-item-title"><?= htmlspecialchars($tag['title']) ?></div>
-                                    <div class="mobile-item-meta">
-                                        <span class="tag-preview small" 
-                                              style="background: linear-gradient(135deg, <?= $tag['color_start'] ?>, <?= $tag['color_end'] ?>); 
-                                                     color: <?= $tag['text_color'] ?>;">
-                                            <?= htmlspecialchars($tag['title']) ?>
-                                        </span>
-                                        • <span class="badge badge-<?= $tag['usage_count'] > 0 ? 'success' : 'secondary' ?>"><?= $tag['usage_count'] ?> استفاده</span>
-                                    </div>
-                                    <div class="mobile-item-date"><?= jdate('Y/m/d', strtotime($tag['created_at'])) ?></div>
-                                </div>
-                                <div class="mobile-item-actions">
-                                    <a href="<?= url('tags?action=edit&id=' . $tag['id']) ?>" class="btn-icon" title="ویرایش">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button class="btn-icon text-danger" onclick="deleteTag(<?= $tag['id'] ?>)" title="حذف">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+        <!-- محبوب‌ترین برچسب‌ها -->
+        <div class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fas fa-fire"></i>
+                    محبوب‌ترین برچسب‌ها
                 </div>
+                <span class="panel-badge"><?= count($popularTags) ?></span>
             </div>
-
-            <!-- ستون جانبی -->
-            <div class="side-column">
-                <!-- محبوب‌ترین تگ‌ها -->
-                <div class="panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            <i class="fas fa-fire"></i>
-                            محبوب‌ترین تگ‌ها
+            <div class="panel-body">
+                <?php if (!empty($popularTags)): ?>
+                    <?php foreach (array_slice($popularTags, 0, 5) as $index => $tag): ?>
+                        <div class="popular-tag-item">
+                            <div class="rank-badge"><?= $index + 1 ?></div>
+                            <span class="tag-preview-mini" 
+                                  style="background: linear-gradient(135deg, <?= $tag['color_start'] ?? '#667eea' ?>, <?= $tag['color_end'] ?? '#764ba2' ?>); 
+                                         color: <?= $tag['text_color'] ?? '#ffffff' ?>;">
+                                <?= htmlspecialchars(mb_substr($tag['title'] ?? '', 0, 8)) ?>
+                            </span>
+                            <small class="text-muted"><?= number_format($tag['usage_count'] ?? 0) ?> بار</small>
                         </div>
-                        <span class="panel-badge"><?= count($popularTags) ?></span>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="empty-state text-center">
+                        <i class="fas fa-tags text-muted"></i>
+                        <p class="text-muted">هنوز آماری موجود نیست</p>
                     </div>
-                    <div class="panel-body">
-                        <?php if (!empty($popularTags)): ?>
-                            <?php foreach (array_slice($popularTags, 0, 5) as $tag): ?>
-                                <div class="popular-tag-item">
-                                    <span class="tag-preview" 
-                                          style="background: linear-gradient(135deg, <?= $tag['color_start'] ?>, <?= $tag['color_end'] ?>); 
-                                                 color: <?= $tag['text_color'] ?>;">
-                                        <?= htmlspecialchars($tag['title']) ?>
-                                    </span>
-                                    <small class="text-muted"><?= $tag['usage_count'] ?> بار</small>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <div class="empty-state">
-                                <i class="fas fa-tags"></i>
-                                <p>هنوز تگی استفاده نشده</p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <!-- عملیات سریع -->
-                <div class="panel">
-                    <div class="panel-header">
-                        <div class="panel-title">
-                            <i class="fas fa-bolt"></i>
-                            عملیات سریع
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        <div class="quick-action" onclick="location.href='<?= url('tags?action=create') ?>'">
-                            <div class="quick-action-icon bg-primary">
-                                <i class="fas fa-plus"></i>
-                            </div>
-                            <div class="quick-action-content">
-                                <div class="quick-action-title">ایجاد تگ جدید</div>
-                                <div class="quick-action-desc">افزودن تگ به سیستم</div>
-                            </div>
-                        </div>
-                        
-                        <div class="quick-action" onclick="exportTags()">
-                            <div class="quick-action-icon bg-success">
-                                <i class="fas fa-download"></i>
-                            </div>
-                            <div class="quick-action-content">
-                                <div class="quick-action-title">دانلود لیست</div>
-                                <div class="quick-action-desc">خروجی Excel تگ‌ها</div>
-                            </div>
-                        </div>
-                        
-                        <div class="quick-action" onclick="refreshTagList()">
-                            <div class="quick-action-icon bg-info">
-                                <i class="fas fa-sync-alt"></i>
-                            </div>
-                            <div class="quick-action-content">
-                                <div class="quick-action-title">به‌روزرسانی</div>
-                                <div class="quick-action-desc">بارگذاری مجدد لیست</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
 
+<!-- JavaScript -->
+<script src="<?= url('assets/js/advanced-search.js') ?>"></script>
+
 <script>
-/**
- * Advanced Search System for Tags
- */
-class TagsAdvancedSearch {
-    constructor() {
-        this.apiUrl = '<?= url('tags?action=api') ?>';
-        this.debounceDelay = 200;
-        this.currentRequest = null;
-        
-        // DOM elements
-        this.searchInput = document.getElementById('searchInput');
-        this.clearButton = document.getElementById('clearSearch');
-        this.resultsContainer = document.getElementById('resultsContainer');
-        this.loadingIndicator = document.getElementById('loadingIndicator');
-        this.noResultsMessage = document.getElementById('noResultsMessage');
-        this.searchStats = document.getElementById('searchStats');
-        this.searchResultCount = document.getElementById('searchResultCount');
-        this.searchTermsDisplay = document.getElementById('searchTermsDisplay');
-        this.totalTagsCount = document.getElementById('totalTagsCount');
-        this.tagsTableBody = document.getElementById('tagsTableBody');
-        this.mobileTagsList = document.getElementById('mobileTagsList');
-        
-        this.init();
-    }
-    
-    init() {
-        this.bindEvents();
-        this.loadInitialData();
-    }
-    
-    bindEvents() {
-        // Real-time search with debouncing
-        this.searchInput.addEventListener('input', this.debounce((e) => {
-            const query = e.target.value.trim();
-            this.performSearch(query);
-            this.toggleClearButton(query);
-        }, this.debounceDelay));
-        
-        // Clear search functionality
-        this.clearButton.addEventListener('click', () => {
-            this.clearSearch();
-        });
-        
-        // Enter key navigation to first result
-        this.searchInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.navigateToFirstResult();
-            }
-            
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                this.clearSearch();
-                this.searchInput.blur();
-            }
-        });
-        
-        // Global ESC key to clear search from anywhere
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.searchInput.value && document.activeElement !== this.searchInput) {
-                e.preventDefault();
-                this.clearSearch();
-            }
-        });
-    }
-    
-    async performSearch(query = '') {
-        try {
-            // Cancel previous request
-            if (this.currentRequest) {
-                this.currentRequest.abort();
-            }
-            
-            // Show loading state
-            this.showLoading();
-            
-            // Create new request
-            this.currentRequest = new AbortController();
-            
-            // Build search URL
-            const searchParams = new URLSearchParams({
-                search: query,
-                status: 'all'
-            });
-            
-            const response = await fetch(`${this.apiUrl}&${searchParams}`, {
-                signal: this.currentRequest.signal,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                this.displayResults(data.data, data.total, query, data.search_terms);
-            } else {
-                throw new Error(data.error || 'Search failed');
-            }
-            
-        } catch (error) {
-            if (error.name !== 'AbortError') {
-                console.error('Search error:', error);
-                this.showError('خطا در جستجو');
-            }
-        } finally {
-            this.hideLoading();
-            this.currentRequest = null;
-        }
-    }
-    
-    displayResults(results, total, query, searchTerms) {
-        // Update statistics
-        this.updateSearchStats(total, query, searchTerms);
-        
-        if (results.length === 0) {
-            this.showNoResults();
-            return;
-        }
-        
-        // Render results
-        this.renderResults(results);
-        this.hideNoResults();
-    }
-    
-    updateSearchStats(total, query, searchTerms) {
-        this.searchResultCount.textContent = total.toLocaleString('fa-IR');
-        this.totalTagsCount.textContent = total;
-        
-        if (query && searchTerms && searchTerms.length > 0) {
-            this.searchTermsDisplay.innerHTML = ` برای "<strong>${query}</strong>" (${searchTerms.length} کلمه)`;
-            this.searchStats.style.display = 'block';
-        } else {
-            this.searchStats.style.display = 'none';
-        }
-    }
-    
-    renderResults(results) {
-        let desktopHtml = '';
-        let mobileHtml = '';
-        
-        results.forEach(tag => {
-            desktopHtml += this.renderTagRow(tag);
-            mobileHtml += this.renderMobileTagCard(tag);
-        });
-        
-        this.tagsTableBody.innerHTML = desktopHtml;
-        this.mobileTagsList.innerHTML = mobileHtml;
-        
-        // Re-bind event listeners for new content
-        this.bindResultEvents();
-    }
-    
-    renderTagRow(tag) {
-        const title = tag.title_highlighted || tag.title;
-        const creatorName = tag.creator_name_highlighted || tag.creator_name || 'نامشخص';
-        
-        return `
-            <tr class="result-item" data-id="${tag.id}">
-                <td class="text-center">
-                    <code>#${tag.id}</code>
-                </td>
-                <td>
-                    <strong>${title}</strong>
-                </td>
-                <td>
-                    <span class="tag-preview" 
-                          style="background: linear-gradient(135deg, ${tag.color_start}, ${tag.color_end}); 
-                                 color: ${tag.text_color};"
-                          title="${tag.title}">
-                        ${tag.title}
-                    </span>
-                </td>
-                <td class="text-center">
-                    <span class="badge badge-${tag.usage_count > 0 ? 'success' : 'secondary'}">
-                        ${tag.usage_count}
-                    </span>
-                </td>
-                <td>${creatorName}</td>
-                <td>${tag.created_at_formatted}</td>
-                <td class="text-center">
-                    <div class="table-actions">
-                        <a href="<?= url('tags?action=edit&id=') ?>${tag.id}" 
-                           class="btn-icon" title="ویرایش">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <button class="btn-icon text-danger" 
-                                onclick="deleteTag(${tag.id})" title="حذف">
-                            <i class="fas fa-trash"></i>
-                        </button>
+// فعال‌سازی ماژول جستجوی پیشرفته
+document.addEventListener('DOMContentLoaded', function() {
+    // ایجاد instance جستجوی پیشرفته
+    apiUrl: '<?= url('api/tags.php?action=search') ?>',
+    window.tagsSearchManager = new AdvancedSearch({
+        containerSelector: '#searchContainer',
+        resultsSelector: '#searchResults',
+        placeholder: 'جستجو در برچسب‌ها...',
+        helpText: 'نام برچسب، توضیحات یا نام ایجادکننده را جستجو کنید | ESC برای پاک کردن',
+        emptyStateMessage: 'هیچ برچسبی با این مشخصات یافت نشد',
+        enableStats: true,
+        enableKeyboardShortcuts: true,
+        highlightFields: ['title', 'description', 'creator_name'],
+        customResultRenderer: function(results) {
+            // رندر سفارشی برای نتایج برچسب‌ها
+            if (!results || results.length === 0) {
+                return `
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">هیچ برچسبی یافت نشد</h5>
+                        <p class="text-muted">لطفاً کلمات کلیدی دیگری امتحان کنید</p>
                     </div>
-                </td>
-            </tr>
-        `;
-    }
-    
-    renderMobileTagCard(tag) {
-        const title = tag.title_highlighted || tag.title;
-        
-        return `
-            <div class="mobile-list-item result-item" data-id="${tag.id}">
-                <div class="mobile-item-main">
-                    <div class="mobile-item-title">${title}</div>
-                    <div class="mobile-item-meta">
-                        <span class="tag-preview small" 
-                              style="background: linear-gradient(135deg, ${tag.color_start}, ${tag.color_end}); 
-                                     color: ${tag.text_color};">
-                            ${tag.title}
-                        </span>
-                        • <span class="badge badge-${tag.usage_count > 0 ? 'success' : 'secondary'}">${tag.usage_count} استفاده</span>
-                    </div>
-                    <div class="mobile-item-date">${tag.created_at_formatted}</div>
+                `;
+            }
+            
+            // رندر جدول دسکتاپ
+            const tableHTML = `
+                <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>شناسه</th>
+                        <th>عنوان</th>
+                        <th>پیش‌نمایش</th>
+                        <th>تعداد استفاده</th>
+                        <th>وضعیت</th>
+                        <th>تاریخ ایجاد</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${results.map(tag => `
+                        <tr>
+                            <td>
+                                <code class="text-muted">#${tag.id}</code>
+                            </td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-name">${tag.title_highlighted || tag.title || ''}</div>
+                                    <div class="user-email text-muted">
+                                        ${tag.creator_name_highlighted || tag.creator_name || 'سیستم'}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="tag-preview-badge" 
+                                      style="background: linear-gradient(135deg, ${tag.color_start || '#667eea'}, ${tag.color_end || '#764ba2'}); 
+                                             color: ${tag.text_color || '#ffffff'};"
+                                      title="${tag.title || ''}">
+                                    ${(tag.title || '').substring(0, 10)}${(tag.title || '').length > 10 ? '...' : ''}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-${getUsageBadgeClass(tag.usage_count || 0)}">
+                                    ${(tag.usage_count || 0).toLocaleString('fa-IR')} استفاده
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-${(tag.usage_count || 0) > 0 ? 'success' : 'secondary'}">
+                                    ${(tag.usage_count || 0) > 0 ? 'فعال' : 'غیرفعال'}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="date-info">
+                                    <div class="date-primary">${formatJalaliDate(tag.created_at)}</div>
+                                    <div class="date-secondary text-muted">${formatJalaliTime(tag.created_at)}</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="<?= url('tags?action=edit&id=') ?>${tag.id}" class="btn-icon" title="ویرایش">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn-icon text-danger" onclick="deleteTag(${tag.id}, '${tag.title || ''}')" title="حذف">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    <button class="btn-icon text-info" onclick="duplicateTag(${tag.id})" title="کپی">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+                </table>
+                
+                <!-- لیست موبایل -->
+                <div class="mobile-list">
+                    ${results.map(tag => `
+                        <div class="mobile-list-item">
+                            <div class="mobile-item-main">
+                                <div class="mobile-item-title">${tag.title_highlighted || tag.title || ''}</div>
+                                <div class="mobile-item-meta">
+                                    <span class="tag-preview-badge small" 
+                                          style="background: linear-gradient(135deg, ${tag.color_start || '#667eea'}, ${tag.color_end || '#764ba2'}); 
+                                                 color: ${tag.text_color || '#ffffff'};">
+                                        ${(tag.title || '').substring(0, 8)}
+                                    </span>
+                                    • <span class="badge badge-${getUsageBadgeClass(tag.usage_count || 0)}">${(tag.usage_count || 0).toLocaleString('fa-IR')}</span>
+                                    • ${tag.creator_name || 'سیستم'}
+                                </div>
+                                <div class="mobile-item-date">${formatJalaliDateTime(tag.created_at)}</div>
+                            </div>
+                            <div class="mobile-item-actions">
+                                <a href="<?= url('tags?action=edit&id=') ?>${tag.id}" class="btn-icon" title="ویرایش">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn-icon text-danger" onclick="deleteTag(${tag.id}, '${tag.title || ''}')" title="حذف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
-                <div class="mobile-item-actions">
-                    <a href="<?= url('tags?action=edit&id=') ?>${tag.id}" class="btn-icon" title="ویرایش">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <button class="btn-icon text-danger" onclick="deleteTag(${tag.id})" title="حذف">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    
-    loadInitialData() {
-        this.performSearch('');
-    }
-    
-    clearSearch() {
-        this.searchInput.value = '';
-        this.toggleClearButton(false);
-        this.performSearch('');
-        this.searchInput.focus();
-    }
-    
-    toggleClearButton(show) {
-        this.clearButton.style.display = show ? 'block' : 'none';
-    }
-    
-    navigateToFirstResult() {
-        const firstResult = this.resultsContainer.querySelector('.result-item');
-        if (firstResult) {
-            firstResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            firstResult.classList.add('highlight-result');
-            setTimeout(() => {
-                firstResult.classList.remove('highlight-result');
-            }, 2000);
+            `;
+            
+            return tableHTML;
+        },
+        onSearchStart: function(query) {
+            console.log('شروع جستجو:', query);
+        },
+        onSearchComplete: function(data, query) {
+            console.log('جستجو تکمیل شد:', data.total + ' نتیجه');
+            // به‌روزرسانی شمارنده
+            const totalCounter = document.getElementById('totalTagsCount');
+            if (totalCounter) {
+                totalCounter.textContent = data.total || 0;
+            }
+        },
+        onError: function(error, query) {
+            console.error('خطا در جستجو:', error);
         }
-    }
+    });
     
-    showLoading() {
-        this.loadingIndicator.style.display = 'block';
-        this.resultsContainer.style.opacity = '0.5';
-    }
-    
-    hideLoading() {
-        this.loadingIndicator.style.display = 'none';
-        this.resultsContainer.style.opacity = '1';
-    }
-    
-    showNoResults() {
-        this.noResultsMessage.style.display = 'block';
-        this.resultsContainer.style.display = 'none';
-    }
-    
-    hideNoResults() {
-        this.noResultsMessage.style.display = 'none';
-        this.resultsContainer.style.display = 'block';
-    }
-    
-    showError(message) {
-        console.error(message);
-        this.hideLoading();
-    }
-    
-    bindResultEvents() {
-        // Add any additional event listeners for result items
-        const resultItems = this.resultsContainer.querySelectorAll('.result-item');
-        resultItems.forEach(item => {
-            // Example: hover effects, click handlers, etc.
+    // فیلترهای سریع
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // حذف active از همه دکمه‌ها
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            // اضافه کردن active به دکمه فعلی
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            // اعمال فیلتر
+            applyQuickFilter(filter);
         });
-    }
+    });
     
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
+    console.log('✅ Tags page with Advanced Search initialized');
+});
+
+// Helper functions
+function getUsageBadgeClass(usageCount) {
+    if (usageCount === 0) return 'secondary';
+    if (usageCount < 5) return 'info';
+    if (usageCount < 20) return 'warning';
+    return 'success';
+}
+
+function formatJalaliDate(dateString) {
+    // ساده‌سازی شده - باید با کتابخانه تاریخ شمسی پیاده‌سازی شود
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fa-IR');
+    } catch {
+        return dateString;
     }
 }
 
-// Global Functions
-function deleteTag(tagId) {
-    if (confirmDelete('آیا از حذف این تگ اطمینان دارید؟')) {
-        // AJAX delete request
-        fetch('<?= url('tags?action=delete') ?>', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ id: tagId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showAlert('تگ با موفقیت حذف شد', 'success');
-                window.searchSystem.performSearch(window.searchSystem.searchInput.value);
-            } else {
-                showAlert(data.message || 'خطا در حذف تگ', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showAlert('خطا در ارتباط با سرور', 'error');
-        });
+function formatJalaliTime(dateString) {
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+    } catch {
+        return '';
     }
+}
+
+function formatJalaliDateTime(dateString) {
+    return formatJalaliDate(dateString) + ' ' + formatJalaliTime(dateString);
+}
+
+function applyQuickFilter(filter) {
+    // پیاده‌سازی فیلتر سریع
+    console.log('اعمال فیلتر:', filter);
+    // TODO: پیاده‌سازی لاجیک فیلتر
+}
+
+// عملیات برچسب‌ها
+function deleteTag(id, title) {
+    if (confirm(`آیا مطمئن هستید که می‌خواهید برچسب "${title}" را حذف کنید؟`)) {
+        // TODO: پیاده‌سازی حذف
+        console.log('حذف برچسب:', id);
+    }
+}
+
+function duplicateTag(id) {
+    // TODO: پیاده‌سازی کپی
+    console.log('کپی برچسب:', id);
 }
 
 function exportTags() {
-    window.open('<?= url('tags?action=export') ?>', '_blank');
+    // TODO: پیاده‌سازی صادرات
+    console.log('صادرات برچسب‌ها');
 }
 
 function refreshTagList() {
-    if (window.searchSystem) {
-        window.searchSystem.performSearch(window.searchSystem.searchInput.value);
-        showAlert('لیست تگ‌ها بروزرسانی شد', 'success');
+    if (window.tagsSearchManager) {
+        window.tagsSearchManager.loadInitialData();
     }
 }
 
-// Initialize search system
-document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('searchInput')) {
-        window.searchSystem = new TagsAdvancedSearch();
-        console.log('✅ Tags Advanced Search System initialized');
-    }
-    
-    // انیمیشن‌های تدریجی برای کارت‌های آمار
-    const statCards = document.querySelectorAll('.stat-card-pro');
-    statCards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.1}s`;
-        card.style.animation = 'fadeInUp 0.6s ease-out forwards';
-    });
-});
+function bulkOperations() {
+    // TODO: پیاده‌سازی عملیات گروهی
+    console.log('عملیات گروهی');
+}
 </script>
 
 <?php
-// Load main layout footer
-require_once(APP_PATH . 'views/layouts/footer.php');
+// Helper function for usage badge class
+if (!function_exists('getUsageBadgeClass')) {
+    function getUsageBadgeClass($usageCount) {
+        if ($usageCount === 0) return 'secondary';
+        if ($usageCount < 5) return 'info';
+        if ($usageCount < 20) return 'warning';
+        return 'success';
+    }
+}
 ?> 

@@ -392,5 +392,77 @@ class User extends Database
     {
         $this->update($userId, ['last_activity' => date('Y-m-d H:i:s')]);
     }
+
+    /**
+     * دریافت تعداد اعضای گروه
+     */
+    public function getGroupMemberCount($groupId) 
+    {
+        try {
+            $query = "SELECT COUNT(*) as count FROM users 
+                     WHERE group_id = ? AND status = 'active'";
+            
+            $stmt = $this->getConnection()->prepare($query);
+            $stmt->execute([$groupId]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            return $result['count'] ?? 0;
+
+        } catch (Exception $e) {
+            writeLog("Error getting group member count: " . $e->getMessage(), 'ERROR');
+            return 0;
+        }
+    }
+
+    /**
+     * جستجوی پیشرفته کاربران با فیلتر - سازگار با AdvancedSearch Component
+     */
+    public function searchWithFilters($searchTerm = '', $filters = [])
+    {
+        try {
+            require_once APP_PATH . 'helpers/AdvancedSearch.php';
+            
+            // فیلدهای قابل جستجو
+            $searchFields = [
+                'username',
+                'full_name', 
+                'email',
+                'phone'
+            ];
+            
+            // آماده کردن فیلترهای اضافی
+            $additionalFilters = [];
+            
+            if (!empty($filters['role'])) {
+                $additionalFilters['role'] = $filters['role'];
+            }
+            
+            if (!empty($filters['status'])) {
+                $additionalFilters['status'] = $filters['status'];
+            }
+            
+            if (!empty($filters['group_id'])) {
+                $additionalFilters['group_id'] = $filters['group_id'];
+            }
+            
+            // اجرای جستجو
+            $results = AdvancedSearch::performSearch(
+                $this,                                           // Model object
+                $this->table,                                   // Table name
+                $searchTerm,                                    // Search term
+                $searchFields,                                  // Search fields
+                $additionalFilters,                             // Additional filters
+                [],                                             // Joins (empty for now)
+                'created_at',                                   // Order by
+                'DESC'                                          // Order direction
+            );
+            
+            return $results;
+            
+        } catch (Exception $e) {
+            writeLog("خطا در جستجوی پیشرفته کاربران: " . $e->getMessage(), 'ERROR');
+            return [];
+        }
+    }
 }
 ?>

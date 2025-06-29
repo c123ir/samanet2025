@@ -354,6 +354,16 @@ class Tag extends Database
     }
     
     /**
+     * الیاس برای getPopularTags
+     * @param int $limit
+     * @return array
+     */
+    public function getPopular(int $limit = 6): array
+    {
+        return $this->getPopularTags($limit);
+    }
+    
+    /**
      * تولید گرادینت تصادفی
      * @return array
      */

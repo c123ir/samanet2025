@@ -15,9 +15,9 @@ php_value upload_max_filesize 5M
 php_value post_max_size 10M
 php_value max_execution_time 300
 
-# فعال‌سازی HTTPS
-RewriteCond %{HTTPS} off
-RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# فعال‌سازی HTTPS (غیرفعال در development)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # Route کردن درخواست‌ها
 RewriteCond %{REQUEST_FILENAME} !-f

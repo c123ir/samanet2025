@@ -200,12 +200,12 @@ class RequestController extends BaseController
             }
 
             $this->render('requests/list', [
-                'title' => 'مدیریت درخواست‌ها',
+                'title' => 'مدیریت درخواست‌ها | سامانت',
                 'requests_data' => $requests_data,
                 'stats' => $stats,
                 'filters' => $filters,
-                'statuses' => PaymentRequest::getStatuses(),
-                'priorities' => PaymentRequest::getPriorities(),
+                'statuses' => PaymentRequest::getStatuses() ?? [],
+                'priorities' => PaymentRequest::getPriorities() ?? [],
                 'csrf_token' => $this->getCSRFToken(),
                 'additional_css' => ['css/requests.css'] // CSS یکپارچه جدید
             ]);

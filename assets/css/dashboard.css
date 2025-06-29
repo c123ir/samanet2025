@@ -44,7 +44,7 @@
     --space-12: 3rem;
     
     /* Typography - دقیقاً مطابق dashboard */
-    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Vazirmatn', sans-serif;
+    --font-sans: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'SF Mono', Monaco, monospace;
     
     /* Shadows - دقیقاً مطابق dashboard */
@@ -970,6 +970,51 @@ body {
         border: 1px solid #000 !important;
         box-shadow: none !important;
     }
+}
+
+/* ========================================
+   PERSIAN FONT ENFORCEMENT - فونت فارسی الزامی
+   ======================================== */
+
+/* تضمین اعمال فونت وزیرمتن در همه جا */
+html,
+body,
+* {
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+/* تقویت فونت برای عناصر خاص فارسی */
+.fa,
+.persian-text,
+[lang="fa"],
+[dir="rtl"] {
+    font-family: 'Vazirmatn', sans-serif !important;
+    font-feature-settings: 'liga' 1, 'dlig' 1;
+}
+
+/* بهبود نمایش فونت فارسی */
+body {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-variant-ligatures: common-ligatures;
+}
+
+/* رفع مشکل نمایش در مرورگرهای مختلف */
+@supports (font-variation-settings: normal) {
+    body {
+        font-variation-settings: 'wght' 400;
+    }
+}
+
+/* تضمین لود فونت در صورت مشکل شبکه */
+@font-face {
+    font-family: 'Vazirmatn-Fallback';
+    src: local('Vazirmatn'), 
+         local('Vazir'),
+         local('Tahoma'),
+         local('Arial');
+    font-display: swap;
 }
 
 /* ========================================

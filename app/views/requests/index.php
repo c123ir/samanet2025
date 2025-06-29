@@ -1,13 +1,16 @@
 <?php
 /**
- * نام فایل: list.php
- * مسیر فایل: /app/views/requests/list.php
+ * نام فایل: index.php
+ * مسیر فایل: /app/views/requests/index.php  
  * توضیح: صفحه مدیریت درخواست‌ها - طراحی حرفه‌ای
  * تاریخ بازطراحی: 1404/10/31
  * نسخه: 5.0 Enterprise Grade - مطابق استانداردهای UI/UX
  */
 
 // Helper functions از Utilities.php استفاده می‌شوند
+
+// Load main layout
+require_once(APP_PATH . 'views/layouts/main.php');
 
 // داده‌های صفحه
 $totalRequests = $stats['total'] ?? 0;
@@ -52,6 +55,71 @@ $completedRequests = $stats['completed'] ?? 0;
             <i class="fas fa-check-circle"></i>
             <span>موفق</span>
         </div>
+    </div>
+</div>
+
+<!-- جستجوی پیشرفته -->
+<div class="table-container">
+    <div class="table-header">
+        <h2 class="table-title">
+            <i class="fas fa-search"></i>
+            جستجوی پیشرفته
+        </h2>
+    </div>
+    <div class="search-container">
+        <!-- Search input with live functionality -->
+        <div class="search-input-wrapper">
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0">
+                    <i class="fas fa-search text-muted"></i>
+                </span>
+                <input type="text" 
+                       id="searchInput" 
+                       class="form-control border-start-0 ps-0" 
+                       placeholder="جستجو در درخواست‌ها... (مثال: حواله، REQ001، علی احمدی، 1000000)"
+                       autocomplete="off">
+                <button class="btn btn-outline-secondary border-start-0" 
+                        id="clearSearch" 
+                        type="button" 
+                        style="display: none;"
+                        title="پاک کردن جستجو">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="search-help-text">
+                <small class="text-muted">
+                    <i class="fas fa-lightbulb me-1"></i>
+                    نکته: برای جستجوی دقیق‌تر از کلمات کلیدی مثل مبلغ، نام صاحب حساب، یا شماره مرجع استفاده کنید | ESC برای پاک کردن
+                </small>
+            </div>
+        </div>
+        
+        <!-- Live search statistics -->
+        <div class="search-stats mt-2" id="searchStats" style="display: none;">
+            <small class="text-info">
+                <i class="fas fa-chart-bar me-1"></i>
+                <span id="searchResultCount">0</span> نتیجه یافت شد
+                <span id="searchTermsDisplay"></span>
+            </small>
+        </div>
+    </div>
+</div>
+
+<!-- Loading indicator -->
+<div id="loadingIndicator" class="text-center p-4" style="display: none;">
+    <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+    در حال جستجو...
+</div>
+
+<!-- No results message -->
+<div id="noResultsMessage" class="text-center p-5" style="display: none;">
+    <div class="empty-state">
+        <i class="fas fa-search-minus fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">نتیجه‌ای یافت نشد</h5>
+        <p class="text-muted">
+            برای عبارت جستجوی شما هیچ نتیجه‌ای یافت نشد.<br>
+            لطفاً کلمات کلیدی دیگری امتحان کنید.
+        </p>
     </div>
 </div>
 
@@ -399,6 +467,426 @@ $completedRequests = $stats['completed'] ?? 0;
 </div>
 
 <script>
+/**
+ * Advanced Search System for Requests
+ */
+class RequestsAdvancedSearch {
+    constructor() {
+        this.apiUrl = '/?route=requests&action=api';
+        this.debounceDelay = 200;
+        this.currentRequest = null;
+        
+        // DOM elements
+        this.searchInput = document.getElementById('searchInput');
+        this.clearButton = document.getElementById('clearSearch');
+        this.resultsContainer = document.getElementById('resultsContainer');
+        this.loadingIndicator = document.getElementById('loadingIndicator');
+        this.noResultsMessage = document.getElementById('noResultsMessage');
+        this.searchStats = document.getElementById('searchStats');
+        this.searchResultCount = document.getElementById('searchResultCount');
+        this.searchTermsDisplay = document.getElementById('searchTermsDisplay');
+        this.totalRequestsCount = document.getElementById('totalRequestsCount');
+        this.requestsTableBody = document.getElementById('requestsTableBody');
+        this.mobileRequestsList = document.getElementById('mobileRequestsList');
+        
+        this.init();
+    }
+    
+    init() {
+        this.bindEvents();
+        this.loadInitialData();
+    }
+    
+    bindEvents() {
+        // Real-time search with debouncing
+        this.searchInput.addEventListener('input', this.debounce((e) => {
+            const query = e.target.value.trim();
+            this.performSearch(query);
+            this.toggleClearButton(query);
+        }, this.debounceDelay));
+        
+        // Clear search functionality
+        this.clearButton.addEventListener('click', () => {
+            this.clearSearch();
+        });
+        
+        // Enter key navigation to first result
+        this.searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.navigateToFirstResult();
+            }
+            
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.clearSearch();
+                this.searchInput.blur();
+            }
+        });
+        
+        // Global ESC key to clear search from anywhere
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.searchInput.value && document.activeElement !== this.searchInput) {
+                e.preventDefault();
+                this.clearSearch();
+            }
+        });
+    }
+    
+    async performSearch(query = '') {
+        try {
+            // Cancel previous request
+            if (this.currentRequest) {
+                this.currentRequest.abort();
+            }
+            
+            // Show loading state
+            if (query) {
+                this.showLoading();
+            }
+            
+            // Create new request
+            this.currentRequest = new AbortController();
+            
+            // Build search URL
+            const searchParams = new URLSearchParams({
+                search: query
+            });
+            
+            const response = await fetch(`${this.apiUrl}&${searchParams}`, {
+                signal: this.currentRequest.signal,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            // Update UI with results
+            this.updateSearchResults(data, query);
+            
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Search error:', error);
+                this.showError('خطا در انجام جستجو');
+            }
+        } finally {
+            this.hideLoading();
+        }
+    }
+    
+    updateSearchResults(data, query) {
+        if (!data.success) {
+            this.showError(data.message || 'خطا در دریافت نتایج');
+            return;
+        }
+        
+        const requests = data.data || [];
+        
+        // Update counters
+        this.updateSearchStats(requests.length, query);
+        this.totalRequestsCount.textContent = requests.length;
+        
+        // Show/hide no results message
+        if (requests.length === 0 && query) {
+            this.showNoResults();
+        } else {
+            this.hideNoResults();
+        }
+        
+        // Update tables
+        this.updateDesktopTable(requests);
+        this.updateMobileList(requests);
+    }
+    
+    updateDesktopTable(requests) {
+        const tbody = this.requestsTableBody;
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        
+        requests.forEach(request => {
+            const row = this.createTableRow(request);
+            tbody.appendChild(row);
+        });
+    }
+    
+    updateMobileList(requests) {
+        const list = this.mobileRequestsList;
+        if (!list) return;
+        
+        list.innerHTML = '';
+        
+        requests.forEach(request => {
+            const item = this.createMobileItem(request);
+            list.appendChild(item);
+        });
+    }
+    
+    createTableRow(request) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="text-center">
+                <code>#${request.id}</code>
+            </td>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="status-indicator" style="width: 8px; height: 8px; border-radius: 50%; background: ${this.getStatusIndicatorColor(request.status)};"></div>
+                    <div>
+                        <div class="fw-semibold">
+                            <a href="/?route=requests&action=show&id=${request.id}" class="text-decoration-none">
+                                ${request.reference_number || 'REQ' + String(request.id).padStart(3, '0')}
+                            </a>
+                        </div>
+                        ${request.is_urgent ? '<span class="badge bg-danger small">فوری</span>' : ''}
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div>
+                    <div class="fw-medium">${request.title || 'بدون عنوان'}</div>
+                    ${request.description ? `<div class="text-muted small">${request.description.substring(0, 50)}${request.description.length > 50 ? '...' : ''}</div>` : ''}
+                </div>
+            </td>
+            <td>
+                ${request.amount ? 
+                    `<span class="fw-bold text-success">${new Intl.NumberFormat('fa-IR').format(request.amount)} ریال</span>` : 
+                    '<span class="text-muted"><i class="fas fa-minus me-1"></i>مشخص نشده</span>'
+                }
+            </td>
+            <td>
+                ${request.account_holder ? 
+                    `<div>
+                        <div class="fw-medium">${request.account_holder}</div>
+                        ${request.bank_name ? `<div class="text-muted small">${request.bank_name}</div>` : ''}
+                    </div>` : 
+                    '<span class="text-muted"><i class="fas fa-user me-1"></i>نامشخص</span>'
+                }
+            </td>
+            <td>
+                <span class="badge bg-${this.getStatusColor(request.status)}">
+                    <i class="${this.getStatusIcon(request.status)} me-1"></i>
+                    ${this.getStatusLabel(request.status)}
+                </span>
+            </td>
+            <td>
+                <span class="badge bg-${this.getPriorityColor(request.priority)}">
+                    <i class="${this.getPriorityIcon(request.priority)} me-1"></i>
+                    ${this.getPriorityLabel(request.priority)}
+                </span>
+            </td>
+            <td class="text-muted">
+                ${request.created_at ? new Date(request.created_at).toLocaleDateString('fa-IR') : new Date().toLocaleDateString('fa-IR')}
+            </td>
+            <td class="text-center">
+                <div class="btn-group btn-group-sm">
+                    <a href="/?route=requests&action=show&id=${request.id}" class="btn btn-outline-primary btn-sm" title="مشاهده جزئیات">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    ${request.status === 'pending' ? `
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="approveRequest(${request.id})" title="تایید درخواست">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="rejectRequest(${request.id})" title="رد درخواست">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </td>
+        `;
+        return row;
+    }
+    
+    createMobileItem(request) {
+        const item = document.createElement('div');
+        item.className = 'mobile-list-item';
+        item.innerHTML = `
+            <div class="mobile-item-main">
+                <div class="mobile-item-title">
+                    ${request.reference_number || 'REQ' + String(request.id).padStart(3, '0')}
+                    ${request.is_urgent ? '<span class="badge bg-danger ms-1">فوری</span>' : ''}
+                </div>
+                <div class="mobile-item-meta">
+                    <span class="badge bg-${this.getStatusColor(request.status)}">${this.getStatusLabel(request.status)}</span>
+                    • <span class="badge bg-${this.getPriorityColor(request.priority)}">${this.getPriorityLabel(request.priority)}</span>
+                    ${request.amount ? `• <span class="text-success fw-bold">${new Intl.NumberFormat('fa-IR').format(request.amount)} ریال</span>` : ''}
+                </div>
+                <div class="mobile-item-date">${request.title || 'بدون عنوان'}</div>
+            </div>
+            <div class="mobile-item-actions">
+                <a href="/?route=requests&action=show&id=${request.id}" class="btn-icon" title="مشاهده">
+                    <i class="fas fa-eye"></i>
+                </a>
+                ${request.status === 'pending' ? `
+                    <button class="btn-icon text-success" onclick="approveRequest(${request.id})" title="تایید">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="btn-icon text-danger" onclick="rejectRequest(${request.id})" title="رد">
+                        <i class="fas fa-times"></i>
+                    </button>
+                ` : ''}
+            </div>
+        `;
+        return item;
+    }
+    
+    // Helper methods for colors and icons
+    getStatusIndicatorColor(status) {
+        const colors = {
+            'pending': '#F59E0B',
+            'processing': '#3B82F6', 
+            'completed': '#10B981',
+            'rejected': '#EF4444'
+        };
+        return colors[status] || '#6B7280';
+    }
+    
+    getStatusColor(status) {
+        const colors = {
+            'pending': 'warning',
+            'processing': 'info',
+            'completed': 'success', 
+            'rejected': 'danger'
+        };
+        return colors[status] || 'secondary';
+    }
+    
+    getStatusIcon(status) {
+        const icons = {
+            'pending': 'fas fa-clock',
+            'processing': 'fas fa-sync-alt',
+            'completed': 'fas fa-check-circle',
+            'rejected': 'fas fa-times-circle'
+        };
+        return icons[status] || 'fas fa-question-circle';
+    }
+    
+    getStatusLabel(status) {
+        const labels = {
+            'pending': 'در انتظار',
+            'processing': 'در حال بررسی',
+            'completed': 'تکمیل شده',
+            'rejected': 'رد شده'
+        };
+        return labels[status] || 'نامشخص';
+    }
+    
+    getPriorityColor(priority) {
+        const colors = {
+            'low': 'info',
+            'normal': 'secondary',
+            'high': 'warning',
+            'urgent': 'danger'
+        };
+        return colors[priority] || 'secondary';
+    }
+    
+    getPriorityIcon(priority) {
+        const icons = {
+            'low': 'fas fa-arrow-down',
+            'normal': 'fas fa-minus',
+            'high': 'fas fa-arrow-up',
+            'urgent': 'fas fa-exclamation-triangle'
+        };
+        return icons[priority] || 'fas fa-minus';
+    }
+    
+    getPriorityLabel(priority) {
+        const labels = {
+            'low': 'کم',
+            'normal': 'معمولی',
+            'high': 'بالا',
+            'urgent': 'فوری'
+        };
+        return labels[priority] || 'معمولی';
+    }
+    
+    // UI state management methods
+    showLoading() {
+        if (this.loadingIndicator) {
+            this.loadingIndicator.style.display = 'block';
+        }
+        this.hideNoResults();
+    }
+    
+    hideLoading() {
+        if (this.loadingIndicator) {
+            this.loadingIndicator.style.display = 'none';
+        }
+    }
+    
+    showNoResults() {
+        if (this.noResultsMessage) {
+            this.noResultsMessage.style.display = 'block';
+        }
+    }
+    
+    hideNoResults() {
+        if (this.noResultsMessage) {
+            this.noResultsMessage.style.display = 'none';
+        }
+    }
+    
+    showError(message) {
+        console.error('Search error:', message);
+        // You can implement a toast notification here
+    }
+    
+    updateSearchStats(count, query) {
+        if (this.searchStats && this.searchResultCount) {
+            if (query) {
+                this.searchResultCount.textContent = count;
+                this.searchTermsDisplay.textContent = ` برای "${query}"`;
+                this.searchStats.style.display = 'block';
+            } else {
+                this.searchStats.style.display = 'none';
+            }
+        }
+    }
+    
+    toggleClearButton(query) {
+        if (this.clearButton) {
+            this.clearButton.style.display = query ? 'block' : 'none';
+        }
+    }
+    
+    clearSearch() {
+        this.searchInput.value = '';
+        this.toggleClearButton('');
+        this.performSearch('');
+        this.hideNoResults();
+    }
+    
+    navigateToFirstResult() {
+        const firstLink = document.querySelector('#requestsTableBody a, #mobileRequestsList a');
+        if (firstLink) {
+            firstLink.click();
+        }
+    }
+    
+    loadInitialData() {
+        // Load initial data without search query
+        this.performSearch('');
+    }
+    
+    // Utility function for debouncing
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+}
+
 // Global functions for request management
 function approveRequest(requestId) {
     if (confirm('آیا از تایید این درخواست اطمینان دارید؟')) {
@@ -456,8 +944,9 @@ function clearAllFilters() {
     location.href = '/?route=requests';
 }
 
-// Initialize when DOM is ready
+// Initialize the search system when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Requests Page loaded with Professional UI/UX Standards');
+    window.requestsSearch = new RequestsAdvancedSearch();
+    console.log('✅ Requests Advanced Search System initialized');
 });
-</script>
+</script> 
