@@ -2,15 +2,15 @@
 /**
  * نام فایل: list.php
  * مسیر فایل: /app/views/requests/list.php
- * توضیح: صفحه لیست درخواست‌های حواله - Bootstrap 5 استاندارد
+ * توضیح: صفحه لیست درخواست‌های حواله - Header/Sidebar یکپارچه
  * تاریخ بازطراحی: 1404/10/16
- * نسخه: 3.0 (Layout-based)
+ * نسخه: 4.0 یکپارچه (Bootstrap 5 + Header/Sidebar)
  */
 ?>
 
 <!-- Page-specific CSS -->
+<link href="/assets/css/requests.css" rel="stylesheet">
 <link href="/assets/css/advanced-search.css" rel="stylesheet">
-<link href="/assets/css/requests-compact.css" rel="stylesheet">
 
 <div class="dashboard-main">
     <!-- Flash Messages -->
@@ -70,7 +70,7 @@
         </div>
     </div>
 
-    <!-- Professional Compact Search Bar -->
+    <!-- Professional Search Filter Bar -->
     <div class="search-filter-bar animate-fade-in animate-delay-4">
         <div class="row g-2 align-items-center">
             <!-- جستجو -->
@@ -81,9 +81,7 @@
             <!-- فیلتر وضعیت -->
             <div class="col-6 col-md-2 col-lg-2">
                 <select id="statusFilter" class="form-select form-select-sm">
-                    <option value="" selected>
-                        <i class="fas fa-list"></i> همه وضعیت‌ها
-                    </option>
+                    <option value="" selected>همه وضعیت‌ها</option>
                     <?php if (isset($statuses)): ?>
                         <?php foreach ($statuses as $value => $label): ?>
                             <option value="<?= $value ?>" <?= ($filters['status'] ?? '') === $value ? 'selected' : '' ?>>
@@ -112,19 +110,19 @@
             <div class="col-12 col-md-4 col-lg-5">
                 <div class="d-flex gap-1 justify-content-md-end">
                     <button type="button" class="btn btn-light btn-sm px-2 py-1" 
-                            onclick="requestSearch.setQuickFilter('status', 'pending')" 
+                            onclick="setQuickFilter('status', 'pending')" 
                             data-bs-toggle="tooltip" title="نمایش در انتظار">
                         <i class="fas fa-clock"></i>
                         <span class="d-none d-sm-inline ms-1">در انتظار</span>
                     </button>
                     <button type="button" class="btn btn-light btn-sm px-2 py-1" 
-                            onclick="requestSearch.setQuickFilter('priority', 'urgent')"
+                            onclick="setQuickFilter('priority', 'urgent')"
                             data-bs-toggle="tooltip" title="نمایش فوری‌ها">
                         <i class="fas fa-exclamation text-danger"></i>
                         <span class="d-none d-sm-inline ms-1">فوری</span>
                     </button>
                     <button type="button" class="btn btn-light btn-sm px-2 py-1" 
-                            onclick="requestSearch.clearFilters()"
+                            onclick="clearFilters()"
                             data-bs-toggle="tooltip" title="پاک کردن فیلترها">
                         <i class="fas fa-filter-circle-xmark"></i>
                     </button>
@@ -290,7 +288,7 @@
                     </div>
 
                     <!-- Mobile Cards View -->
-                    <div class="d-md-none">
+                    <div class="mobile-list d-md-none">
                         <?php foreach ($requests_data['data'] as $request): ?>
                             <div class="p-3 border-bottom">
                                 <div class="d-flex align-items-start gap-3">
@@ -387,15 +385,15 @@
                 
                 <?php else: ?>
                 <div class="dashboard-card-body text-center py-5">
-                    <div class="mb-3">
-                        <i class="fas fa-file-invoice-dollar fa-3x text-muted"></i>
+                    <div class="empty-state">
+                        <i class="fas fa-file-invoice-dollar fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">هیچ درخواستی یافت نشد</h5>
+                        <p class="text-muted">هنوز درخواستی در سیستم ثبت نشده است یا درخواستی با این فیلترها وجود ندارد</p>
+                        <a href="<?= url('requests/create') ?>" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            ایجاد اولین درخواست
+                        </a>
                     </div>
-                    <h5 class="text-muted">هیچ درخواستی یافت نشد</h5>
-                    <p class="text-muted">هنوز درخواستی در سیستم ثبت نشده است یا درخواستی با این فیلترها وجود ندارد</p>
-                    <a href="<?= url('requests/create') ?>" class="btn btn-dashboard btn-dashboard-primary">
-                        <i class="fas fa-plus me-2"></i>
-                        ایجاد اولین درخواست
-                    </a>
                 </div>
                 <?php endif; ?>
             </div>
@@ -646,17 +644,21 @@ function refreshTable() {
 }
 
 function clearFilters() {
-    if (requestSearch) {
-        requestSearch.clearFilters();
-    } else {
-        // Fallback برای صورتی که requestSearch آماده نباشد
-        const statusFilter = document.getElementById('statusFilter');
-        const priorityFilter = document.getElementById('priorityFilter');
-        
-        if (statusFilter) statusFilter.value = '';
-        if (priorityFilter) priorityFilter.value = '';
-        
-        location.reload();
+    const statusFilter = document.getElementById('statusFilter');
+    const priorityFilter = document.getElementById('priorityFilter');
+    
+    if (statusFilter) statusFilter.value = '';
+    if (priorityFilter) priorityFilter.value = '';
+    
+    location.reload();
+}
+
+function setQuickFilter(field, value) {
+    const filterElement = document.getElementById(field + 'Filter');
+    if (filterElement) {
+        filterElement.value = value;
+        // Trigger change event
+        filterElement.dispatchEvent(new Event('change'));
     }
 }
 
@@ -678,7 +680,7 @@ document.addEventListener('DOMContentLoaded', function() {
         containerSelector: '#requestAdvancedSearch',
         resultsSelector: '.dashboard-table tbody',
         apiUrl: '<?= url('requests') ?>&action=api',
-        placeholder: 'جستجو... (Ctrl+K)',
+        placeholder: 'جستجو در درخواست‌ها... (مثال: فوری REQ001، علی احمدی)',
         helpText: '',
         debounceDelay: 300,
         enableStats: false,
@@ -748,7 +750,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         onSearchComplete: function(results, searchTerm) {
             console.log('جستجو تکمیل شد:', results.length, 'نتیجه برای', searchTerm);
-            updatePageResults(results);
         },
         
         onSearchError: function(error) {
@@ -759,11 +760,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // اتصال فیلترها
     document.getElementById('statusFilter').addEventListener('change', function() {
-        requestSearch.setFilter('status', this.value);
+        // می‌توان فیلتر را اعمال کرد
+        const url = new URL(window.location);
+        if (this.value) {
+            url.searchParams.set('status', this.value);
+        } else {
+            url.searchParams.delete('status');
+        }
+        window.location.href = url.toString();
     });
     
     document.getElementById('priorityFilter').addEventListener('change', function() {
-        requestSearch.setFilter('priority', this.value);
+        // می‌توان فیلتر را اعمال کرد
+        const url = new URL(window.location);
+        if (this.value) {
+            url.searchParams.set('priority', this.value);
+        } else {
+            url.searchParams.delete('priority');
+        }
+        window.location.href = url.toString();
     });
     
     // Keyboard shortcut برای جستجو (Ctrl+K)
@@ -828,12 +843,6 @@ function getPriorityColorForResult(priority) {
 
 function formatAmount(amount) {
     return new Intl.NumberFormat('fa-IR').format(amount);
-}
-
-function updatePageResults(results) {
-    // می‌توان نتایج را در صفحه به‌روزرسانی کرد
-    console.log('نتایج جدید:', results);
-    // اختیاری: صفحه را reload کن یا نتایج را dynamic به‌روزرسانی کن
 }
 
 function showErrorMessage(message) {

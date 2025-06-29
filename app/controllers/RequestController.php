@@ -207,7 +207,7 @@ class RequestController extends BaseController
                 'statuses' => PaymentRequest::getStatuses(),
                 'priorities' => PaymentRequest::getPriorities(),
                 'csrf_token' => $this->getCSRFToken(),
-                'additional_css' => ['css/bootstrap-dashboard.css'] // Bootstrap 5 استاندارد
+                'additional_css' => ['css/requests.css'] // CSS یکپارچه جدید
             ]);
 
         } catch (Exception $e) {

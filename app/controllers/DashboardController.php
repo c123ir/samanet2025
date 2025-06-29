@@ -2,9 +2,9 @@
 /**
  * نام فایل: DashboardController.php
  * مسیر فایل: /app/controllers/DashboardController.php
- * توضیح: کنترلر داشبورد اصلی سامانت
- * تاریخ ایجاد: 1404/03/31
- * نویسنده: توسعه‌دهنده سامانت
+ * توضیح: کنترلر داشبورد اصلی سامانت - نسخه بهینه شده
+ * تاریخ بازطراحی: 1404/10/17
+ * نسخه: 3.0 یکپارچه
  */
 
 require_once APP_PATH . 'controllers/BaseController.php';
@@ -39,15 +39,19 @@ class DashboardController extends BaseController
         $groupId = $user['group_id'];
 
         try {
-            // Fetch all necessary data in a more optimized way
+            // دریافت آمار داشبورد
             $stats = $this->paymentRequestModel->getRequestStats($groupId);
             $recent_requests = $this->paymentRequestModel->getRecentRequests(5, $groupId);
             $urgent_requests = $this->paymentRequestModel->getUrgentRequests($groupId);
 
         } catch (Exception $e) {
-            // Provide fallback data in case of DB error
             writeLog("Dashboard Error: " . $e->getMessage(), "ERROR");
-            $stats = ['total_amount' => 12500000, 'completed_requests' => 195, 'pending_requests' => 18, 'today_requests' => 8];
+            $stats = [
+                'total_amount' => 12500000, 
+                'completed_requests' => 5, 
+                'pending_requests' => 2, 
+                'today_requests' => 3
+            ];
             $recent_requests = [];
             $urgent_requests = [];
         }
@@ -55,7 +59,7 @@ class DashboardController extends BaseController
         $this->render('dashboard/index', [
             'title' => 'داشبورد سامانت',
             'page_title' => 'داشبورد سامانت',
-            'page_subtitle' => 'خوش آمدید، در اینجا یک نمای کلی از فعالیت‌های سیستم را مشاهده می‌کنید',
+            'page_subtitle' => 'خلاصه‌ای از وضعیت سیستم',
             'current_user' => $user,
             'user' => $user,
             'stats' => $stats,
@@ -280,13 +284,16 @@ class DashboardController extends BaseController
     /**
      * دریافت اعلان‌های مهم
      */
-    private function getImportantNotifications($userId, $userRole, $userGroupId) 
+    private function getImportantNotifications($user) 
     {
         try {
             $notifications = [];
+            $groupId = $user['group_id'];
 
-            // درخواست‌های نیازمند توجه
-            $pendingCount = count($this->paymentRequestModel->getGroupRequests($userGroupId, ['status' => 'pending'])['data'] ?? []);
+            // درخواست‌های در انتظار
+            $pendingRequests = $this->paymentRequestModel->getGroupRequests($groupId, ['status' => 'pending']);
+            $pendingCount = count($pendingRequests['data'] ?? []);
+            
             if ($pendingCount > 0) {
                 $notifications[] = [
                     'type' => 'warning',
@@ -298,52 +305,43 @@ class DashboardController extends BaseController
                 ];
             }
 
-            // درخواست‌های منقضی
-            $expiredRequests = $this->getExpiredRequests($userId, $userRole, $userGroupId);
-            if (count($expiredRequests) > 0) {
-                $notifications[] = [
-                    'type' => 'danger',
-                    'icon' => 'fas fa-exclamation-triangle',
-                    'title' => 'درخواست‌های منقضی',
-                    'message' => fa_num(count($expiredRequests)) . ' درخواست از موعد مقرر گذشته است',
-                    'action_url' => url('requests?expired=1'),
-                    'created_at' => jdate('Y/m/d H:i')
-                ];
-            }
-
-            // آمار مثبت (تکمیل درخواست‌ها)
-            $completedToday = $this->getTodayStats($userGroupId)['completed'] ?? 0;
-            if ($completedToday > 0) {
+            // درخواست‌های تکمیل شده امروز
+            $todayCompleted = $this->getTodayCompletedCount($groupId);
+            if ($todayCompleted > 0) {
                 $notifications[] = [
                     'type' => 'success',
                     'icon' => 'fas fa-check-circle',
                     'title' => 'تکمیل موفق',
-                    'message' => fa_num($completedToday) . ' درخواست امروز تکمیل شد',
+                    'message' => fa_num($todayCompleted) . ' درخواست امروز تکمیل شد',
                     'action_url' => url('requests?status=completed'),
                     'created_at' => jdate('Y/m/d H:i')
                 ];
             }
 
-            // اگر مدیر است، اعلان‌های مدیریتی اضافه کن
-            if ($userRole === 'admin' || $userRole === 'manager') {
-                $newUsersToday = $this->getNewUsersToday();
-                if ($newUsersToday > 0) {
-                    $notifications[] = [
-                        'type' => 'info',
-                        'icon' => 'fas fa-user-plus',
-                        'title' => 'کاربران جدید',
-                        'message' => fa_num($newUsersToday) . ' کاربر امروز ثبت‌نام کرده است',
-                        'action_url' => url('users'),
-                        'created_at' => jdate('Y/m/d H:i')
-                    ];
-                }
-            }
-
-            return array_slice($notifications, 0, 5); // حداکثر 5 اعلان
+            return array_slice($notifications, 0, 5);
 
         } catch (Exception $e) {
             writeLog("خطا در دریافت اعلان‌ها: " . $e->getMessage(), 'ERROR');
             return [];
+        }
+    }
+
+    /**
+     * دریافت تعداد درخواست‌های تکمیل شده امروز
+     */
+    private function getTodayCompletedCount($groupId) 
+    {
+        try {
+            $today = date('Y-m-d');
+            $query = "SELECT COUNT(*) as count FROM payment_requests 
+                     WHERE group_id = ? AND status = 'completed' 
+                     AND DATE(created_at) = ? AND deleted_at IS NULL";
+            
+            $result = $this->db->fetchOne($query, [$groupId, $today]);
+            return $result['count'] ?? 0;
+
+        } catch (Exception $e) {
+            return 0;
         }
     }
 
@@ -417,14 +415,14 @@ class DashboardController extends BaseController
     public function getLiveStats() 
     {
         try {
-            $userId = $_SESSION['user_id'];
-            $userRole = $_SESSION['user_role'];
-            $userGroupId = $_SESSION['group_id'];
-
-            $stats = $this->getDashboardStats($userId, $userRole, $userGroupId);
+            $user = $this->getCurrentUser();
+            $groupId = $user['group_id'];
+            
+            $stats = $this->paymentRequestModel->getRequestStats($groupId);
             
             $this->json([
-                'stats' => $stats,
+                'success' => true,
+                'data' => $stats,
                 'last_update' => jdate('Y/m/d H:i:s')
             ]);
 
@@ -439,14 +437,12 @@ class DashboardController extends BaseController
     public function getNewNotifications() 
     {
         try {
-            $userId = $_SESSION['user_id'];
-            $userRole = $_SESSION['user_role'];
-            $userGroupId = $_SESSION['group_id'];
-
-            $notifications = $this->getImportantNotifications($userId, $userRole, $userGroupId);
+            $user = $this->getCurrentUser();
+            $notifications = $this->getImportantNotifications($user);
             
             $this->json([
-                'notifications' => $notifications,
+                'success' => true,
+                'data' => $notifications,
                 'count' => count($notifications)
             ]);
 
@@ -591,22 +587,27 @@ class DashboardController extends BaseController
     }
 
     /**
-     * صفحه راهنما
+     * راهنمای سیستم
      */
     public function help() 
     {
-        $this->data['page_title'] = 'راهنمای استفاده از سامانت';
-        $this->view('dashboard/help');
+        $this->render('dashboard/help', [
+            'title' => 'راهنمای سیستم',
+            'page_title' => 'راهنمای استفاده از سامانت',
+            'additional_css' => ['/assets/css/dashboard.css']
+        ]);
     }
 
     /**
-     * صفحه درباره سامانت
+     * درباره سیستم
      */
     public function about() 
     {
-        $this->data['page_title'] = 'درباره سامانت';
-        $this->data['version'] = APP_VERSION;
-        $this->view('dashboard/about');
+        $this->render('dashboard/about', [
+            'title' => 'درباره سامانت',
+            'page_title' => 'اطلاعات سیستم',
+            'additional_css' => ['/assets/css/dashboard.css']
+        ]);
     }
 }
 ?>

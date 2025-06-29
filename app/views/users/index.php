@@ -2,9 +2,9 @@
 /**
  * نام فایل: index.php
  * مسیر فایل: /app/views/users/index.php
- * توضیح: صفحه مدیریت کاربران - Bootstrap 5 استاندارد
- * تاریخ بازطراحی: 1404/10/16
- * نسخه: 2.0 Bootstrap Standard
+ * توضیح: صفحه مدیریت کاربران - یکپارچه با Header/Sidebar
+ * تاریخ بازطراحی: 1404/10/17
+ * نسخه: 3.0 یکپارچه
  */
 
 // تابع دریافت رنگ نقش
@@ -37,7 +37,7 @@ require_once(APP_PATH . 'views/layouts/main.php');
 <link href="/assets/css/users.css" rel="stylesheet">
 
 <!-- Page Content -->
-<div class="users-page">
+<div class="users-page animate-fade-in-up">
     <div class="dashboard-container">
         <!-- Header -->
         <header class="dashboard-header">
@@ -536,10 +536,21 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         const alerts = document.querySelectorAll('.alert');
         alerts.forEach(alert => {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
+            if (bootstrap.Alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }
         });
     }, 5000);
+    
+    // Test localStorage for theme persistence
+    try {
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+        console.log('✅ localStorage کار می‌کند');
+    } catch (error) {
+        console.error('❌ localStorage در دسترس نیست:', error);
+    }
 });
 </script>
 

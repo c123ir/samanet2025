@@ -2,9 +2,9 @@
 /**
  * نام فایل: TagController.php
  * مسیر: /app/controllers/TagController.php
- * توضیح: کنترلر مدیریت تگ‌ها - Enterprise Grade
- * تاریخ ایجاد: 1404/10/15
- * نسخه: 1.0 حرفه‌ای
+ * توضیح: کنترلر مدیریت تگ‌ها - نسخه بهینه شده
+ * تاریخ بازطراحی: 1404/10/17
+ * نسخه: 3.0 یکپارچه
  */
 
 declare(strict_types=1);
@@ -53,6 +53,7 @@ class TagController extends BaseController
             $data = [
                 'title' => 'مدیریت تگ‌ها',
                 'page_title' => 'مدیریت تگ‌ها',
+                'page_subtitle' => 'ایجاد، ویرایش و مدیریت تگ‌های سیستم',
                 'tags' => $tags,
                 'stats' => $stats,
                 'popular_tags' => $popularTags,
@@ -61,7 +62,7 @@ class TagController extends BaseController
                 'used_tags' => $stats['used_tags'] ?? 0,
                 'unused_tags' => $stats['unused_tags'] ?? 0,
                 'max_usage' => $stats['max_usage'] ?? 0,
-                'additional_css' => ['css/bootstrap-dashboard.css']
+                'additional_css' => ['/assets/css/tags.css']
             ];
             
             $this->render('tags/list', $data);
@@ -83,14 +84,15 @@ class TagController extends BaseController
             
             $this->render('tags/create', [
                 'title' => 'ایجاد تگ جدید',
+                'page_title' => 'ایجاد تگ جدید',
+                'page_subtitle' => 'افزودن تگ جدید به سیستم',
                 'random_gradient' => $randomGradient,
-                'additional_css' => ['css/bootstrap-dashboard.css']
+                'additional_css' => ['/assets/css/tags.css']
             ]);
             
         } catch (Exception $e) {
             error_log('Error in create form: ' . $e->getMessage());
-            header('Location: ' . url('tags') . '?error=' . urlencode('خطا در نمایش فرم ایجاد'));
-            exit;
+            $this->redirectWithError(url('tags'), 'خطا در نمایش فرم ایجاد');
         }
     }
     
@@ -117,7 +119,7 @@ class TagController extends BaseController
         if ($result['success']) {
             $this->redirectWithMessage(url('tags'), 'success', $result['message']);
         } else {
-            $this->redirectWithError(url('tags/create'), $result['message']);
+            $this->redirectWithError(url('tags?action=create'), $result['message']);
         }
     }
     
@@ -151,18 +153,15 @@ class TagController extends BaseController
             
             $this->render('tags/edit', [
                 'title' => 'ویرایش تگ',
+                'page_title' => 'ویرایش تگ',
+                'page_subtitle' => 'ویرایش تگ ' . $tag['title'],
                 'tag' => $tag,
-                'additional_css' => ['css/bootstrap-dashboard.css']
+                'additional_css' => ['/assets/css/tags.css']
             ]);
             
         } catch (Exception $e) {
             error_log('Error in edit form: ' . $e->getMessage());
-            $_SESSION['flash'] = [
-                'type' => 'error',
-                'message' => 'خطا در نمایش فرم ویرایش'
-            ];
-            header('Location: ' . url('tags'));
-            exit;
+            $this->redirectWithError(url('tags'), 'خطا در نمایش فرم ویرایش');
         }
     }
     
@@ -194,7 +193,7 @@ class TagController extends BaseController
         if ($result['success']) {
             $this->redirectWithMessage(url('tags'), 'success', $result['message']);
         } else {
-            $this->redirectWithError(url("tags/edit?id={$id}"), $result['message']);
+            $this->redirectWithError(url("tags?action=edit&id={$id}"), $result['message']);
         }
     }
     
@@ -219,7 +218,7 @@ class TagController extends BaseController
     }
     
     /**
-     * API جستجوی پیشرفته تگ‌ها با استفاده از AdvancedSearch Helper
+     * API جستجوی پیشرفته تگ‌ها
      */
     public function api(): void
     {
@@ -320,5 +319,48 @@ class TagController extends BaseController
             'success' => true,
             'data' => $gradient
         ]);
+    }
+    
+    /**
+     * صادرات لیست تگ‌ها
+     */
+    public function export(): void
+    {
+        try {
+            $tags = $this->tagModel->getAllTags();
+            
+            // تولید CSV
+            $filename = 'tags_' . date('Y-m-d_H-i-s') . '.csv';
+            
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            
+            $output = fopen('php://output', 'w');
+            
+            // BOM برای پشتیبانی از UTF-8 در Excel
+            fputs($output, "\xEF\xBB\xBF");
+            
+            // Header
+            fputcsv($output, ['شناسه', 'عنوان', 'رنگ شروع', 'رنگ پایان', 'تعداد استفاده', 'تاریخ ایجاد']);
+            
+            // Data
+            foreach ($tags as $tag) {
+                fputcsv($output, [
+                    $tag['id'],
+                    $tag['title'],
+                    $tag['color_start'],
+                    $tag['color_end'],
+                    $tag['usage_count'],
+                    $tag['created_at']
+                ]);
+            }
+            
+            fclose($output);
+            exit;
+            
+        } catch (Exception $e) {
+            error_log('Export error: ' . $e->getMessage());
+            $this->redirectWithError(url('tags'), 'خطا در صادرات فایل');
+        }
     }
 } 

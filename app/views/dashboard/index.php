@@ -1,9 +1,17 @@
 <?php
 /**
- * داشبورد اصلی سامانت - طراحی حرفه‌ای
- * نسخه: 3.0
+ * نام فایل: index.php
+ * مسیر فایل: /app/views/dashboard/index.php
+ * توضیح: داشبورد اصلی سامانت - نسخه بهینه شده
+ * تاریخ بازطراحی: 1404/10/17
+ * نسخه: 3.0 یکپارچه
  */
 
+// تنظیم متغیرهای صفحه
+$page_title = 'داشبورد سامانت';
+$page_subtitle = 'خلاصه‌ای از وضعیت سیستم';
+
+// Load main layout
 require_once(APP_PATH . 'views/layouts/main.php');
 ?>
 
@@ -27,25 +35,25 @@ require_once(APP_PATH . 'views/layouts/main.php');
             
             <div class="stat-card-pro">
                 <div class="stat-label">تکمیل شده</div>
-                <div class="stat-value">0</div>
+                <div class="stat-value">5</div>
                 <div class="stat-change positive">
                     <i class="fas fa-check"></i>
-                    <span>آماده برای بررسی</span>
+                    <span>درخواست تایید شده</span>
                 </div>
             </div>
             
             <div class="stat-card-pro">
                 <div class="stat-label">درخواست‌های امروز</div>
-                <div class="stat-value">0</div>
+                <div class="stat-value">3</div>
                 <div class="stat-change neutral">
                     <i class="fas fa-calendar"></i>
-                    <span>بدون درخواست جدید</span>
+                    <span>درخواست جدید</span>
                 </div>
             </div>
             
             <div class="stat-card-pro">
                 <div class="stat-label">در انتظار</div>
-                <div class="stat-value">0</div>
+                <div class="stat-value">2</div>
                 <div class="stat-change warning">
                     <i class="fas fa-clock"></i>
                     <span>نیاز به بررسی</span>
@@ -91,7 +99,7 @@ require_once(APP_PATH . 'views/layouts/main.php');
                                 <td><span class="font-mono">REQ2506238564</span></td>
                                 <td>تست جدید</td>
                                 <td class="text-right font-mono">0 ریال</td>
-                                <td><span class="status-badge-pro pending">در انتظار</span></td>
+                                <td><span class="badge badge-warning">در انتظار</span></td>
                                 <td>1404/03/30</td>
                                 <td>
                                     <div class="table-actions">
@@ -108,7 +116,7 @@ require_once(APP_PATH . 'views/layouts/main.php');
                                 <td><span class="font-mono">REQ2506232896</span></td>
                                 <td>تست تاریخ</td>
                                 <td class="text-right font-mono">0 ریال</td>
-                                <td><span class="status-badge-pro pending">در انتظار</span></td>
+                                <td><span class="badge badge-warning">در انتظار</span></td>
                                 <td>1404/03/30</td>
                                 <td>
                                     <div class="table-actions">
@@ -125,7 +133,7 @@ require_once(APP_PATH . 'views/layouts/main.php');
                                 <td><span class="font-mono">REQ2506232939</span></td>
                                 <td>سیو</td>
                                 <td class="text-right font-mono">23,231,000 ریال</td>
-                                <td><span class="status-badge-pro completed">تکمیل شده</span></td>
+                                <td><span class="badge badge-success">تکمیل شده</span></td>
                                 <td>1404/03/30</td>
                                 <td>
                                     <div class="table-actions">
@@ -142,7 +150,7 @@ require_once(APP_PATH . 'views/layouts/main.php');
                                 <td><span class="font-mono">REQ2506220943</span></td>
                                 <td>سیو</td>
                                 <td class="text-right font-mono">23,231,000 ریال</td>
-                                <td><span class="status-badge-pro completed">تکمیل شده</span></td>
+                                <td><span class="badge badge-success">تکمیل شده</span></td>
                                 <td>1404/03/30</td>
                                 <td>
                                     <div class="table-actions">
@@ -159,7 +167,7 @@ require_once(APP_PATH . 'views/layouts/main.php');
                                 <td><span class="font-mono">REQ2506212400</span></td>
                                 <td>سیو</td>
                                 <td class="text-right font-mono">12,400,000 ریال</td>
-                                <td><span class="status-badge-pro completed">تکمیل شده</span></td>
+                                <td><span class="badge badge-success">تکمیل شده</span></td>
                                 <td>1404/03/30</td>
                                 <td>
                                     <div class="table-actions">
@@ -182,7 +190,7 @@ require_once(APP_PATH . 'views/layouts/main.php');
                                 <div class="mobile-item-title">تست جدید</div>
                                 <div class="mobile-item-meta">
                                     <span class="font-mono">REQ2506238564</span> • 
-                                    <span class="status-badge-pro pending">در انتظار</span>
+                                    <span class="badge badge-warning">در انتظار</span>
                                 </div>
                                 <div class="mobile-item-amount">0 ریال</div>
                             </div>
@@ -198,7 +206,7 @@ require_once(APP_PATH . 'views/layouts/main.php');
                                 <div class="mobile-item-title">تست تاریخ</div>
                                 <div class="mobile-item-meta">
                                     <span class="font-mono">REQ2506232896</span> • 
-                                    <span class="status-badge-pro pending">در انتظار</span>
+                                    <span class="badge badge-warning">در انتظار</span>
                                 </div>
                                 <div class="mobile-item-amount">0 ریال</div>
                             </div>
@@ -214,7 +222,7 @@ require_once(APP_PATH . 'views/layouts/main.php');
                                 <div class="mobile-item-title">سیو</div>
                                 <div class="mobile-item-meta">
                                     <span class="font-mono">REQ2506232939</span> • 
-                                    <span class="status-badge-pro completed">تکمیل شده</span>
+                                    <span class="badge badge-success">تکمیل شده</span>
                                 </div>
                                 <div class="mobile-item-amount">23,231,000 ریال</div>
                             </div>
@@ -403,61 +411,38 @@ require_once(APP_PATH . 'views/layouts/main.php');
 <script>
 // توابع عملیاتی
 function refreshRequests() {
-    // نمایش loading
     const icon = document.querySelector('[onclick="refreshRequests()"] i');
     icon.classList.add('fa-spin');
     
-    // شبیه‌سازی بروزرسانی
     setTimeout(() => {
         icon.classList.remove('fa-spin');
-        showToast('درخواست‌ها بروزرسانی شد', 'success');
+        showAlert('درخواست‌ها بروزرسانی شد', 'success');
     }, 1000);
 }
 
 function filterRequests() {
-    showToast('فیلترهای پیشرفته به‌زودی اضافه می‌شود', 'info');
+    showAlert('فیلترهای پیشرفته به‌زودی اضافه می‌شود', 'info');
 }
 
-// نمایش toast notification
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.style.cssText = `
-        position: fixed;
-        top: 80px;
-        left: 20px;
-        background: var(--${type === 'success' ? 'success' : 'info'});
-        color: white;
-        padding: 12px 16px;
-        border-radius: 8px;
-        font-size: 14px;
-        z-index: 1100;
-        animation: slideInLeft 0.3s ease;
-    `;
-    toast.textContent = message;
+// انیمیشن‌های تدریجی برای کارت‌های آمار
+document.addEventListener('DOMContentLoaded', function() {
+    const statCards = document.querySelectorAll('.stat-card-pro');
+    statCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.style.animation = 'fadeInUp 0.6s ease-out forwards';
+    });
     
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = 'slideOutLeft 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// انیمیشن‌های CSS
-const style = document.createElement('style');
-style.textContent = `
-@keyframes slideInLeft {
-    from { transform: translateX(-100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideOutLeft {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(-100%); opacity: 0; }
-}
-`;
-document.head.appendChild(style);
+    const tableRows = document.querySelectorAll('.data-table tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.01)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
 </script>
 
 <?php

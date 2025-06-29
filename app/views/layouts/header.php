@@ -2,8 +2,9 @@
 /**
  * نام فایل: header.php
  * مسیر فایل: /app/views/layouts/header.php
- * توضیح: هدر حرفه‌ای صفحات سامانت
- * تاریخ ایجاد: 1404/03/31
+ * توضیح: هدر حرفه‌ای صفحات سامانت - نسخه بهینه شده
+ * تاریخ بازطراحی: 1404/10/17
+ * نسخه: 3.0 یکپارچه
  */
 ?>
 
@@ -11,7 +12,7 @@
     <!-- بخش راست: دکمه منو موبایل + عنوان -->
     <div class="header-content">
         <!-- دکمه Toggle سایدبار (فقط موبایل) -->
-        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="باز کردن منو">
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()" aria-label="باز کردن منو" title="منو">
             <i class="fas fa-bars"></i>
         </button>
         
@@ -75,50 +76,13 @@
         </div>
         
         <!-- تغییر تم -->
-        <button class="theme-toggle header-btn" onclick="toggleTheme()" title="تغییر تم">
+        <button class="theme-toggle" onclick="toggleTheme()" title="تغییر تم">
             <i class="fas fa-moon" id="theme-icon"></i>
         </button>
         
         <!-- پروفایل کاربر -->
-        <div class="header-user-profile">
-            <button class="user-profile-btn" onclick="toggleUserMenu()" title="پروفایل کاربر">
-                <div class="user-profile">
-                    <?= substr($current_user['name'] ?? 'کاربر', 0, 1) ?>
-                </div>
-                <div class="user-info d-none d-md-block">
-                    <span class="user-name"><?= $current_user['name'] ?? 'کاربر سامانت' ?></span>
-                    <small class="user-role"><?= $current_user['role'] ?? 'کاربر عادی' ?></small>
-                </div>
-                <i class="fas fa-chevron-down user-chevron"></i>
-            </button>
-            
-            <!-- dropdown پروفایل -->
-            <div class="user-dropdown" id="userDropdown">
-                <div class="user-dropdown-header">
-                    <div class="user-profile large">
-                        <?= substr($current_user['name'] ?? 'کاربر', 0, 1) ?>
-                    </div>
-                    <div class="user-details">
-                        <h6><?= $current_user['name'] ?? 'کاربر سامانت' ?></h6>
-                        <p><?= $current_user['email'] ?? 'user@samanet.com' ?></p>
-                    </div>
-                </div>
-                <div class="user-dropdown-menu">
-                    <a href="<?= url('profile') ?>" class="dropdown-item">
-                        <i class="fas fa-user"></i>
-                        پروفایل من
-                    </a>
-                    <a href="<?= url('settings') ?>" class="dropdown-item">
-                        <i class="fas fa-cog"></i>
-                        تنظیمات
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="<?= url('auth/logout') ?>" class="dropdown-item text-danger">
-                        <i class="fas fa-sign-out-alt"></i>
-                        خروج از حساب
-                    </a>
-                </div>
-            </div>
+        <div class="user-profile" title="<?= $current_user['name'] ?? 'کاربر سامانت' ?>">
+            <?= substr($current_user['name'] ?? 'کاربر', 0, 1) ?>
         </div>
     </div>
 </header>
