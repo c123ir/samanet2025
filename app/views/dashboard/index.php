@@ -115,16 +115,17 @@ $urgentCount = count($urgent_requests ?? []);
                         <td style="color: var(--gray-600); font-size: 13px;">
                             <?= isset($request['created_at']) ? jdate('j M Y', strtotime($request['created_at'])) : '-' ?>
                         </td>
-                        <td>
-                            <div style="display: flex; gap: 4px;">
-                                <a href="/?route=requests&action=show&id=<?= $request['id'] ?>" class="btn-icon" title="مشاهده">
+                        <td class="actions-cell">
+                            <div class="action-buttons">
+                                <button class="btn-action btn-view" title="مشاهده">
                                     <i class="fas fa-eye"></i>
-                                </a>
-                                <?php if ($request['status'] === 'pending'): ?>
-                                <a href="/?route=requests&action=edit&id=<?= $request['id'] ?>" class="btn-icon" title="ویرایش">
+                                </button>
+                                <button class="btn-action btn-edit" title="ویرایش">
                                     <i class="fas fa-edit"></i>
-                                </a>
-                                <?php endif; ?>
+                                </button>
+                                <button class="btn-action btn-delete" title="حذف">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
