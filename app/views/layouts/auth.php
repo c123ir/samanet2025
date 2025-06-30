@@ -48,88 +48,123 @@
             display: none !important;
         }
         
-        /* ✅ FIXED: Theme Toggle - Clear Icons */
+        /* ✅ PERFECT: Single Theme Toggle with Beautiful Animation */
         .theme-toggle {
             position: fixed;
             top: 20px;
             left: 20px;
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             border: none;
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
         }
         
         .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.35);
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.08) rotate(5deg);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
         }
         
         .theme-toggle:active {
-            transform: scale(0.95);
+            transform: scale(0.92);
+            transition: transform 0.1s ease;
         }
         
-        /* ✅ FIXED: Theme Icons - Proper Positioning */
+        /* ✅ SINGLE Icon Container with Rotation Animation */
+        .theme-icon-container {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
         .theme-icon {
             font-size: 20px;
-            transition: all 0.3s ease;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        /* Light theme - Show Sun Icon */
+        /* ✅ Beautiful Light Theme Animation */
+        [data-theme="light"] .theme-icon-container {
+            transform: rotate(0deg);
+        }
+        
         [data-theme="light"] .sun-icon {
             opacity: 1;
             color: #f59e0b;
             visibility: visible;
+            transform: translate(-50%, -50%) scale(1) rotate(0deg);
         }
         
         [data-theme="light"] .moon-icon {
             opacity: 0;
             visibility: hidden;
+            transform: translate(-50%, -50%) scale(0.3) rotate(180deg);
         }
         
-        /* Dark theme - Show Moon Icon */
+        /* ✅ Beautiful Dark Theme Animation */
+        [data-theme="dark"] .theme-icon-container {
+            transform: rotate(180deg);
+        }
+        
         [data-theme="dark"] .sun-icon {
             opacity: 0;
             visibility: hidden;
+            transform: translate(-50%, -50%) scale(0.3) rotate(-180deg);
         }
         
         [data-theme="dark"] .moon-icon {
             opacity: 1;
             color: #e5e7eb;
             visibility: visible;
+            transform: translate(-50%, -50%) scale(1) rotate(0deg);
         }
         
-        /* ✅ FIXED: Auth Container - Natural Proportions */
+        /* ✅ Hover Glow Effects */
+        [data-theme="light"] .theme-toggle:hover .sun-icon {
+            color: #fbbf24;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+            transform: translate(-50%, -50%) scale(1.1) rotate(90deg);
+        }
+        
+        [data-theme="dark"] .theme-toggle:hover .moon-icon {
+            color: #f3f4f6;
+            text-shadow: 0 0 15px rgba(229, 231, 235, 0.4);
+            transform: translate(-50%, -50%) scale(1.1) rotate(20deg);
+        }
+        
+        /* ✅ FIXED: Auth Container - Perfect Proportions */
         .auth-container {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            padding: 40px 35px;
+            padding: 35px 30px 30px 30px; /* ✅ Reduced vertical padding */
             width: 100%;
-            max-width: 420px;
+            max-width: 400px; /* ✅ Reduced from 420px */
             min-width: 320px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
             text-align: center;
-            /* ✅ Natural height constraints */
+            /* ✅ Compact height constraints */
             min-height: auto;
             height: auto;
+            aspect-ratio: 4/5; /* ✅ Perfect ratio constraint */
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between; /* ✅ Better distribution */
             position: relative;
         }
         
@@ -187,17 +222,21 @@
             color: #93c5fd;
         }
         
-        /* Logo & Branding */
+        /* ✅ Compact Logo & Branding */
+        .auth-header {
+            flex-shrink: 0;
+        }
+        
         .auth-logo {
-            font-size: 60px;
-            margin-bottom: 20px;
+            font-size: 50px; /* ✅ Reduced from 60px */
+            margin-bottom: 15px; /* ✅ Reduced from 20px */
             line-height: 1;
         }
         
         .auth-title {
-            font-size: 2rem;
+            font-size: 1.8rem; /* ✅ Reduced from 2rem */
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 8px; /* ✅ Reduced from 10px */
             line-height: 1.2;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
@@ -207,27 +246,35 @@
         
         .auth-subtitle {
             opacity: 0.8;
-            margin-bottom: 30px;
-            font-size: 0.9rem;
+            margin-bottom: 25px; /* ✅ Reduced from 30px */
+            font-size: 0.85rem; /* ✅ Slightly smaller */
             line-height: 1.4;
+        }
+        
+        /* ✅ Compact Form Container */
+        .form-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         /* ✅ IMPROVED: Form Styles */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px; /* ✅ Slightly reduced */
             text-align: right;
         }
         
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px; /* ✅ Reduced from 8px */
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.85rem; /* ✅ Slightly smaller */
         }
         
         .form-control {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 14px; /* ✅ Reduced padding */
             border-radius: 12px;
             font-size: 16px;
             transition: all 0.3s ease;
@@ -245,7 +292,7 @@
         
         .btn-primary {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 14px; /* ✅ Reduced padding */
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 12px;
@@ -254,7 +301,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 15px;
+            margin-top: 12px; /* ✅ Reduced from 15px */
             font-family: inherit;
         }
         
@@ -267,17 +314,18 @@
             transform: translateY(0);
         }
         
-        /* Test Info */
+        /* ✅ Compact Test Info */
         .test-info {
-            margin-top: 30px;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 14px;
+            margin-top: 20px; /* ✅ Reduced from 30px */
+            padding: 12px; /* ✅ Reduced padding */
+            border-radius: 10px;
+            font-size: 13px; /* ✅ Slightly smaller */
+            flex-shrink: 0;
         }
         
         .test-info p {
-            margin: 6px 0;
-            line-height: 1.4;
+            margin: 4px 0; /* ✅ Reduced from 6px */
+            line-height: 1.3;
         }
         
         .test-info strong {
@@ -305,45 +353,78 @@
             color: #059669;
         }
         
-        /* ✅ IMPROVED: Mobile Responsive */
+        /* ✅ PERFECT: Mobile Responsive */
         @media (max-width: 576px) {
             body {
-                padding: 15px;
+                padding: 10px;
             }
             
             .auth-container {
-                padding: 30px 25px;
-                margin: 10px;
-                max-width: 350px;
+                padding: 25px 20px 20px 20px; /* ✅ More compact */
+                margin: 5px;
+                max-width: 340px;
                 min-width: 280px;
+                aspect-ratio: 3.5/4.5; /* ✅ Better mobile ratio */
             }
             
             .theme-toggle {
-                top: 15px;
-                left: 15px;
-                width: 45px;
-                height: 45px;
+                top: 12px;
+                left: 12px;
+                width: 42px;
+                height: 42px;
+            }
+            
+            .theme-icon-container {
+                width: 20px;
+                height: 20px;
             }
             
             .theme-icon {
-                font-size: 18px;
-            }
-            
-            .auth-title {
-                font-size: 1.6rem;
+                font-size: 16px;
             }
             
             .auth-logo {
-                font-size: 50px;
+                font-size: 40px; /* ✅ Smaller for mobile */
+                margin-bottom: 12px;
+            }
+            
+            .auth-title {
+                font-size: 1.5rem; /* ✅ Smaller for mobile */
+                margin-bottom: 6px;
+            }
+            
+            .auth-subtitle {
+                font-size: 0.8rem;
+                margin-bottom: 20px;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            .form-label {
+                font-size: 0.8rem;
+                margin-bottom: 5px;
             }
             
             .form-control {
                 font-size: 16px; /* Prevent iOS zoom */
-                padding: 12px 14px;
+                padding: 11px 12px;
             }
             
             .btn-primary {
-                padding: 12px 14px;
+                padding: 11px 12px;
+                margin-top: 10px;
+            }
+            
+            .test-info {
+                margin-top: 15px;
+                padding: 10px;
+                font-size: 12px;
+            }
+            
+            .test-info p {
+                margin: 3px 0;
             }
         }
         
@@ -362,65 +443,72 @@
 </head>
 
 <body data-theme="light">
-    <!-- Theme Toggle -->
-    <button id="themeToggle" class="theme-toggle" title="تغییر تم">
-        <i class="fas fa-sun theme-icon sun-icon"></i>
-        <i class="fas fa-moon theme-icon moon-icon"></i>
+    <!-- ✅ Single Theme Toggle with Animation Container -->
+    <button id="themeToggle" class="theme-toggle" title="تغییر تم" aria-label="تبدیل تم">
+        <div class="theme-icon-container">
+            <i class="fas fa-sun theme-icon sun-icon"></i>
+            <i class="fas fa-moon theme-icon moon-icon"></i>
+        </div>
     </button>
     
-    <!-- Auth Container -->
+    <!-- ✅ Optimized Auth Container -->
     <div class="auth-container">
-        <!-- Logo -->
-        <div class="auth-logo">🔹</div>
-        <h1 class="auth-title">سامانت</h1>
-        <p class="auth-subtitle">سامانه مدیریت حواله و بایگانی اسناد</p>
+        <!-- Header Section -->
+        <div class="auth-header">
+            <div class="auth-logo">🔹</div>
+            <h1 class="auth-title">سامانت</h1>
+            <p class="auth-subtitle">سامانه مدیریت حواله و بایگانی اسناد</p>
+        </div>
         
-        <!-- Flash Message -->
-        <?php if (isset($_SESSION['flash'])): ?>
-            <div class="alert alert-<?= $_SESSION['flash']['type'] === 'error' ? 'danger' : 'success' ?>">
-                <?= htmlspecialchars($_SESSION['flash']['message']) ?>
-            </div>
-            <?php unset($_SESSION['flash']); ?>
-        <?php endif; ?>
-        
-        <!-- Form -->
-        <form method="POST" action="<?= url('login') ?>">
-            <div class="form-group">
-                <label class="form-label">
-                    <i class="fas fa-user me-2"></i>
-                    نام کاربری
-                </label>
-                <input type="text" 
-                       class="form-control" 
-                       name="username" 
-                       placeholder="admin"
-                       value="admin"
-                       required>
-            </div>
+        <!-- Form Container -->
+        <div class="form-container">
+            <!-- Flash Message -->
+            <?php if (isset($_SESSION['flash'])): ?>
+                <div class="alert alert-<?= $_SESSION['flash']['type'] === 'error' ? 'danger' : 'success' ?>">
+                    <?= htmlspecialchars($_SESSION['flash']['message']) ?>
+                </div>
+                <?php unset($_SESSION['flash']); ?>
+            <?php endif; ?>
             
-            <div class="form-group">
-                <label class="form-label">
-                    <i class="fas fa-lock me-2"></i>
-                    کلمه عبور
-                </label>
-                <input type="password" 
-                       class="form-control" 
-                       name="password" 
-                       placeholder="admin123"
-                       required>
-            </div>
+            <!-- Login Form -->
+            <form method="POST" action="<?= url('login') ?>">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-user me-2"></i>
+                        نام کاربری
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           name="username" 
+                           placeholder="admin"
+                           value="admin"
+                           required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-lock me-2"></i>
+                        کلمه عبور
+                    </label>
+                    <input type="password" 
+                           class="form-control" 
+                           name="password" 
+                           placeholder="admin123"
+                           required>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt me-2"></i>
+                    ورود به سامانت
+                </button>
+            </form>
             
-            <button type="submit" class="btn-primary">
-                <i class="fas fa-sign-in-alt me-2"></i>
-                ورود به سامانت
-            </button>
-        </form>
-        
-        <!-- Test Info -->
-        <div class="test-info">
-            <p><strong>اطلاعات تست</strong></p>
-            <p>نام کاربری: <strong>admin</strong></p>
-            <p>رمز عبور: <strong>admin123</strong></p>
+            <!-- Test Info -->
+            <div class="test-info">
+                <p><strong>اطلاعات تست</strong></p>
+                <p>نام کاربری: <strong>admin</strong></p>
+                <p>رمز عبور: <strong>admin123</strong></p>
+            </div>
         </div>
     </div>
     
@@ -429,14 +517,24 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('🚀 Samanet Auth Page Initialized');
         
-        // ✅ Remove any duplicate theme toggles first
+        // ✅ AGGRESSIVE: Remove any duplicate theme toggles
         const allToggles = document.querySelectorAll('.theme-toggle');
         if (allToggles.length > 1) {
-            console.warn('⚠️ Multiple theme toggles found, removing duplicates');
+            console.warn(`⚠️ Found ${allToggles.length} theme toggles, removing duplicates`);
+            // Keep only the first one and remove all others
             for (let i = 1; i < allToggles.length; i++) {
                 allToggles[i].remove();
             }
         }
+        
+        // ✅ Also remove any orphaned theme buttons from other systems
+        const orphanedButtons = document.querySelectorAll('button[onclick*="theme"], .btn-theme, #theme-btn');
+        orphanedButtons.forEach(btn => {
+            if (btn.id !== 'themeToggle') {
+                console.warn('⚠️ Removing orphaned theme button:', btn);
+                btn.remove();
+            }
+        });
         
         const themeToggle = document.getElementById('themeToggle');
         const body = document.body;
