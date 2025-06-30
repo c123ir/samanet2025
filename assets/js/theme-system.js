@@ -5,6 +5,7 @@
  * مطابق: استانداردهای MANDATORY Theme Management
  */
 
+if (!window.samanetThemeSystemLoaded) {
 (function() {
     'use strict';
     
@@ -347,4 +348,7 @@ if (document.head && !document.getElementById('theme-transition-styles')) {
     style.id = 'theme-transition-styles';
     style.textContent = themeTransitionCSS;
     document.head.appendChild(style);
+}
+
+window.samanetThemeSystemLoaded = true;
 } 
