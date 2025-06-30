@@ -84,6 +84,240 @@ $user_avatar = $user_info['avatar'] ?? '';
         .stat-label, .stat-value, .table-title, .panel-title, .task-text {
             font-family: 'Vazirmatn', sans-serif !important;
         }
+
+        /* Profile Dropdown Styles */
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-btn {
+            background: none;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .profile-btn:hover {
+            background: var(--gray-100);
+            transform: translateY(-1px);
+        }
+
+        .avatar-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .avatar-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary, #667eea) 0%, var(--primary-light, #764ba2) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .profile-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .dropdown-arrow {
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-dropdown.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        /* Profile Menu */
+        .profile-menu {
+            position: absolute;
+            top: 110%; /* Adjusted for better spacing */
+            left: 0; /* Changed from right to left for RTL */
+            background: var(--bg-primary, #fff);
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            min-width: 250px;
+            padding: 16px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .profile-dropdown.active .profile-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 16px 12px;
+        }
+
+        .avatar-large {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary, #667eea) 0%, var(--primary-light, #764ba2) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .profile-info h6 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--text-primary, #2d3748);
+        }
+
+        .profile-info small {
+            color: var(--text-secondary, #718096);
+        }
+
+        .profile-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-primary, #2d3748);
+            text-decoration: none;
+            transition: background 0.2s ease;
+        }
+
+        .profile-item:hover {
+            background: var(--gray-50, #f9fafb);
+            color: var(--text-primary, #2d3748);
+            text-decoration: none;
+        }
+
+        .profile-item.logout {
+            color: var(--danger, #e53e3e);
+        }
+
+        .profile-item.logout:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Global Search Styles */
+        .global-search {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 12px; /* Adjusted for RTL */
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 12px;
+            background: var(--bg-secondary, #f1f5f9);
+            color: var(--text-primary, #2d3748);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary, #667eea);
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 102, 126, 234), 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px; /* Adjusted for RTL */
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary, #718096);
+            font-size: 14px;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary, #fff);
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        /* Theme Toggle Fixed */
+        .theme-toggle-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--gray-100, #f1f5f9);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* To hide icons during transition */
+        }
+
+        .theme-toggle-btn:hover {
+            background: var(--gray-200, #e5e7eb);
+            transform: scale(1.05);
+        }
+
+        .theme-icon-light,
+        .theme-icon-dark {
+            font-size: 16px;
+            transition: all 0.3s ease;
+            position: absolute;
+        }
+
+        [data-theme="light"] .theme-icon-light {
+            opacity: 1;
+            transform: translateY(0);
+            color: #f59e0b;
+        }
+
+        [data-theme="light"] .theme-icon-dark {
+            opacity: 0;
+            transform: translateY(100%);
+        }
+
+        [data-theme="dark"] .theme-icon-light {
+            opacity: 0;
+            transform: translateY(-100%);
+        }
+
+        [data-theme="dark"] .theme-icon-dark {
+            opacity: 1;
+            transform: translateY(0);
+            color: #e5e7eb;
+        }
     </style>
     
     <!-- FontAwesome Icons -->
@@ -120,18 +354,62 @@ $user_avatar = $user_info['avatar'] ?? '';
             </div>
             
             <div class="header-actions">
-                <!-- Theme Toggle Button - دقیقاً مطابق استانداردها -->
-                <button class="theme-toggle" onclick="toggleTheme()" title="تغییر تم">
-                    <i class="fas fa-moon" id="theme-icon"></i>
+                <!-- Global Search Field -->
+                <div class="global-search">
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="جستجو در اسناد و درخواست‌ها..." id="globalSearch">
+                        <div class="search-results" id="searchResults"></div>
+                    </div>
+                </div>
+
+                <!-- Theme Toggle Button -->
+                <button id="themeToggle" class="theme-toggle-btn" title="تغییر تم">
+                    <i class="fas fa-sun theme-icon-light"></i>
+                    <i class="fas fa-moon theme-icon-dark"></i>
                 </button>
                 
-                <!-- User Profile - دقیقاً مطابق استانداردها -->
-                <div class="user-profile" title="<?= htmlspecialchars($user_name) ?>">
-                    <?php if (!empty($user_avatar)): ?>
-                        <img src="<?= htmlspecialchars($user_avatar) ?>" alt="پروفایل" style="width: 100%; height: 100%; border-radius: 50%;">
-                    <?php else: ?>
-                        <?= strtoupper(substr($user_name, 0, 1)) ?>
-                    <?php endif; ?>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown">
+                    <button class="profile-btn" id="profileDropdown" title="پروفایل کاربری">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-circle">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="profile-name">مدیر سیستم</span>
+                            <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        </div>
+                    </button>
+                    
+                    <div class="profile-menu" id="profileMenu">
+                        <div class="profile-header">
+                            <div class="avatar-large">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="profile-info">
+                                <h6>مدیر سیستم</h6>
+                                <small>admin@samanat.com</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <a href="#" class="profile-item">
+                            <i class="fas fa-user-edit"></i>
+                            ویرایش پروفایل
+                        </a>
+                        <a href="#" class="profile-item">
+                            <i class="fas fa-cog"></i>
+                            تنظیمات
+                        </a>
+                        <a href="#" class="profile-item">
+                            <i class="fas fa-bell"></i>
+                            اعلان‌ها
+                        </a>
+                        <hr>
+                        <a href="<?= url('logout') ?>" class="profile-item logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            خروج
+                        </a>
+                    </div>
                 </div>
             </div>
         </header>
@@ -230,32 +508,92 @@ $user_avatar = $user_info['avatar'] ?? '';
         </div>
         
         <!-- MANDATORY: Mobile Navigation -->
-        <nav class="mobile-nav">
-            <a href="/dashboard" class="mobile-nav-item <?= ($current_route === 'dashboard') ? 'active' : '' ?>">
-                <i class="mobile-nav-icon fas fa-home"></i>
-                <span>خانه</span>
-            </a>
+        <div class="mobile-nav" id="mobileNav">
+            <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
             
-            <a href="/requests" class="mobile-nav-item <?= (strpos($current_route, 'request') === 0) ? 'active' : '' ?>">
-                <i class="mobile-nav-icon fas fa-file-alt"></i>
-                <span>درخواست‌ها</span>
-            </a>
+            <!-- Hamburger Menu Button -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
             
-            <a href="/users" class="mobile-nav-item <?= (strpos($current_route, 'user') === 0) ? 'active' : '' ?>">
-                <i class="mobile-nav-icon fas fa-users"></i>
-                <span>کاربران</span>
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <div class="mobile-header">
+                    <div class="mobile-logo">
+                        <span>🔹</span>
+                        <h6>سامانت</h6>
+                    </div>
+                    <button class="mobile-close" id="mobileClose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <nav class="mobile-nav-items">
+                    <a href="<?= url('dashboard') ?>" class="mobile-nav-item active">
+                        <i class="fas fa-home"></i>
+                        <span>داشبورد</span>
+                    </a>
+                    <a href="<?= url('requests') ?>" class="mobile-nav-item">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>درخواست‌ها</span>
+                    </a>
+                    <a href="<?= url('users') ?>" class="mobile-nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>کاربران</span>
+                    </a>
+                    <a href="<?= url('tags') ?>" class="mobile-nav-item">
+                        <i class="fas fa-tags"></i>
+                        <span>برچسب‌ها</span>
+                    </a>
+                    <a href="<?= url('settings') ?>" class="mobile-nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>تنظیمات</span>
+                    </a>
+                </nav>
+                
+                <div class="mobile-footer">
+                    <div class="mobile-profile">
+                        <div class="mobile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="mobile-profile-info">
+                            <span>مدیر سیستم</span>
+                            <small>admin@samanat.com</small>
+                        </div>
+                    </div>
+                    <a href="<?= url('logout') ?>" class="mobile-logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        خروج
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation for Mobile -->
+        <div class="bottom-nav">
+            <a href="<?= url('dashboard') ?>" class="bottom-nav-item active">
+                <i class="fas fa-home"></i>
+                <span>داشبورد</span>
             </a>
-            
-            <a href="/tags" class="mobile-nav-item <?= (strpos($current_route, 'tag') === 0) ? 'active' : '' ?>">
-                <i class="mobile-nav-icon fas fa-tags"></i>
-                <span>برچسب‌ها</span>
+            <a href="<?= url('requests') ?>" class="bottom-nav-item">
+                <i class="fas fa-plus-circle"></i>
+                <span>جدید</span>
             </a>
-            
-            <a href="/settings" class="mobile-nav-item <?= (strpos($current_route, 'setting') === 0) ? 'active' : '' ?>">
-                <i class="mobile-nav-icon fas fa-cog"></i>
-                <span>تنظیمات</span>
+            <a href="<?= url('requests') ?>" class="bottom-nav-item">
+                <i class="fas fa-list"></i>
+                <span>لیست</span>
             </a>
-        </nav>
+            <a href="<?= url('tags') ?>" class="bottom-nav-item">
+                <i class="fas fa-tags"></i>
+                <span>برچسب</span>
+            </a>
+            <a href="<?= url('users') ?>" class="bottom-nav-item">
+                <i class="fas fa-user-circle"></i>
+                <span>پروفایل</span>
+            </a>
+        </div>
     </div>
     
     <!-- JavaScript -->
@@ -314,12 +652,132 @@ $user_avatar = $user_info['avatar'] ?? '';
         });
     </script>
     
-    <!-- Additional JavaScript -->
-    <?php if (isset($additional_js) && is_array($additional_js)): ?>
-        <?php foreach ($additional_js as $js_file): ?>
-            <script src="<?= htmlspecialchars($js_file) ?>"></script>
-        <?php endforeach; ?>
-    <?php endif; ?>
+    <!-- Additional JavaScript for new UI components -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Profile Dropdown
+            const profileDropdownBtn = document.getElementById('profileDropdown');
+            if (profileDropdownBtn) {
+                const profileDropdown = profileDropdownBtn.parentElement;
+                profileDropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    profileDropdown.classList.toggle('active');
+                });
+            }
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                const openDropdown = document.querySelector('.profile-dropdown.active');
+                if (openDropdown && !openDropdown.contains(e.target)) {
+                    openDropdown.classList.remove('active');
+                }
+            });
+            
+            // Global Search
+            const globalSearch = document.getElementById('globalSearch');
+            const searchResults = document.getElementById('searchResults');
+            
+            if (globalSearch && searchResults) {
+                let searchTimeout;
+                
+                globalSearch.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    const query = this.value.trim();
+                    
+                    if (query.length > 2) {
+                        searchResults.style.display = 'block'; // Show loading state
+                        searchResults.innerHTML = '<div class="search-loading">در حال جستجو...</div>';
+                        
+                        searchTimeout = setTimeout(() => {
+                            performGlobalSearch(query);
+                        }, 500); // Debounce
+                    } else {
+                        searchResults.style.display = 'none';
+                    }
+                });
+
+                // Hide search results when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!globalSearch.contains(e.target)) {
+                        searchResults.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Mobile Menu
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileClose = document.getElementById('mobileClose');
+            const mobileOverlay = document.getElementById('mobileNavOverlay');
+            
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    document.body.classList.add('mobile-menu-open');
+                });
+            }
+            
+            if (mobileClose) {
+                mobileClose.addEventListener('click', function() {
+                    document.body.classList.remove('mobile-menu-open');
+                });
+            }
+
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', function() {
+                    document.body.classList.remove('mobile-menu-open');
+                });
+            }
+            
+            // Re-bind theme toggle to the new button, as the old logic might be tied to a different ID or class
+            const newThemeToggle = document.getElementById('themeToggle');
+            if (newThemeToggle) {
+                newThemeToggle.addEventListener('click', function() {
+                    // This re-implements the toggle logic locally to ensure it works, 
+                    // assuming the global `toggleTheme()` might not be available or might conflict.
+                    const html = document.documentElement;
+                    const currentTheme = html.getAttribute('data-theme') || 'light';
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    
+                    html.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('samanat_theme', newTheme);
+                });
+
+                // Set initial state from localStorage
+                const savedTheme = localStorage.getItem('samanat_theme');
+                if (savedTheme) {
+                    document.documentElement.setAttribute('data-theme', savedTheme);
+                }
+            }
+        });
+
+        // Global Search API Call Function
+        function performGlobalSearch(query) {
+            // This is a mock API call. Replace with your actual endpoint.
+            console.log(`Searching for: ${query}`);
+            const searchResults = document.getElementById('searchResults');
+            
+            // Mock data
+            const results = [
+                { url: '#', icon: 'fas fa-file-invoice', title: 'درخواست حواله #123', description: 'مبلغ: 1,500,000 تومان برای پروژه آلفا' },
+                { url: '#', icon: 'fas fa-file-alt', title: 'سند قرارداد پروژه بتا', description: 'قرارداد همکاری با شرکت توسعه‌دهندگان' },
+                { url: '#', icon: 'fas fa-user', title: 'کاربر: علی رضایی', description: 'آخرین فعالیت: 2 ساعت پیش' }
+            ];
+            
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div class="search-no-results">نتیجه‌ای یافت نشد</div>';
+            } else {
+                searchResults.innerHTML = results.map(item => `
+                    <a href="${item.url}" class="search-result-item">
+                        <i class="${item.icon}"></i>
+                        <div>
+                            <div class="result-title">${item.title}</div>
+                            <div class="result-desc">${item.description}</div>
+                        </div>
+                    </a>
+                `).join('');
+            }
+        }
+    </script>
     
     <!-- Page-specific JavaScript -->
     <?php if (isset($page_js)): ?>
