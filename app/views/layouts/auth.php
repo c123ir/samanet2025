@@ -3,7 +3,7 @@
  * نام فایل: auth.php
  * مسیر: /app/views/layouts/auth.php
  * هدف: قالب استاندارد و بازنویسی شده برای احراز هویت
- * نسخه: 4.0 (بازنویسی کامل)
+ * نسخه: 4.1 (ایزوله شده)
  */
 ?>
 <!DOCTYPE html>
@@ -67,6 +67,21 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
+        /* --- Force Hide Parent Layout --- */
+        body > *:not(.auth-wrapper):not(script) {
+            display: none !important;
+        }
+        .auth-wrapper {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
         /* --- Theme Toggle --- */
         .theme-toggle {
             position: fixed;
@@ -84,7 +99,7 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-            z-index: 1000;
+            z-index: 1001;
         }
         .theme-toggle:hover {
             transform: translateY(-2px) scale(1.05);
@@ -194,64 +209,59 @@
     </style>
 </head>
 <body>
+    <div class="auth-wrapper">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle" onclick="toggleTheme()" title="تغییر تم">
+            <span id="theme-icon">🌙</span>
+        </button>
 
-    <!-- Theme Toggle Button -->
-    <button class="theme-toggle" onclick="toggleTheme()" title="تغییر تم">
-        <span id="theme-icon">🌙</span>
-    </button>
-
-    <!-- Main Authentication Container -->
-    <main class="auth-container">
-        
-        <header class="auth-header">
-            <div class="logo">🔹</div>
-            <h1>ورود به سامانت</h1>
-            <p>سامانه مدیریت حواله و بایگانی اسناد</p>
-        </header>
-
-        <!-- Flash Message -->
-        <?php if (isset($_SESSION['flash'])): ?>
-            <div class="alert alert-danger">
-                <?= htmlspecialchars($_SESSION['flash']['message']) ?>
-            </div>
-            <?php unset($_SESSION['flash']); ?>
-        <?php endif; ?>
-
-        <!-- Login Form -->
-        <form method="POST" action="<?= url('login') ?>">
-            <input type="hidden" name="csrf_token" value="<?= $csrf_token ?? '' ?>">
+        <!-- Main Authentication Container -->
+        <main class="auth-container">
             
-            <div class="form-group">
-                <label for="username">نام کاربری</label>
-                <input type="text" id="username" class="form-control" name="username" value="admin" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">کلمه عبور</label>
-                <input type="password" id="password" class="form-control" name="password" value="admin123" required>
-            </div>
-            
-            <button type="submit" class="btn-submit">ورود به سامانه</button>
-        </form>
+            <header class="auth-header">
+                <div class="logo">🔹</div>
+                <h1>ورود به سامانت</h1>
+                <p>سامانه مدیریت حواله و بایگانی اسناد</p>
+            </header>
 
-        <div class="test-info">
-            <p><strong>اطلاعات تست:</strong> نام کاربری: <strong>admin</strong> | رمز عبور: <strong>admin123</strong></p>
-        </div>
+            <!-- Flash Message -->
+            <?php if (isset($_SESSION['flash'])): ?>
+                <div class="alert alert-danger">
+                    <?= htmlspecialchars($_SESSION['flash']['message']) ?>
+                </div>
+                <?php unset($_SESSION['flash']); ?>
+            <?php endif; ?>
 
-    </main>
+            <!-- Login Form -->
+            <form method="POST" action="<?= url('login') ?>">
+                <input type="hidden" name="csrf_token" value="<?= $csrf_token ?? '' ?>">
+                
+                <div class="form-group">
+                    <label for="username">نام کاربری</label>
+                    <input type="text" id="username" class="form-control" name="username" value="admin" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">کلمه عبور</label>
+                    <input type="password" id="password" class="form-control" name="password" value="admin123" required>
+                </div>
+                
+                <button type="submit" class="btn-submit">ورود به سامانه</button>
+            </form>
+
+            <div class="test-info">
+                <p><strong>اطلاعات تست:</strong> نام کاربری: <strong>admin</strong> | رمز عبور: <strong>admin123</strong></p>
+            </div>
+
+        </main>
+    </div>
 
     <!-- Load Central Theme System -->
     <script src="<?= asset('js/theme-system.js') ?>"></script>
     <script>
-        // Auto-focus password field if username is pre-filled
         document.addEventListener('DOMContentLoaded', function() {
-            const usernameField = document.getElementById('username');
             const passwordField = document.getElementById('password');
-            if (usernameField && usernameField.value && passwordField) {
-                passwordField.focus();
-            } else if (usernameField) {
-                usernameField.focus();
-            }
+            if (passwordField) passwordField.focus();
         });
     </script>
 
