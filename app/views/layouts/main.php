@@ -323,22 +323,26 @@ $user_avatar = $user_info['avatar'] ?? '';
             font-family: 'Vazirmatn', sans-serif !important;
         }
 
-        /* --- FIXES & IMPROVEMENTS --- */
-
-        .theme-toggle-header {
-            width: 36px; height: 36px; border-radius: 50%; border: none;
-            background: rgba(255, 255, 255, 0.1); cursor: pointer;
-            position: relative; margin-left: 12px;
+        /* --- HEADER FIXES --- */
+        
+        /* Dark mode theme colors */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --text-primary: #f9fafb;
+            --border-color: #374151;
         }
-        .theme-icon {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); font-size: 14px;
-            transition: opacity 0.3s ease;
+        
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --text-primary: #1f2937;
+            --border-color: #e5e7eb;
         }
-        [data-theme="light"] .sun-icon { opacity: 1; color: #f59e0b; }
-        [data-theme="light"] .moon-icon { opacity: 0; }
-        [data-theme="dark"] .sun-icon { opacity: 0; }
-        [data-theme="dark"] .moon-icon { opacity: 1; color: #e5e7eb; }
+        
+        .dashboard-header {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
 
         .action-buttons { display: flex; gap: 4px; justify-content: center; }
         .btn-action {
@@ -351,28 +355,100 @@ $user_avatar = $user_info['avatar'] ?? '';
         .btn-delete { background: #ef4444; color: white; }
         .btn-action:hover { transform: scale(1.1); opacity: 0.9; }
 
-        .profile-simple { position: relative; }
+        /* Profile Dropdown Improved */
+        .profile-simple { 
+            position: relative; 
+        }
+        
         .profile-btn-simple {
             background: none; border: none; display: flex; align-items: center;
-            gap: 8px; padding: 6px 12px; border-radius: 8px;
-            cursor: pointer; color: inherit;
+            gap: 8px; padding: 8px 12px; border-radius: 8px;
+            cursor: pointer; color: inherit; transition: all 0.2s ease;
         }
+        
+        .profile-btn-simple:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+        
         .profile-avatar-simple {
-            width: 28px; height: 28px; border-radius: 50%; background: #667eea;
+            width: 32px; height: 32px; border-radius: 50%; 
+            background: linear-gradient(135deg, #667eea, #764ba2);
             display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 12px;
+            color: white; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+        
+        .profile-text {
+            font-weight: 500; font-size: 14px; 
+            max-width: 120px; overflow: hidden; 
+            text-overflow: ellipsis; white-space: nowrap;
+        }
+        
         .profile-menu-simple {
-            position: absolute; top: 110%; left: 0; background: var(--bg-primary, #fff);
-            border: 1px solid #e5e7eb; border-radius: 8px; min-width: 180px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; padding: 8px 0;
+            position: absolute; top: 110%; left: 0; 
+            background: var(--bg-primary, #fff);
+            border: 1px solid var(--border-color, #e5e7eb); 
+            border-radius: 12px; min-width: 200px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
+            z-index: 1000; padding: 12px 0;
+            opacity: 0; visibility: hidden; transform: translateY(-10px);
+            transition: all 0.3s ease;
         }
+        
+        .profile-menu-simple[style*="block"] {
+            opacity: 1 !important; visibility: visible !important; 
+            transform: translateY(0) !important;
+        }
+        
         .profile-item-simple {
-            display: flex; align-items: center; gap: 8px; padding: 8px 16px;
-            color: inherit; text-decoration: none; font-size: 14px;
+            display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+            color: var(--text-primary, #2d3748); text-decoration: none; 
+            font-size: 14px; transition: all 0.2s ease;
         }
-        .profile-item-simple:hover { background: #f3f4f6; }
-        .profile-item-simple.logout { color: #ef4444; }
+        
+        .profile-item-simple:hover { 
+            background: var(--gray-100, #f3f4f6); 
+            color: var(--text-primary, #2d3748);
+            text-decoration: none;
+        }
+        
+        .profile-item-simple.logout { 
+            color: #ef4444; 
+        }
+        
+        .profile-item-simple.logout:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+        
+        .profile-item-simple i {
+            width: 16px; text-align: center; font-size: 13px;
+        }
+        
+        /* Header Search */
+        .header-search {
+            position: relative; margin: 0 15px;
+        }
+        
+        .search-input-header {
+            width: 250px; padding: 8px 35px 8px 12px; border: 1px solid #e5e7eb;
+            border-radius: 20px; background: var(--gray-100, #f3f4f6);
+            font-size: 13px; transition: all 0.2s ease;
+        }
+        
+        .search-input-header:focus {
+            outline: none; border-color: #667eea; width: 300px;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .header-search i {
+            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+            color: #9ca3af; font-size: 12px; pointer-events: none;
+        }
+        
+        @media (max-width: 768px) {
+            .header-search { display: none; }
+        }
 
         .bottom-nav-fixed {
             position: fixed; bottom: 0; left: 0; right: 0;
@@ -394,8 +470,32 @@ $user_avatar = $user_info['avatar'] ?? '';
         @media (max-width: 767px) { body { padding-bottom: 70px !important; } }
     </style>
     
-    <!-- FontAwesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons - با fallback -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
+    
+    <!-- Fallback Icons with Unicode -->
+    <style>
+        /* Fallback اگر FontAwesome لود نشد */
+        .fas.fa-sun::before { content: "☀️"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-moon::before { content: "🌙"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-user::before { content: "👤"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-chevron-down::before { content: "▼"; font-family: "Arial", sans-serif; font-size: 8px; }
+        .fas.fa-search::before { content: "🔍"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-eye::before { content: "👁️"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-edit::before { content: "✏️"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-trash::before { content: "🗑️"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-user-edit::before { content: "⚙️"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-cog::before { content: "⚙️"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-sign-out-alt::before { content: "🚪"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-bars::before { content: "☰"; font-family: "Arial", sans-serif; }
+        .fas.fa-home::before { content: "🏠"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-file-alt::before { content: "📄"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-users::before { content: "👥"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-tags::before { content: "🏷️"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-plus::before { content: "➕"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+        .fas.fa-list::before { content: "📝"; font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif; }
+    </style>
     
     <!-- Additional CSS -->
     <?php if (isset($additional_css) && is_array($additional_css)): ?>
@@ -416,8 +516,13 @@ $user_avatar = $user_info['avatar'] ?? '';
         <header class="dashboard-header">
             <div class="header-content">
                 <!-- Mobile Menu Toggle -->
-                <button class="mobile-menu-toggle" onclick="toggleSidebar()" title="منو">
-                    <i class="fas fa-bars"></i>
+                <button class="mobile-menu-toggle" onclick="toggleSidebar()" title="منو" style="
+                    width: 40px; height: 40px; border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.1); border: none;
+                    cursor: pointer; display: none; align-items: center; justify-content: center;
+                    font-size: 16px;
+                ">
+                    ☰
                 </button>
                 
                 <!-- Page Title -->
@@ -427,39 +532,78 @@ $user_avatar = $user_info['avatar'] ?? '';
                 <?php endif; ?>
             </div>
             
-            <div class="header-actions">
-                <!-- Theme Toggle Button -->
-                <button id="themeToggle" class="theme-toggle-header" title="تغییر تم">
-                    <i class="fas fa-sun theme-icon sun-icon"></i>
-                    <i class="fas fa-moon theme-icon moon-icon"></i>
-                </button>
-                
-                <!-- Global Search (ساده) -->
-                <div class="header-search">
-                    <input type="text" placeholder="جستجو..." class="search-input-header">
-                    <i class="fas fa-search"></i>
+            <div class="header-actions" style="display: flex; align-items: center; gap: 12px;">
+                <!-- Global Search -->
+                <div style="position: relative; margin: 0 10px;">
+                                         <input type="text" placeholder="جستجو..." style="
+                        width: 200px; padding: 8px 35px 8px 12px; border: 1px solid #e5e7eb;
+                        border-radius: 20px; background: rgba(255,255,255,0.1);
+                        font-size: 13px; color: inherit;
+                    ">
+                    <span style="
+                        position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+                        color: #9ca3af; font-size: 14px; pointer-events: none;
+                    ">🔍</span>
                 </div>
 
-                <!-- Profile Dropdown (ساده) -->
-                <div class="profile-simple">
-                    <button class="profile-btn-simple" id="profileBtn">
-                        <div class="profile-avatar-simple">
-                            <i class="fas fa-user"></i>
+                <!-- Theme Toggle Button (EMOJI VERSION) -->
+                <button id="themeToggle" onclick="toggleTheme()" style="
+                    width: 40px; height: 40px; border-radius: 50%; border: none;
+                    background: rgba(255, 255, 255, 0.1); cursor: pointer;
+                    display: flex; align-items: center; justify-content: center;
+                    color: inherit; transition: all 0.2s ease; font-size: 18px;
+                " title="تغییر تم">
+                    <span id="theme-icon-light">☀️</span>
+                    <span id="theme-icon-dark" style="display: none;">🌙</span>
+                </button>
+                
+                <!-- Profile Menu (FIXED) -->
+                <div style="position: relative;">
+                    <button id="profileBtn" onclick="toggleProfileMenu()" style="
+                        background: none; border: none; display: flex; align-items: center;
+                        gap: 8px; padding: 8px 12px; border-radius: 8px;
+                        cursor: pointer; color: inherit; transition: all 0.2s ease;
+                    ">
+                        <div style="
+                            width: 32px; height: 32px; border-radius: 50%; 
+                            background: linear-gradient(135deg, #667eea, #764ba2);
+                            display: flex; align-items: center; justify-content: center;
+                            color: white; font-size: 16px;
+                        ">
+                            👤
                         </div>
-                        <span class="profile-text">مدیر سیستم</span>
-                        <i class="fas fa-chevron-down"></i>
+                        <span style="font-weight: 500; font-size: 14px;">مدیر سیستم</span>
+                        <span style="font-size: 10px;">▼</span>
                     </button>
                     
-                    <div class="profile-menu-simple" id="profileMenu" style="display: none;">
-                        <a href="#" class="profile-item-simple">
-                            <i class="fas fa-user-edit"></i> پروفایل
+                    <div id="profileMenu" style="
+                        position: absolute; top: 110%; left: 0; 
+                        background: var(--bg-primary, #fff);
+                        border: 1px solid #e5e7eb; border-radius: 12px; min-width: 200px;
+                        box-shadow: 0 8px 25px rgba(0,0,0,0.15); 
+                        z-index: 1000; padding: 12px 0; display: none;
+                    ">
+                        <a href="#" style="
+                            display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+                            color: #2d3748; text-decoration: none; font-size: 14px;
+                            transition: all 0.2s ease;
+                        " onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                            <span style="width: 16px; text-align: center;">⚙️</span> پروفایل
                         </a>
-                        <a href="#" class="profile-item-simple">
-                            <i class="fas fa-cog"></i> تنظیمات
+                        <a href="#" style="
+                            display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+                            color: #2d3748; text-decoration: none; font-size: 14px;
+                            transition: all 0.2s ease;
+                        " onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                            <span style="width: 16px; text-align: center;">⚙️</span> تنظیمات
                         </a>
-                        <hr>
-                        <a href="<?= url('logout') ?>" class="profile-item-simple logout">
-                            <i class="fas fa-sign-out-alt"></i> خروج
+                        <hr style="margin: 8px 0; border: none; border-top: 1px solid #e5e7eb;">
+                        <a href="/logout" style="
+                            display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+                            color: #ef4444; text-decoration: none; font-size: 14px;
+                            transition: all 0.2s ease;
+                        " onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'" onmouseout="this.style.background='transparent'">
+                            <span style="width: 16px; text-align: center;">🚪</span> خروج
                         </a>
                     </div>
                 </div>
@@ -475,54 +619,42 @@ $user_avatar = $user_info['avatar'] ?? '';
             <ul class="sidebar-menu">
                 <li class="sidebar-menu-item">
                     <a href="/dashboard" class="sidebar-menu-link <?= ($current_route === 'dashboard') ? 'active' : '' ?>">
-                        <span class="sidebar-menu-icon">
-                            <i class="fas fa-home"></i>
-                        </span>
+                        <span class="sidebar-menu-icon">🏠</span>
                         داشبورد
                     </a>
                 </li>
                 
                 <li class="sidebar-menu-item">
                     <a href="/requests" class="sidebar-menu-link <?= (strpos($current_route, 'request') === 0) ? 'active' : '' ?>">
-                        <span class="sidebar-menu-icon">
-                            <i class="fas fa-file-alt"></i>
-                        </span>
+                        <span class="sidebar-menu-icon">📄</span>
                         درخواست‌ها
                     </a>
                 </li>
                 
                 <li class="sidebar-menu-item">
                     <a href="/users" class="sidebar-menu-link <?= (strpos($current_route, 'user') === 0) ? 'active' : '' ?>">
-                        <span class="sidebar-menu-icon">
-                            <i class="fas fa-users"></i>
-                        </span>
+                        <span class="sidebar-menu-icon">👥</span>
                         کاربران
                     </a>
                 </li>
                 
                 <li class="sidebar-menu-item">
                     <a href="/tags" class="sidebar-menu-link <?= (strpos($current_route, 'tag') === 0) ? 'active' : '' ?>">
-                        <span class="sidebar-menu-icon">
-                            <i class="fas fa-tags"></i>
-                        </span>
+                        <span class="sidebar-menu-icon">🏷️</span>
                         برچسب‌ها
                     </a>
                 </li>
                 
                 <li class="sidebar-menu-item">
                     <a href="/settings" class="sidebar-menu-link <?= (strpos($current_route, 'setting') === 0) ? 'active' : '' ?>">
-                        <span class="sidebar-menu-icon">
-                            <i class="fas fa-cog"></i>
-                        </span>
+                        <span class="sidebar-menu-icon">⚙️</span>
                         تنظیمات
                     </a>
                 </li>
                 
                 <li class="sidebar-menu-item">
                     <a href="/logout" class="sidebar-menu-link">
-                        <span class="sidebar-menu-icon">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </span>
+                        <span class="sidebar-menu-icon">🚪</span>
                         خروج
                     </a>
                 </li>
@@ -561,24 +693,24 @@ $user_avatar = $user_info['avatar'] ?? '';
         
         <!-- MANDATORY: Mobile Navigation & Footer -->
         <div class="bottom-nav-fixed">
-            <a href="<?= url('dashboard') ?>" class="nav-item-fixed active">
-                <i class="fas fa-home"></i>
+            <a href="/dashboard" class="nav-item-fixed active">
+                <span style="font-size: 18px;">🏠</span>
                 <span>داشبورد</span>
             </a>
-            <a href="<?= url('requests/create') ?>" class="nav-item-fixed">
-                <i class="fas fa-plus"></i>
+            <a href="/requests/create" class="nav-item-fixed">
+                <span style="font-size: 18px;">➕</span>
                 <span>جدید</span>
             </a>
-            <a href="<?= url('requests') ?>" class="nav-item-fixed">
-                <i class="fas fa-list"></i>
+            <a href="/requests" class="nav-item-fixed">
+                <span style="font-size: 18px;">📝</span>
                 <span>درخواست‌ها</span>
             </a>
-            <a href="<?= url('tags') ?>" class="nav-item-fixed">
-                <i class="fas fa-tags"></i>
+            <a href="/tags" class="nav-item-fixed">
+                <span style="font-size: 18px;">🏷️</span>
                 <span>برچسب‌ها</span>
             </a>
-            <a href="<?= url('users') ?>" class="nav-item-fixed">
-                <i class="fas fa-users"></i>
+            <a href="/users" class="nav-item-fixed">
+                <span style="font-size: 18px;">👥</span>
                 <span>کاربران</span>
             </a>
         </div>
@@ -586,62 +718,123 @@ $user_avatar = $user_info['avatar'] ?? '';
     
     <!-- JavaScript -->
     <script>
+        // ======== GLOBAL FUNCTIONS ========
+        
+        // Mobile Sidebar Toggle (Global)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            if (!sidebar) return;
+            
+            sidebar.classList.toggle('open');
+            
+            if (sidebar.classList.contains('open')) {
+                if (overlay) {
+                    overlay.style.display = 'block';
+                    setTimeout(() => overlay.style.opacity = '1', 10);
+                }
+            } else {
+                if (overlay) {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.style.display = 'none', 300);
+                }
+            }
+        }
+        
+        // Theme Toggle (Global)
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('samanat_theme', newTheme);
+            
+            // Update theme icons
+            const lightIcon = document.getElementById('theme-icon-light');
+            const darkIcon = document.getElementById('theme-icon-dark');
+            
+            if (lightIcon && darkIcon) {
+                if (newTheme === 'dark') {
+                    lightIcon.style.display = 'none';
+                    darkIcon.style.display = 'inline-block';
+                } else {
+                    lightIcon.style.display = 'inline-block';
+                    darkIcon.style.display = 'none';
+                }
+            }
+        }
+        
+        // Profile Toggle (Global)
+        function toggleProfileMenu() {
+            const profileMenu = document.getElementById('profileMenu');
+            if (profileMenu) {
+                const isVisible = profileMenu.style.display === 'block';
+                profileMenu.style.display = isVisible ? 'none' : 'block';
+            }
+        }
+        
+        // ======== DOM READY ========
         document.addEventListener('DOMContentLoaded', function() {
             
-            // Theme Toggle
-            const themeToggle = document.getElementById('themeToggle');
-            if (themeToggle) {
-                themeToggle.addEventListener('click', function() {
-                    const html = document.documentElement;
-                    const currentTheme = html.getAttribute('data-theme') || 'light';
-                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-                    
-                    html.setAttribute('data-theme', newTheme);
-                    localStorage.setItem('samanat_theme', newTheme);
-                });
-                
-                // Load saved theme
-                const savedTheme = localStorage.getItem('samanat_theme') || 'light';
-                document.documentElement.setAttribute('data-theme', savedTheme);
+            // Load saved theme
+            const savedTheme = localStorage.getItem('samanat_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Set initial theme icons
+            const lightIcon = document.getElementById('theme-icon-light');
+            const darkIcon = document.getElementById('theme-icon-dark');
+            
+            if (lightIcon && darkIcon) {
+                if (savedTheme === 'dark') {
+                    lightIcon.style.display = 'none';
+                    darkIcon.style.display = 'inline-block';
+                } else {
+                    lightIcon.style.display = 'inline-block';
+                    darkIcon.style.display = 'none';
+                }
             }
             
-            // Profile Dropdown
+            // Theme Toggle Event
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+            
+            // Profile Dropdown Events
             const profileBtn = document.getElementById('profileBtn');
             const profileMenu = document.getElementById('profileMenu');
             
             if (profileBtn && profileMenu) {
                 profileBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    const isVisible = profileMenu.style.display === 'block';
-                    profileMenu.style.display = isVisible ? 'none' : 'block';
+                    toggleProfileMenu();
                 });
                 
-                document.addEventListener('click', function() {
-                    profileMenu.style.display = 'none';
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
+                        profileMenu.style.display = 'none';
+                    }
+                });
+                
+                // Prevent menu from closing when clicking inside
+                profileMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
                 });
             }
 
-            // --- Existing JS ---
-            // Mobile Sidebar Toggle
-            function toggleSidebar() {
-                const sidebar = document.getElementById('sidebar');
-                const overlay = document.querySelector('.sidebar-overlay');
-                
-                sidebar.classList.toggle('open');
-                
-                if (sidebar.classList.contains('open')) {
-                    overlay.style.display = 'block';
-                    setTimeout(() => overlay.style.opacity = '1', 10);
-                } else {
-                    overlay.style.opacity = '0';
-                    setTimeout(() => overlay.style.display = 'none', 300);
-                }
-            }
-
+            // Mobile Menu Events
             const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-            if(mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleSidebar);
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', toggleSidebar);
+            }
+            
             const sidebarOverlay = document.querySelector('.sidebar-overlay');
-            if(sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', toggleSidebar);
+            }
 
             // Alert Auto-close
             const alerts = document.querySelectorAll('.alert');
@@ -652,7 +845,7 @@ $user_avatar = $user_info['avatar'] ?? '';
                 }, 5000);
             });
             
-            console.log('✅ Samanet Dashboard v3.0 loaded');
+            console.log('✅ Samanet Dashboard v3.0 - All functions loaded');
         });
     </script>
 </body>
