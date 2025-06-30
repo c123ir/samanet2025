@@ -171,6 +171,26 @@ class BaseController
     }
 
     /**
+     * Renders a view file directly without any layout.
+     * Useful for pages like login, register, or for AJAX content.
+     *
+     * @param string $view The view file to render.
+     * @param array $data Data to be made available to the view.
+     */
+    protected function renderPartial(string $view, array $data = [])
+    {
+        $viewFile = APP_PATH . "views/{$view}.php";
+
+        if (file_exists($viewFile)) {
+            extract($this->data);
+            extract($data);
+            require $viewFile;
+        } else {
+            $this->sendError("View not found: {$viewFile}", 404);
+        }
+    }
+
+    /**
      * نمایش JSON response
      */
     protected function json($data = [], $status = 200) 
@@ -415,17 +435,6 @@ class BaseController
         if (!Security::checkPermission($role)) {
             $this->sendError('دسترسی محدود شده', 403);
         }
-    }
-
-    /**
-     * Wrapper برای renderView - alias برای view method
-     */
-    protected function renderView($viewPath, $data = [], $pageTitle = null) 
-    {
-        if ($pageTitle) {
-            $data['page_title'] = $pageTitle;
-        }
-        return $this->view($viewPath, $data);
     }
 
     /**

@@ -59,7 +59,7 @@ class AuthController extends BaseController
             $this->data['lockout_time'] = LOGIN_LOCKOUT_TIME / 60; // تبدیل به دقیقه
         }
 
-        $this->render('auth/login', $this->data);
+        $this->renderPartial('auth/login', $this->data);
     }
 
     /**

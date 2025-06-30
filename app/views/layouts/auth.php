@@ -68,9 +68,10 @@
         }
 
         /* --- Force Hide Parent Layout --- */
-        body > *:not(.auth-wrapper):not(script) {
+        #main-sidebar, .main-header, .main-sidebar, .page-header, .sidebar, .navbar, .header, .content-wrapper, .main-footer {
             display: none !important;
         }
+
         .auth-wrapper {
             width: 100vw;
             height: 100vh;
@@ -80,6 +81,7 @@
             position: fixed;
             top: 0;
             left: 0;
+            z-index: 1000; /* Lower z-index */
         }
 
         /* --- Theme Toggle --- */
