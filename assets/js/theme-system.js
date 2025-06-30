@@ -93,12 +93,25 @@
                 themeIcon.style.transform = 'scale(0.8)';
                 
                 setTimeout(() => {
-                    if (theme === 'dark') {
-                        themeIcon.className = 'fas fa-sun';
-                        themeIcon.style.color = '#F59E0B';
+                    // Check if using emoji or FontAwesome
+                    const isEmoji = themeIcon.tagName === 'SPAN' && !themeIcon.classList.contains('fas');
+                    
+                    if (isEmoji) {
+                        // Emoji mode
+                        if (theme === 'dark') {
+                            themeIcon.textContent = '☀️';
+                        } else {
+                            themeIcon.textContent = '🌙';
+                        }
                     } else {
-                        themeIcon.className = 'fas fa-moon';
-                        themeIcon.style.color = '#6B7280';
+                        // FontAwesome mode
+                        if (theme === 'dark') {
+                            themeIcon.className = 'fas fa-sun';
+                            themeIcon.style.color = '#F59E0B';
+                        } else {
+                            themeIcon.className = 'fas fa-moon';
+                            themeIcon.style.color = '#6B7280';
+                        }
                     }
                     
                     themeIcon.style.transform = 'scale(1)';
