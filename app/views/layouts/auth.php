@@ -48,121 +48,54 @@
             display: none !important;
         }
         
-        /* ✅ PERFECT: Single Theme Toggle with Beautiful Animation */
+        /* ✅ Simple Theme Toggle */
         .theme-toggle {
             position: fixed;
             top: 20px;
             left: 20px;
-            width: 48px;
-            height: 48px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             border: none;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(15px);
+            background: rgba(255, 255, 255, 0.9);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            font-size: 22px;
         }
         
         .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.08) rotate(5deg);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
         
         .theme-toggle:active {
-            transform: scale(0.92);
-            transition: transform 0.1s ease;
+            transform: scale(0.95);
         }
         
-        /* ✅ SINGLE Icon Container with Rotation Animation */
-        .theme-icon-container {
-            position: relative;
-            width: 24px;
-            height: 24px;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        [data-theme="dark"] .theme-toggle {
+            background: rgba(45, 55, 72, 0.9);
+            color: #e2e8f0;
         }
         
-        .theme-icon {
-            font-size: 20px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* ✅ Beautiful Light Theme Animation */
-        [data-theme="light"] .theme-icon-container {
-            transform: rotate(0deg);
-        }
-        
-        [data-theme="light"] .sun-icon {
-            opacity: 1;
-            color: #f59e0b;
-            visibility: visible;
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-        }
-        
-        [data-theme="light"] .moon-icon {
-            opacity: 0;
-            visibility: hidden;
-            transform: translate(-50%, -50%) scale(0.3) rotate(180deg);
-        }
-        
-        /* ✅ Beautiful Dark Theme Animation */
-        [data-theme="dark"] .theme-icon-container {
-            transform: rotate(180deg);
-        }
-        
-        [data-theme="dark"] .sun-icon {
-            opacity: 0;
-            visibility: hidden;
-            transform: translate(-50%, -50%) scale(0.3) rotate(-180deg);
-        }
-        
-        [data-theme="dark"] .moon-icon {
-            opacity: 1;
-            color: #e5e7eb;
-            visibility: visible;
-            transform: translate(-50%, -50%) scale(1) rotate(0deg);
-        }
-        
-        /* ✅ Hover Glow Effects */
-        [data-theme="light"] .theme-toggle:hover .sun-icon {
-            color: #fbbf24;
-            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-            transform: translate(-50%, -50%) scale(1.1) rotate(90deg);
-        }
-        
-        [data-theme="dark"] .theme-toggle:hover .moon-icon {
-            color: #f3f4f6;
-            text-shadow: 0 0 15px rgba(229, 231, 235, 0.4);
-            transform: translate(-50%, -50%) scale(1.1) rotate(20deg);
-        }
-        
-        /* ✅ OPTIMIZED Auth Container - Modern Design */
+        /* ✅ OPTIMIZED Auth Container - Compact Design */
         .auth-container {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            padding: 30px 25px 25px 25px;
+            padding: 25px 20px;
             width: 100%;
-            max-width: 380px;
-            min-width: 320px;
+            max-width: 360px;
+            min-width: 300px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             text-align: center;
+            /* Compact structure */
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            position: relative;
-            /* Remove aspect-ratio for better browser support */
-            min-height: 520px;
-            max-height: 600px;
+            gap: 10px;
         }
         
         /* ✅ IMPROVED: Light theme styles */
@@ -225,16 +158,16 @@
         }
         
         .auth-logo {
-            font-size: 45px;
-            margin-bottom: 10px;
+            font-size: 40px;
+            margin-bottom: 5px;
             line-height: 1;
         }
         
         .auth-title {
-            font-size: 1.7rem;
+            font-size: 1.5rem;
             font-weight: 600;
-            margin-bottom: 5px;
-            line-height: 1.2;
+            margin-bottom: 3px;
+            line-height: 1.1;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -243,9 +176,9 @@
         
         .auth-subtitle {
             opacity: 0.8;
-            margin-bottom: 20px;
-            font-size: 0.82rem;
-            line-height: 1.3;
+            margin-bottom: 15px;
+            font-size: 0.75rem;
+            line-height: 1.2;
         }
         
         /* ✅ Compact Form Container */
@@ -258,22 +191,22 @@
         
         /* ✅ IMPROVED: Form Styles */
         .form-group {
-            margin-bottom: 18px; /* ✅ Slightly reduced */
+            margin-bottom: 12px;
             text-align: right;
         }
         
         .form-label {
             display: block;
-            margin-bottom: 6px; /* ✅ Reduced from 8px */
+            margin-bottom: 4px;
             font-weight: 500;
-            font-size: 0.85rem; /* ✅ Slightly smaller */
+            font-size: 0.8rem;
         }
         
         .form-control {
             width: 100%;
-            padding: 12px 14px; /* ✅ Reduced padding */
-            border-radius: 12px;
-            font-size: 16px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 14px;
             transition: all 0.3s ease;
             border: 1px solid transparent;
             font-family: inherit;
@@ -289,16 +222,16 @@
         
         .btn-primary {
             width: 100%;
-            padding: 12px 14px; /* ✅ Reduced padding */
+            padding: 10px 12px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             color: white;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 12px; /* ✅ Reduced from 15px */
+            margin-top: 8px;
             font-family: inherit;
         }
         
@@ -313,16 +246,16 @@
         
         /* ✅ Compact Test Info */
         .test-info {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 12px;
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 11px;
             flex-shrink: 0;
         }
         
         .test-info p {
-            margin: 4px 0; /* ✅ Reduced from 6px */
-            line-height: 1.3;
+            margin: 2px 0;
+            line-height: 1.2;
         }
         
         .test-info strong {
@@ -441,13 +374,9 @@
 </head>
 
 <body data-theme="light">
-    <!-- ✅ Theme Toggle with SVG Icons -->
-    <button id="themeToggle" class="theme-toggle" title="تغییر تم" aria-label="تبدیل تم">
-        <div class="theme-icon-container">
-            <!-- Better SVG Icons -->
-            <span class="theme-icon sun-icon">☀️</span>
-            <span class="theme-icon moon-icon">🌙</span>
-        </div>
+    <!-- ✅ Theme Toggle Button -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="تغییر تم" aria-label="تبدیل تم">
+        <span id="theme-icon">🌙</span>
     </button>
     
     <!-- ✅ Optimized Auth Container -->
@@ -511,176 +440,22 @@
         </div>
     </div>
     
-    <!-- ✅ IMPROVED: Enhanced JavaScript -->
+    <!-- Load theme system -->
+    <script src="<?= asset('js/theme-system.js') ?>"></script>
+    
+    <!-- Simple auth page script -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('🚀 Samanet Auth Page Initialized');
-        
-        // ✅ AGGRESSIVE: Remove any duplicate theme toggles
-        const allToggles = document.querySelectorAll('.theme-toggle');
-        if (allToggles.length > 1) {
-            console.warn(`⚠️ Found ${allToggles.length} theme toggles, removing duplicates`);
-            // Keep only the first one and remove all others
-            for (let i = 1; i < allToggles.length; i++) {
-                allToggles[i].remove();
-            }
-        }
-        
-        // ✅ Also remove any orphaned theme buttons from other systems
-        const orphanedButtons = document.querySelectorAll('button[onclick*="theme"], .btn-theme, #theme-btn');
-        orphanedButtons.forEach(btn => {
-            if (btn.id !== 'themeToggle') {
-                console.warn('⚠️ Removing orphaned theme button:', btn);
-                btn.remove();
-            }
-        });
-        
-        const themeToggle = document.getElementById('themeToggle');
-        const body = document.body;
-        
-        // ✅ Verify elements exist
-        if (!themeToggle) {
-            console.error('❌ Theme toggle button not found');
-            return;
-        }
-        
-        // ✅ Load saved theme with validation
-        let savedTheme = localStorage.getItem('samanat_theme');
-        if (!savedTheme || !['light', 'dark'].includes(savedTheme)) {
-            savedTheme = 'light';
-            localStorage.setItem('samanat_theme', savedTheme);
-        }
-        
-        body.setAttribute('data-theme', savedTheme);
-        console.log('✅ Theme loaded:', savedTheme);
-        
-        // ✅ Enhanced toggle theme function
-        function toggleTheme() {
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            
-            // Update theme
-            body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('samanat_theme', newTheme);
-            
-            // Enhanced animation
-            themeToggle.style.transform = 'scale(0.9)';
-            themeToggle.style.opacity = '0.8';
-            
-            setTimeout(() => {
-                themeToggle.style.transform = 'scale(1)';
-                themeToggle.style.opacity = '1';
-            }, 150);
-            
-            console.log('🎨 Theme changed to:', newTheme);
-            
-            // Dispatch custom event for other components
-            const event = new CustomEvent('themeChanged', { 
-                detail: { theme: newTheme, timestamp: Date.now() } 
-            });
-            document.dispatchEvent(event);
-        }
-        
-        // ✅ Add click event with proper error handling
-        themeToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            try {
-                toggleTheme();
-            } catch (error) {
-                console.error('❌ Theme toggle error:', error);
-            }
-        });
-        
-        // ✅ Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Ctrl+Shift+T for theme toggle
-            if (e.ctrlKey && e.shiftKey && e.key === 'T') {
-                e.preventDefault();
-                toggleTheme();
-            }
-            
-            // Tab navigation enhancement for accessibility
-            if (e.key === 'Tab' && e.target === themeToggle) {
-                themeToggle.style.outline = '2px solid #667eea';
-            }
-        });
-        
-        // ✅ Enhanced form functionality
+        // Simple form enhancements
         const form = document.querySelector('form');
-        const usernameField = document.querySelector('input[name="username"]');
         const passwordField = document.querySelector('input[name="password"]');
-        const submitBtn = document.querySelector('.btn-primary');
         
-        if (form && submitBtn) {
-            // Form submission with loading state
-            form.addEventListener('submit', function(e) {
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>در حال ورود...';
-                submitBtn.disabled = true;
-                submitBtn.style.opacity = '0.8';
-                
-                // Prevent double submission
-                setTimeout(() => {
-                    if (submitBtn.disabled) {
-                        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>ورود به سامانت';
-                        submitBtn.disabled = false;
-                        submitBtn.style.opacity = '1';
-                    }
-                }, 5000);
-            });
-            
-            // Enhanced keyboard navigation
-            if (usernameField && passwordField) {
-                usernameField.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        passwordField.focus();
-                    }
-                });
-                
-                passwordField.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        form.submit();
-                    }
-                });
-                
-                // Auto-focus username field
-                usernameField.focus();
+        if (form) {
+            // Focus on password field since username is pre-filled
+            if (passwordField) {
+                passwordField.focus();
             }
         }
-        
-        // ✅ Accessibility improvements
-        const removeOutline = () => {
-            themeToggle.style.outline = 'none';
-        };
-        
-        themeToggle.addEventListener('blur', removeOutline);
-        themeToggle.addEventListener('click', removeOutline);
-        
-        // ✅ FontAwesome loading verification
-        setTimeout(() => {
-            const sunIcon = document.querySelector('.sun-icon');
-            const moonIcon = document.querySelector('.moon-icon');
-            
-            if (sunIcon && moonIcon) {
-                const sunComputed = window.getComputedStyle(sunIcon, '::before');
-                const moonComputed = window.getComputedStyle(moonIcon, '::before');
-                
-                if (sunComputed.content === 'none' || moonComputed.content === 'none') {
-                    console.warn('⚠️ FontAwesome icons may not be loaded properly');
-                    
-                    // Fallback to text icons if FontAwesome fails
-                    sunIcon.textContent = '☀️';
-                    moonIcon.textContent = '🌙';
-                    sunIcon.style.fontSize = '18px';
-                    moonIcon.style.fontSize = '18px';
-                }
-            }
-        }, 1000);
-        
-        console.log('✅ Auth page fully initialized');
     });
     </script>
 </body>
