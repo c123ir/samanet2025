@@ -1,37 +1,60 @@
-# 🎨 SAMANET DESIGN SYSTEM - MANDATORY AUTO-APPLY
+# 🔐 SIMPLE AUTH RULES FOR SAMANET
 
-When creating/editing ANY PHP view, CSS file, or controller:
+## ✅ **CLEAN LOGIN PAGE REQUIREMENTS**
 
-## ALWAYS APPLY THESE CLASSES:
-- `.glass-card` for all containers (glassmorphism effect)
-- `.btn-modern` for all buttons (modern styling)
-- `.stat-card` for statistics cards
-- `.animate-fade-in-up` for page wrapper
-- `.hover-lift` for interactive elements
+### **1. Simple Layout:**
+- Centered login form only
+- NO sidebar in auth pages  
+- Clean theme toggle in corner
+- Responsive design without complexity
 
-## REQUIRED CSS VARIABLES:
+### **2. Theme Toggle:**
+- Simple button with sun/moon icons
+- 40px size, corner positioned
+- Basic hover animation
+- localStorage: 'samanat_theme'
+
+### **3. Form Styling:**
+- Clean white/dark backgrounds
+- Readable text colors
+- Simple border radius (15px)
+- Proper spacing without glassmorphism
+
+### **4. NO Complex Features:**
+- NO CSS glassmorphism overrides
+- NO enterprise-grade complexities  
+- NO mandatory design systems
+- NO auto-apply glass-card classes
+- Keep auth pages SIMPLE and functional
+
+---
+
+## 🎨 **Simple CSS Variables Only:**
+
 ```css
 :root {
-    --glass-bg: rgba(255,255,255,0.15);
-    --backdrop-blur: blur(16px);
-    --border-radius-xl: 20px;
-    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+    --primary: #667eea;
+    --bg-light: #ffffff; 
+    --bg-dark: #2d3748;
+    --text-light: #2d3748;
+    --text-dark: #e2e8f0;
+    --border-radius: 15px;
 }
 ```
 
-## MANDATORY HTML STRUCTURE:
-```html
-<div class="page-name-page animate-fade-in-up">
-    <div class="page-header glass-card hover-lift">
-        <h1>Page Title</h1>
-    </div>
-    <div class="main-content glass-card">
-        <!-- Content -->
-    </div>
-</div>
-```
+## 🚫 **What NOT to do in Auth Pages:**
+- Don't apply glass-card classes
+- Don't override existing layouts  
+- Don't create complex design systems
+- Don't add multiple theme handlers
+- Don't use enterprise-grade CSS
+- Keep auth pages SIMPLE
 
-## CONTROLLER REQUIREMENT:
-Always add: `'additional_css' => ['css/page-name.css']`
+## ✅ **Expected Auth Result:**
+- Clean, centered login form
+- Working theme toggle
+- Proper responsive design
+- NO layout distortion
+- Clean and minimal styling
 
-🎯 **GOAL:** Professional glassmorphism UI with smooth animations and perfect responsiveness. 
+🎯 **AUTH GOAL:** Simple, functional login page without design system interference. 
