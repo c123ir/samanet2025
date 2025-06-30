@@ -1,8 +1,9 @@
 <?php
 /**
  * نام فایل: auth.php
- * مسیر فایل: /app/views/layouts/auth.php
- * توضیح: قالب ساده صفحات احراز هویت - ورژن رفع باگ
+ * مسیر: /app/views/layouts/auth.php
+ * هدف: قالب استاندارد و بازنویسی شده برای احراز هویت
+ * نسخه: 4.0 (بازنویسی کامل)
  */
 ?>
 <!DOCTYPE html>
@@ -18,444 +19,241 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="<?= $csrf_token ?? '' ?>">
     
-    <!-- Bootstrap RTL -->
-    <link href="<?= asset('vendor/bootstrap/css/bootstrap.rtl.min.css') ?>" rel="stylesheet">
-    <link href="<?= asset('vendor/fontawesome/css/all.min.css') ?>" rel="stylesheet">
-    <!-- ✅ FontAwesome CDN Fallback -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- Fonts -->
     <link href="<?= asset('fonts/Vazirmatn-font-face.css') ?>" rel="stylesheet">
-    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <style>
+        /* --- CSS Reset & Base --- */
+        :root {
+            --bg-light: #f4f7fa;
+            --bg-dark: #1a202c;
+            --card-bg-light: #ffffff;
+            --card-bg-dark: #2d3748;
+            --text-light: #2d3748;
+            --text-dark: #e2e8f0;
+            --input-bg-light: #edf2f7;
+            --input-bg-dark: #4a5568;
+            --primary-color: #667eea;
+            --primary-hover: #5a67d8;
+            --border-color: #e2e8f0;
+            --border-dark: #4a5568;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --font-family: 'Vazirmatn', sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --bg-light: var(--bg-dark);
+            --card-bg-light: var(--card-bg-dark);
+            --text-light: var(--text-dark);
+            --input-bg-light: var(--input-bg-dark);
+            --border-color: var(--border-dark);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Vazirmatn', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            font-family: var(--font-family);
+            background-color: var(--bg-light);
+            color: var(--text-light);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            position: relative;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
         }
-        
-        /* هیچ sidebar نمایش داده نشود */
-        .sidebar, .main-navigation, .navbar, .nav-menu {
-            display: none !important;
-        }
-        
-        /* ✅ Simple Theme Toggle */
+
+        /* --- Theme Toggle --- */
         .theme-toggle {
             position: fixed;
-            top: 20px;
-            left: 20px;
+            top: 25px;
+            left: 25px;
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            border: none;
-            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg-light);
+            color: var(--text-light);
+            font-size: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
             z-index: 1000;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            font-size: 22px;
         }
-        
         .theme-toggle:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: var(--shadow);
         }
-        
-        .theme-toggle:active {
-            transform: scale(0.95);
-        }
-        
-        [data-theme="dark"] .theme-toggle {
-            background: rgba(45, 55, 72, 0.9);
-            color: #e2e8f0;
-        }
-        
-        /* ✅ OPTIMIZED Auth Container - Compact Design */
+
+        /* --- Auth Container --- */
         .auth-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 25px 20px;
             width: 100%;
-            max-width: 360px;
-            min-width: 300px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            padding: 40px 35px;
+            background-color: var(--card-bg-light);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
             text-align: center;
-            /* Compact structure */
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            transition: background-color 0.3s;
         }
-        
-        /* ✅ IMPROVED: Light theme styles */
-        [data-theme="light"] .auth-container {
-            color: #2d3748;
+
+        .auth-header .logo {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
         }
-        
-        [data-theme="light"] .form-control {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #2d3748;
-        }
-        
-        [data-theme="light"] .form-control::placeholder {
-            color: #718096;
-            opacity: 0.8;
-        }
-        
-        [data-theme="light"] .form-label {
-            color: #2d3748;
-        }
-        
-        [data-theme="light"] .test-info {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            color: #1e40af;
-        }
-        
-        /* ✅ IMPROVED: Dark theme styles */
-        [data-theme="dark"] .auth-container {
-            background: rgba(45, 55, 72, 0.95);
-            color: #e2e8f0;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }
-        
-        [data-theme="dark"] .form-control {
-            background: rgba(45, 55, 72, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #e2e8f0;
-        }
-        
-        [data-theme="dark"] .form-control::placeholder {
-            color: #a0aec0;
-            opacity: 0.8;
-        }
-        
-        [data-theme="dark"] .form-label {
-            color: #e2e8f0;
-        }
-        
-        [data-theme="dark"] .test-info {
-            background: rgba(59, 130, 246, 0.15);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            color: #93c5fd;
-        }
-        
-        /* ✅ Compact Logo & Branding */
-        .auth-header {
-            flex-shrink: 0;
-        }
-        
-        .auth-logo {
-            font-size: 40px;
+        .auth-header h1 {
+            font-size: 28px;
+            font-weight: 700;
             margin-bottom: 5px;
-            line-height: 1;
         }
-        
-        .auth-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 3px;
-            line-height: 1.1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .auth-header p {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 30px;
         }
-        
-        .auth-subtitle {
-            opacity: 0.8;
-            margin-bottom: 15px;
-            font-size: 0.75rem;
-            line-height: 1.2;
-        }
-        
-        /* ✅ Compact Form Container */
-        .form-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        /* ✅ IMPROVED: Form Styles */
+
+        /* --- Form Elements --- */
         .form-group {
-            margin-bottom: 12px;
+            margin-bottom: 20px;
             text-align: right;
         }
-        
-        .form-label {
+        .form-group label {
             display: block;
-            margin-bottom: 4px;
-            font-weight: 500;
-            font-size: 0.8rem;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
-        
         .form-control {
             width: 100%;
-            padding: 10px 12px;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            border: 1px solid transparent;
-            font-family: inherit;
-            box-sizing: border-box;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg-light);
+            color: var(--text-light);
+            font-size: 15px;
+            transition: all 0.3s;
         }
-        
         .form-control:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            transform: translateY(-1px);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
-        
-        .btn-primary {
+
+        /* --- Button --- */
+        .btn-submit {
             width: 100%;
-            padding: 10px 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 12px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
+            background-color: var(--primary-color);
             color: white;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 8px;
-            font-family: inherit;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-        
-        /* ✅ Compact Test Info */
-        .test-info {
+            transition: background-color 0.3s, transform 0.2s;
             margin-top: 10px;
-            padding: 8px;
+        }
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* --- Test Info --- */
+        .test-info {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: var(--input-bg-light);
             border-radius: 8px;
-            font-size: 11px;
-            flex-shrink: 0;
-        }
-        
-        .test-info p {
-            margin: 2px 0;
-            line-height: 1.2;
-        }
-        
-        .test-info strong {
-            font-weight: 600;
-        }
-        
-        /* Alert styles */
-        .alert {
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            border-radius: 12px;
+            font-size: 13px;
             text-align: center;
+        }
+        .test-info p {
+            margin: 5px 0;
+        }
+        
+        /* --- Alert Messages --- */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
             font-size: 14px;
         }
-        
         .alert-danger {
-            background: rgba(239, 68, 68, 0.1);
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #c53030;
             border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #dc2626;
         }
-        
-        .alert-success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #059669;
-        }
-        
-        /* ✅ PERFECT: Mobile Responsive */
-        @media (max-width: 576px) {
-            body {
-                padding: 10px;
-            }
-            
-            .auth-container {
-                padding: 25px 20px 20px 20px;
-                margin: 5px;
-                max-width: 340px;
-                min-width: 280px;
-                min-height: 480px;
-                max-height: 560px;
-            }
-            
-            .theme-toggle {
-                top: 12px;
-                left: 12px;
-                width: 42px;
-                height: 42px;
-            }
-            
-            .theme-icon-container {
-                width: 20px;
-                height: 20px;
-            }
-            
-            .theme-icon {
-                font-size: 16px;
-            }
-            
-            .auth-logo {
-                font-size: 40px; /* ✅ Smaller for mobile */
-                margin-bottom: 12px;
-            }
-            
-            .auth-title {
-                font-size: 1.5rem; /* ✅ Smaller for mobile */
-                margin-bottom: 6px;
-            }
-            
-            .auth-subtitle {
-                font-size: 0.8rem;
-                margin-bottom: 20px;
-            }
-            
-            .form-group {
-                margin-bottom: 15px;
-            }
-            
-            .form-label {
-                font-size: 0.8rem;
-                margin-bottom: 5px;
-            }
-            
-            .form-control {
-                font-size: 16px; /* Prevent iOS zoom */
-                padding: 11px 12px;
-            }
-            
-            .btn-primary {
-                padding: 11px 12px;
-                margin-top: 10px;
-            }
-            
-            .test-info {
-                margin-top: 15px;
-                padding: 10px;
-                font-size: 12px;
-            }
-            
-            .test-info p {
-                margin: 3px 0;
-            }
-        }
-        
-        /* ✅ اطمینان از عدم نمایش هر چیز اضافی */
-        .main-wrapper,
-        .dashboard-wrapper,
-        .layout-wrapper {
-            display: none !important;
-        }
-        
-        /* ✅ Animation for smooth transitions */
-        * {
-            transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
-        }
+
     </style>
 </head>
+<body>
 
-<body data-theme="light">
-    <!-- ✅ Theme Toggle Button -->
-    <button class="theme-toggle" onclick="toggleTheme()" title="تغییر تم" aria-label="تبدیل تم">
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="تغییر تم">
         <span id="theme-icon">🌙</span>
     </button>
-    
-    <!-- ✅ Optimized Auth Container -->
-    <div class="auth-container">
-        <!-- Header Section -->
-        <div class="auth-header">
-            <div class="auth-logo">🔹</div>
-            <h1 class="auth-title">سامانت</h1>
-            <p class="auth-subtitle">سامانه مدیریت حواله و بایگانی اسناد</p>
-        </div>
+
+    <!-- Main Authentication Container -->
+    <main class="auth-container">
         
-        <!-- Form Container -->
-        <div class="form-container">
-            <!-- Flash Message -->
-            <?php if (isset($_SESSION['flash'])): ?>
-                <div class="alert alert-<?= $_SESSION['flash']['type'] === 'error' ? 'danger' : 'success' ?>">
-                    <?= htmlspecialchars($_SESSION['flash']['message']) ?>
-                </div>
-                <?php unset($_SESSION['flash']); ?>
-            <?php endif; ?>
-            
-            <!-- Login Form -->
-            <form method="POST" action="<?= url('login') ?>">
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-user me-2"></i>
-                        نام کاربری
-                    </label>
-                    <input type="text" 
-                           class="form-control" 
-                           name="username" 
-                           placeholder="admin"
-                           value="admin"
-                           required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-lock me-2"></i>
-                        کلمه عبور
-                    </label>
-                    <input type="password" 
-                           class="form-control" 
-                           name="password" 
-                           placeholder="admin123"
-                           required>
-                </div>
-                
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-sign-in-alt me-2"></i>
-                    ورود به سامانت
-                </button>
-            </form>
-            
-            <!-- Test Info -->
-            <div class="test-info">
-                <p><strong>اطلاعات تست</strong></p>
-                <p>نام کاربری: <strong>admin</strong></p>
-                <p>رمز عبور: <strong>admin123</strong></p>
+        <header class="auth-header">
+            <div class="logo">🔹</div>
+            <h1>ورود به سامانت</h1>
+            <p>سامانه مدیریت حواله و بایگانی اسناد</p>
+        </header>
+
+        <!-- Flash Message -->
+        <?php if (isset($_SESSION['flash'])): ?>
+            <div class="alert alert-danger">
+                <?= htmlspecialchars($_SESSION['flash']['message']) ?>
             </div>
+            <?php unset($_SESSION['flash']); ?>
+        <?php endif; ?>
+
+        <!-- Login Form -->
+        <form method="POST" action="<?= url('login') ?>">
+            <input type="hidden" name="csrf_token" value="<?= $csrf_token ?? '' ?>">
+            
+            <div class="form-group">
+                <label for="username">نام کاربری</label>
+                <input type="text" id="username" class="form-control" name="username" value="admin" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">کلمه عبور</label>
+                <input type="password" id="password" class="form-control" name="password" value="admin123" required>
+            </div>
+            
+            <button type="submit" class="btn-submit">ورود به سامانه</button>
+        </form>
+
+        <div class="test-info">
+            <p><strong>اطلاعات تست:</strong> نام کاربری: <strong>admin</strong> | رمز عبور: <strong>admin123</strong></p>
         </div>
-    </div>
-    
-    <!-- Load theme system -->
+
+    </main>
+
+    <!-- Load Central Theme System -->
     <script src="<?= asset('js/theme-system.js') ?>"></script>
-    
-    <!-- Simple auth page script -->
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Simple form enhancements
-        const form = document.querySelector('form');
-        const passwordField = document.querySelector('input[name="password"]');
-        
-        if (form) {
-            // Focus on password field since username is pre-filled
-            if (passwordField) {
+        // Auto-focus password field if username is pre-filled
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameField = document.getElementById('username');
+            const passwordField = document.getElementById('password');
+            if (usernameField && usernameField.value && passwordField) {
                 passwordField.focus();
+            } else if (usernameField) {
+                usernameField.focus();
             }
-        }
-    });
+        });
     </script>
+
 </body>
 </html>
