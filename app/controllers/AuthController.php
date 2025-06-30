@@ -98,7 +98,7 @@ class AuthController extends BaseController
             }
 
             // برای تست، یک کاربر پیش‌فرض ایجاد می‌کنیم
-            if ($username === 'admin' && $password === '123456') {
+            if ($username === 'admin' && $password === 'admin123') {
                 $this->createTestSession();
                 
                 // Debug: بررسی session ایجاد شده

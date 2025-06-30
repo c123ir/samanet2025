@@ -146,26 +146,23 @@
             transform: translate(-50%, -50%) scale(1.1) rotate(20deg);
         }
         
-        /* ✅ FIXED: Auth Container - Perfect Proportions */
+        /* ✅ OPTIMIZED Auth Container - Modern Design */
         .auth-container {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
-            padding: 35px 30px 30px 30px; /* ✅ Reduced vertical padding */
+            padding: 30px 25px 25px 25px;
             width: 100%;
-            max-width: 400px; /* ✅ Reduced from 420px */
+            max-width: 380px;
             min-width: 320px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             text-align: center;
-            /* ✅ Compact height constraints */
-            min-height: auto;
-            height: auto;
-            aspect-ratio: 4/5; /* ✅ Perfect ratio constraint */
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* ✅ Better distribution */
+            gap: 15px;
             position: relative;
+            /* Remove aspect-ratio for better browser support */
+            min-height: 520px;
+            max-height: 600px;
         }
         
         /* ✅ IMPROVED: Light theme styles */
@@ -196,9 +193,9 @@
         
         /* ✅ IMPROVED: Dark theme styles */
         [data-theme="dark"] .auth-container {
-            background: rgba(45, 55, 72, 0.25);
+            background: rgba(45, 55, 72, 0.95);
             color: #e2e8f0;
-            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
         
         [data-theme="dark"] .form-control {
@@ -228,15 +225,15 @@
         }
         
         .auth-logo {
-            font-size: 50px; /* ✅ Reduced from 60px */
-            margin-bottom: 15px; /* ✅ Reduced from 20px */
+            font-size: 45px;
+            margin-bottom: 10px;
             line-height: 1;
         }
         
         .auth-title {
-            font-size: 1.8rem; /* ✅ Reduced from 2rem */
+            font-size: 1.7rem;
             font-weight: 600;
-            margin-bottom: 8px; /* ✅ Reduced from 10px */
+            margin-bottom: 5px;
             line-height: 1.2;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
@@ -246,9 +243,9 @@
         
         .auth-subtitle {
             opacity: 0.8;
-            margin-bottom: 25px; /* ✅ Reduced from 30px */
-            font-size: 0.85rem; /* ✅ Slightly smaller */
-            line-height: 1.4;
+            margin-bottom: 20px;
+            font-size: 0.82rem;
+            line-height: 1.3;
         }
         
         /* ✅ Compact Form Container */
@@ -316,10 +313,10 @@
         
         /* ✅ Compact Test Info */
         .test-info {
-            margin-top: 20px; /* ✅ Reduced from 30px */
-            padding: 12px; /* ✅ Reduced padding */
+            margin-top: 15px;
+            padding: 10px;
             border-radius: 10px;
-            font-size: 13px; /* ✅ Slightly smaller */
+            font-size: 12px;
             flex-shrink: 0;
         }
         
@@ -360,11 +357,12 @@
             }
             
             .auth-container {
-                padding: 25px 20px 20px 20px; /* ✅ More compact */
+                padding: 25px 20px 20px 20px;
                 margin: 5px;
                 max-width: 340px;
                 min-width: 280px;
-                aspect-ratio: 3.5/4.5; /* ✅ Better mobile ratio */
+                min-height: 480px;
+                max-height: 560px;
             }
             
             .theme-toggle {
@@ -443,11 +441,12 @@
 </head>
 
 <body data-theme="light">
-    <!-- ✅ Single Theme Toggle with Animation Container -->
+    <!-- ✅ Theme Toggle with SVG Icons -->
     <button id="themeToggle" class="theme-toggle" title="تغییر تم" aria-label="تبدیل تم">
         <div class="theme-icon-container">
-            <i class="fas fa-sun theme-icon sun-icon"></i>
-            <i class="fas fa-moon theme-icon moon-icon"></i>
+            <!-- Better SVG Icons -->
+            <span class="theme-icon sun-icon">☀️</span>
+            <span class="theme-icon moon-icon">🌙</span>
         </div>
     </button>
     
