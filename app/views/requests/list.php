@@ -2,12 +2,26 @@
 /**
  * نام فایل: list.php
  * مسیر فایل: /app/views/requests/list.php
- * توضیح: صفحه مدیریت درخواست‌ها - طراحی حرفه‌ای
+ * توضیح: صفحه مدیریت درخواست‌ها - طراحی حرفه‌ای با قابلیت‌های پیشرفته
  * تاریخ بازطراحی: 1404/10/31
- * نسخه: 5.0 Enterprise Grade - مطابق استانداردهای UI/UX
+ * نسخه: 6.1 Enterprise Grade + Mobile-First + Advanced Search + PHP 8+ Compatible
  */
 
-// Helper functions از Utilities.php استفاده می‌شوند
+// Helper functions برای جلوگیری از PHP 8+ deprecated warnings
+function safe_htmlspecialchars($string, $flags = ENT_QUOTES, $encoding = 'UTF-8') {
+    return htmlspecialchars((string)($string ?? ''), $flags, $encoding);
+}
+
+function safe_number_format($number, $decimals = 0, $decimal_separator = '.', $thousands_separator = ',') {
+    return number_format((float)($number ?? 0), $decimals, $decimal_separator, $thousands_separator);
+}
+
+function safe_substr($string, $start, $length = null) {
+    if ($string === null || $string === '') {
+        return '';
+    }
+    return $length !== null ? substr((string)$string, $start, $length) : substr((string)$string, $start);
+}
 
 // داده‌های صفحه
 $totalRequests = $stats['total'] ?? 0;
@@ -20,7 +34,7 @@ $completedRequests = $stats['completed'] ?? 0;
 <div class="stats-row">
     <div class="stat-card-pro">
         <div class="stat-label">کل درخواست‌ها</div>
-        <div class="stat-value"><?= number_format($totalRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($totalRequests) ?></div>
         <div class="stat-change positive">
             <i class="fas fa-file-invoice-dollar"></i>
             <span>همه موارد</span>
@@ -29,7 +43,7 @@ $completedRequests = $stats['completed'] ?? 0;
     
     <div class="stat-card-pro">
         <div class="stat-label">در انتظار</div>
-        <div class="stat-value"><?= number_format($pendingRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($pendingRequests) ?></div>
         <div class="stat-change">
             <i class="fas fa-clock"></i>
             <span>بررسی نشده</span>
@@ -38,7 +52,7 @@ $completedRequests = $stats['completed'] ?? 0;
     
     <div class="stat-card-pro">
         <div class="stat-label">در حال بررسی</div>
-        <div class="stat-value"><?= number_format($processingRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($processingRequests) ?></div>
         <div class="stat-change">
             <i class="fas fa-sync-alt"></i>
             <span>در جریان</span>
@@ -47,12 +61,75 @@ $completedRequests = $stats['completed'] ?? 0;
     
     <div class="stat-card-pro">
         <div class="stat-label">تکمیل شده</div>
-        <div class="stat-value"><?= number_format($completedRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($completedRequests) ?></div>
         <div class="stat-change positive">
             <i class="fas fa-check-circle"></i>
             <span>موفق</span>
         </div>
     </div>
+</div>
+
+<!-- Search and Filter Bar - جدید و پیشرفته -->
+<div class="search-filter-bar">
+    <div class="search-filter-container">
+        <!-- Search Input -->
+        <div class="search-input-wrapper">
+            <input type="text" 
+                   class="form-control" 
+                   id="searchInput" 
+                   placeholder="جستجو در عنوان، مرجع، صاحب حساب..."
+                   value="<?= safe_htmlspecialchars($filters['search'] ?? '') ?>">
+            <i class="fas fa-search search-icon"></i>
+            <button type="button" class="clear-search" id="clearSearch" title="پاک کردن جستجو">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <!-- Status Filter -->
+        <select class="filter-select" id="statusFilter">
+            <option value="">همه وضعیت‌ها</option>
+            <option value="pending" <?= ($filters['status'] ?? '') === 'pending' ? 'selected' : '' ?>>در انتظار</option>
+            <option value="processing" <?= ($filters['status'] ?? '') === 'processing' ? 'selected' : '' ?>>در حال بررسی</option>
+            <option value="completed" <?= ($filters['status'] ?? '') === 'completed' ? 'selected' : '' ?>>تکمیل شده</option>
+            <option value="rejected" <?= ($filters['status'] ?? '') === 'rejected' ? 'selected' : '' ?>>رد شده</option>
+        </select>
+        
+        <!-- Priority Filter -->
+        <select class="filter-select" id="priorityFilter">
+            <option value="">همه اولویت‌ها</option>
+            <option value="urgent" <?= ($filters['priority'] ?? '') === 'urgent' ? 'selected' : '' ?>>فوری</option>
+            <option value="high" <?= ($filters['priority'] ?? '') === 'high' ? 'selected' : '' ?>>بالا</option>
+            <option value="normal" <?= ($filters['priority'] ?? '') === 'normal' ? 'selected' : '' ?>>معمولی</option>
+            <option value="low" <?= ($filters['priority'] ?? '') === 'low' ? 'selected' : '' ?>>پایین</option>
+        </select>
+        
+        <!-- Filter Actions -->
+        <div class="filter-actions">
+            <button type="button" class="btn-filter" id="applyFilters">
+                <i class="fas fa-filter"></i>
+                اعمال فیلتر
+            </button>
+            <button type="button" class="btn-filter" id="resetFilters">
+                <i class="fas fa-undo"></i>
+                پاک کردن
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Search Results Info -->
+<div class="search-results-info" id="searchResultsInfo" style="display: none;">
+    <div>
+        <span class="search-results-count" id="searchResultsCount">0</span>
+        نتیجه یافت شد
+        <span id="searchTermsDisplay" style="display: none;">
+            برای: <span class="search-terms" id="searchTerms"></span>
+        </span>
+    </div>
+    <button type="button" class="btn-filter" id="clearAllFilters">
+        <i class="fas fa-times"></i>
+        پاک کردن همه فیلترها
+    </button>
 </div>
 
 <!-- Grid اصلی صفحه -->
@@ -80,9 +157,24 @@ $completedRequests = $stats['completed'] ?? 0;
                 </div>
             </div>
             
+            <!-- Loading Indicator -->
+            <div class="loading-indicator" id="loadingIndicator">
+                <div class="loading-spinner"></div>
+                <div>در حال بارگذاری...</div>
+            </div>
+            
+            <!-- No Results Message -->
+            <div class="no-results" id="noResultsMessage">
+                <div class="no-results-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="no-results-title">نتیجه‌ای یافت نشد</div>
+                <div class="no-results-message">لطفاً کلمات کلیدی یا فیلترهای مختلفی امتحان کنید</div>
+            </div>
+            
             <?php if (!empty($requests_data['data'])): ?>
             <!-- جدول دسکتاپ -->
-            <table class="data-table">
+            <table class="data-table" id="desktopTable">
                 <thead>
                     <tr>
                         <th class="text-center" style="width: 70px;">شناسه</th>
@@ -98,223 +190,230 @@ $completedRequests = $stats['completed'] ?? 0;
                 </thead>
                 <tbody id="requestsTableBody">
                     <?php foreach ($requests_data['data'] as $request): ?>
-                    <tr>
+                    <tr data-request-id="<?= $request['id'] ?>">
                         <td class="text-center">
                             <code>#<?= $request['id'] ?></code>
                         </td>
                         <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="status-indicator" style="width: 8px; height: 8px; border-radius: 50%; background: <?= getStatusColor($request['status'] ?? 'pending') === 'success' ? '#10B981' : (getStatusColor($request['status'] ?? 'pending') === 'warning' ? '#F59E0B' : '#6B7280') ?>;"></div>
-                                <div>
-                                    <div class="fw-semibold">
-                                        <a href="/?route=requests&action=show&id=<?= $request['id'] ?>" class="text-decoration-none">
-                                            <?= htmlspecialchars($request['reference_number'] ?? 'REQ' . str_pad($request['id'], 3, '0', STR_PAD_LEFT)) ?>
-                                        </a>
-                                    </div>
-                                    <?php if ($request['is_urgent'] ?? false): ?>
-                                        <span class="badge bg-danger small">فوری</span>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
+                            <span class="text-primary fw-bold"><?= safe_htmlspecialchars($request['reference_number'] ?? '#' . $request['id']) ?></span>
                         </td>
                         <td>
-                            <div>
-                                <div class="fw-medium"><?= htmlspecialchars($request['title'] ?? 'بدون عنوان') ?></div>
-                                <?php if (!empty($request['description'])): ?>
-                                    <div class="text-muted small">
-                                        <?= htmlspecialchars(mb_substr($request['description'], 0, 50)) ?>
-                                        <?= mb_strlen($request['description']) > 50 ? '...' : '' ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </td>
-                        <td>
-                            <?php if (!empty($request['amount'])): ?>
-                                <span class="fw-bold text-success">
-                                    <?= number_format($request['amount']) ?> ریال
-                                </span>
-                            <?php else: ?>
-                                <span class="text-muted">
-                                    <i class="fas fa-minus me-1"></i>
-                                    مشخص نشده
-                                </span>
+                            <div class="fw-bold"><?= safe_htmlspecialchars($request['title']) ?></div>
+                            <?php if (!empty($request['description'])): ?>
+                            <small class="text-muted"><?= safe_htmlspecialchars(safe_substr($request['description'], 0, 50)) ?>...</small>
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if (!empty($request['account_holder'])): ?>
-                                <div>
-                                    <div class="fw-medium"><?= htmlspecialchars($request['account_holder']) ?></div>
-                                    <?php if (!empty($request['bank_name'])): ?>
-                                        <div class="text-muted small"><?= htmlspecialchars($request['bank_name']) ?></div>
-                                    <?php endif; ?>
-                                </div>
-                            <?php else: ?>
-                                <span class="text-muted">
-                                    <i class="fas fa-user me-1"></i>
-                                    نامشخص
-                                </span>
-                            <?php endif; ?>
-                        </td>
-                        <td>
-                            <span class="badge bg-<?= getStatusColor($request['status'] ?? 'pending') ?>">
-                                <i class="<?= getStatusIcon($request['status'] ?? 'pending') ?> me-1"></i>
-                                <?= getStatusLabel($request['status'] ?? 'pending') ?>
+                            <span class="text-success fw-bold persian-num">
+                                <?= safe_number_format($request['amount']) ?> ریال
                             </span>
                         </td>
                         <td>
-                            <span class="badge bg-<?= getPriorityColor($request['priority'] ?? 'normal') ?>">
-                                <i class="<?= getPriorityIcon($request['priority'] ?? 'normal') ?> me-1"></i>
-                                <?= getPriorityLabel($request['priority'] ?? 'normal') ?>
+                            <div><?= safe_htmlspecialchars($request['account_holder']) ?></div>
+                            <?php if (!empty($request['account_number'])): ?>
+                            <small class="text-muted"><?= safe_htmlspecialchars($request['account_number']) ?></small>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php 
+                            $statusClass = '';
+                            $statusText = '';
+                            switch($request['status']) {
+                                case 'pending':
+                                    $statusClass = 'bg-warning';
+                                    $statusText = 'در انتظار';
+                                    break;
+                                case 'processing':
+                                    $statusClass = 'bg-info';
+                                    $statusText = 'در حال بررسی';
+                                    break;
+                                case 'completed':
+                                    $statusClass = 'bg-success';
+                                    $statusText = 'تکمیل شده';
+                                    break;
+                                case 'rejected':
+                                    $statusClass = 'bg-danger';
+                                    $statusText = 'رد شده';
+                                    break;
+                                default:
+                                    $statusClass = 'bg-secondary';
+                                    $statusText = 'نامشخص';
+                            }
+                            ?>
+                            <span class="badge <?= $statusClass ?>"><?= $statusText ?></span>
+                        </td>
+                        <td>
+                            <?php
+                            $priorityClass = '';
+                            $priorityText = '';
+                            $priorityIcon = '';
+                            switch($request['priority'] ?? 'normal') {
+                                case 'urgent':
+                                    $priorityClass = 'bg-danger';
+                                    $priorityText = 'فوری';
+                                    $priorityIcon = 'fas fa-exclamation-triangle';
+                                    break;
+                                case 'high':
+                                    $priorityClass = 'bg-warning';
+                                    $priorityText = 'بالا';
+                                    $priorityIcon = 'fas fa-arrow-up';
+                                    break;
+                                case 'normal':
+                                    $priorityClass = 'bg-primary';
+                                    $priorityText = 'معمولی';
+                                    $priorityIcon = 'fas fa-minus';
+                                    break;
+                                case 'low':
+                                    $priorityClass = 'bg-secondary';
+                                    $priorityText = 'پایین';
+                                    $priorityIcon = 'fas fa-arrow-down';
+                                    break;
+                                default:
+                                    $priorityClass = 'bg-secondary';
+                                    $priorityText = 'معمولی';
+                                    $priorityIcon = 'fas fa-minus';
+                            }
+                            ?>
+                            <span class="badge <?= $priorityClass ?>">
+                                <i class="<?= $priorityIcon ?> me-1"></i>
+                                <?= $priorityText ?>
                             </span>
                         </td>
-                        <td class="text-muted">
-                            <?php if (!empty($request['created_at'])): ?>
-                                <?= jdate('Y/m/d H:i', strtotime($request['created_at'])) ?>
-                            <?php else: ?>
-                                <?= jdate('Y/m/d H:i', time()) ?>
-                            <?php endif; ?>
+                        <td>
+                            <div class="small"><?= $request['created_at_jalali'] ?? date('Y/m/d H:i') ?></div>
                         </td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
-                                <a href="/?route=requests&action=show&id=<?= $request['id'] ?>" 
-                                   class="btn btn-outline-primary btn-sm" 
-                                   title="مشاهده جزئیات">
+                                <a href="?route=requests&action=show&id=<?= $request['id'] ?>" 
+                                   class="btn btn-outline-primary btn-sm" title="مشاهده">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                
-                                <?php if (($request['status'] ?? 'pending') === 'pending'): ?>
-                                    <button type="button" 
-                                            class="btn btn-outline-success btn-sm" 
-                                            onclick="approveRequest(<?= $request['id'] ?>)"
-                                            title="تایید درخواست">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button type="button" 
-                                            class="btn btn-outline-danger btn-sm" 
-                                            onclick="rejectRequest(<?= $request['id'] ?>)"
-                                            title="رد درخواست">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                                <?php if (($request['status'] ?? '') === 'pending'): ?>
+                                <a href="?route=requests&action=edit&id=<?= $request['id'] ?>" 
+                                   class="btn btn-outline-info btn-sm" title="ویرایش">
+                                    <i class="fas fa-edit"></i>
+                                </a>
                                 <?php endif; ?>
-                                
                                 <button type="button" 
-                                        class="btn btn-outline-secondary btn-sm dropdown-toggle" 
-                                        data-bs-toggle="dropdown" 
-                                        title="عملیات بیشتر">
-                                    <i class="fas fa-ellipsis-v"></i>
+                                        class="btn btn-outline-success btn-sm" 
+                                        onclick="approveRequest(<?= $request['id'] ?>)" 
+                                        title="تایید">
+                                    <i class="fas fa-check"></i>
                                 </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="/?route=requests&action=edit&id=<?= $request['id'] ?>">
-                                        <i class="fas fa-edit me-2"></i>ویرایش
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="duplicateRequest(<?= $request['id'] ?>)">
-                                        <i class="fas fa-copy me-2"></i>کپی
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteRequest(<?= $request['id'] ?>)">
-                                        <i class="fas fa-trash me-2"></i>حذف
-                                    </a></li>
-                                </ul>
                             </div>
                         </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
-
-            <!-- لیست موبایل -->
-            <div class="mobile-list" id="mobileRequestsList">
+            
+            <!-- Mobile Cards Container - جدید -->
+            <div class="mobile-cards-container" id="mobileCardsContainer">
                 <?php foreach ($requests_data['data'] as $request): ?>
-                <div class="mobile-list-item">
-                    <div class="mobile-item-main">
-                        <div class="mobile-item-title">
-                            <?= htmlspecialchars($request['reference_number'] ?? 'REQ' . str_pad($request['id'], 3, '0', STR_PAD_LEFT)) ?>
-                            <?php if ($request['is_urgent'] ?? false): ?>
-                                <span class="badge bg-danger ms-1">فوری</span>
-                            <?php endif; ?>
+                <div class="request-card" data-request-id="<?= $request['id'] ?>">
+                    <div class="request-card-header">
+                        <div class="request-card-id">#<?= $request['id'] ?></div>
+                        <div class="request-card-status <?= $request['status'] ?? 'pending' ?>">
+                            <?php
+                            switch($request['status'] ?? 'pending') {
+                                case 'pending': echo 'در انتظار'; break;
+                                case 'processing': echo 'در حال بررسی'; break;
+                                case 'completed': echo 'تکمیل شده'; break;
+                                case 'rejected': echo 'رد شده'; break;
+                                default: echo 'نامشخص';
+                            }
+                            ?>
                         </div>
-                        <div class="mobile-item-meta">
-                            <span class="badge bg-<?= getStatusColor($request['status'] ?? 'pending') ?>"><?= getStatusLabel($request['status'] ?? 'pending') ?></span>
-                            • <span class="badge bg-<?= getPriorityColor($request['priority'] ?? 'normal') ?>"><?= getPriorityLabel($request['priority'] ?? 'normal') ?></span>
-                            <?php if (!empty($request['amount'])): ?>
-                                • <span class="text-success fw-bold"><?= number_format($request['amount']) ?> ریال</span>
-                            <?php endif; ?>
-                        </div>
-                        <div class="mobile-item-date"><?= htmlspecialchars($request['title'] ?? 'بدون عنوان') ?></div>
                     </div>
-                    <div class="mobile-item-actions">
-                        <a href="/?route=requests&action=show&id=<?= $request['id'] ?>" class="btn-icon" title="مشاهده">
+                    
+                    <div class="request-card-title">
+                        <?= safe_htmlspecialchars($request['title']) ?>
+                    </div>
+                    
+                    <div class="request-card-meta">
+                        <div class="request-card-meta-item">
+                            <div class="request-card-meta-label">مرجع</div>
+                            <div class="request-card-meta-value">
+                                <?= safe_htmlspecialchars($request['reference_number'] ?? '#' . $request['id']) ?>
+                            </div>
+                        </div>
+                        
+                        <div class="request-card-meta-item">
+                            <div class="request-card-meta-label">مبلغ</div>
+                            <div class="request-card-meta-value request-card-amount">
+                                <?= safe_number_format($request['amount']) ?> ریال
+                            </div>
+                        </div>
+                        
+                        <div class="request-card-meta-item">
+                            <div class="request-card-meta-label">صاحب حساب</div>
+                            <div class="request-card-meta-value">
+                                <?= safe_htmlspecialchars($request['account_holder']) ?>
+                            </div>
+                        </div>
+                        
+                        <div class="request-card-meta-item">
+                            <div class="request-card-meta-label">اولویت</div>
+                            <div class="request-card-meta-value">
+                                <span class="request-card-priority <?= $request['priority'] ?? 'normal' ?>">
+                                    <?php
+                                    switch($request['priority'] ?? 'normal') {
+                                        case 'urgent': echo '<i class="fas fa-exclamation-triangle"></i> فوری'; break;
+                                        case 'high': echo '<i class="fas fa-arrow-up"></i> بالا'; break;
+                                        case 'normal': echo '<i class="fas fa-minus"></i> معمولی'; break;
+                                        case 'low': echo '<i class="fas fa-arrow-down"></i> پایین'; break;
+                                        default: echo '<i class="fas fa-minus"></i> معمولی';
+                                    }
+                                    ?>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="request-card-actions">
+                        <a href="?route=requests&action=show&id=<?= $request['id'] ?>" 
+                           class="request-card-btn primary">
                             <i class="fas fa-eye"></i>
+                            مشاهده
                         </a>
-                        <?php if (($request['status'] ?? 'pending') === 'pending'): ?>
-                        <button class="btn-icon text-success" onclick="approveRequest(<?= $request['id'] ?>)" title="تایید">
-                            <i class="fas fa-check"></i>
-                        </button>
-                        <button class="btn-icon text-danger" onclick="rejectRequest(<?= $request['id'] ?>)" title="رد">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <?php if (($request['status'] ?? '') === 'pending'): ?>
+                        <a href="?route=requests&action=edit&id=<?= $request['id'] ?>" 
+                           class="request-card-btn">
+                            <i class="fas fa-edit"></i>
+                            ویرایش
+                        </a>
                         <?php endif; ?>
+                        <button type="button" 
+                                class="request-card-btn" 
+                                onclick="approveRequest(<?= $request['id'] ?>)">
+                            <i class="fas fa-check"></i>
+                            تایید
+                        </button>
                     </div>
                 </div>
                 <?php endforeach; ?>
             </div>
+            
             <?php else: ?>
-            <!-- پیام خالی -->
-            <div style="text-align: center; padding: var(--space-8); color: var(--gray-500);">
-                <i class="fas fa-file-invoice-dollar" style="font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.5;"></i>
-                <h5>هیچ درخواستی یافت نشد</h5>
-                <p>هنوز درخواستی در سیستم ثبت نشده است یا درخواستی با این فیلترها وجود ندارد</p>
-                <a href="/?route=requests&action=create" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    ایجاد درخواست جدید
-                </a>
+            <div class="no-results show">
+                <div class="no-results-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <div class="no-results-title">هیچ درخواستی یافت نشد</div>
+                <div class="no-results-message">
+                    <a href="/?route=requests&action=create" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        ایجاد اولین درخواست
+                    </a>
+                </div>
             </div>
             <?php endif; ?>
         </div>
     </div>
-
-    <!-- ستون جانبی -->
-    <div class="side-column">
-        <!-- عملیات سریع -->
-        <div class="panel">
-            <div class="panel-header">
-                <div class="panel-title">
-                    <i class="fas fa-bolt"></i>
-                    عملیات سریع
-                </div>
-            </div>
-            <div class="panel-body">
-                <div class="task-item" onclick="location.href='/?route=requests&action=create'" style="cursor: pointer;">
-                    <span class="task-text">
-                        <i class="fas fa-plus" style="color: var(--success); margin-left: var(--space-2);"></i>
-                        درخواست جدید
-                    </span>
-                </div>
-                
-                <div class="task-item" onclick="exportRequests()" style="cursor: pointer;">
-                    <span class="task-text">
-                        <i class="fas fa-download" style="color: var(--primary); margin-left: var(--space-2);"></i>
-                        خروجی Excel
-                    </span>
-                </div>
-                
-                <div class="task-item" onclick="refreshRequestList()" style="cursor: pointer;">
-                    <span class="task-text">
-                        <i class="fas fa-sync-alt" style="color: var(--info); margin-left: var(--space-2);"></i>
-                        بروزرسانی لیست
-                    </span>
-                </div>
-                
-                <div class="task-item" onclick="showBulkActions()" style="cursor: pointer;">
-                    <span class="task-text">
-                        <i class="fas fa-tasks" style="color: var(--warning); margin-left: var(--space-2);"></i>
-                        عملیات گروهی
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        <!-- آمار این ماه -->
+    
+    <!-- ستون کناری -->
+    <div class="sidebar-column">
+        <!-- پنل آمار -->
         <div class="panel">
             <div class="panel-header">
                 <div class="panel-title">
@@ -328,7 +427,7 @@ $completedRequests = $stats['completed'] ?? 0;
                         <i class="fas fa-check-circle me-1 text-success"></i>
                         تکمیل شده
                     </span>
-                    <span style="font-weight: 600; color: var(--success);"><?= $completedRequests ?></span>
+                    <span style="font-weight: 600; color: var(--success);"><?= safe_number_format($completedRequests) ?></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-100);">
@@ -336,7 +435,7 @@ $completedRequests = $stats['completed'] ?? 0;
                         <i class="fas fa-clock me-1 text-warning"></i>
                         در انتظار
                     </span>
-                    <span style="font-weight: 600; color: var(--warning);"><?= $pendingRequests ?></span>
+                    <span style="font-weight: 600; color: var(--warning);"><?= safe_number_format($pendingRequests) ?></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-100);">
@@ -344,120 +443,247 @@ $completedRequests = $stats['completed'] ?? 0;
                         <i class="fas fa-sync-alt me-1 text-info"></i>
                         در حال بررسی
                     </span>
-                    <span style="font-weight: 600; color: var(--info);"><?= $processingRequests ?></span>
+                    <span style="font-weight: 600; color: var(--info);"><?= safe_number_format($processingRequests) ?></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0;">
                     <span style="font-size: 12px; color: var(--gray-600);">
-                        <i class="fas fa-times-circle me-1 text-danger"></i>
-                        رد شده
+                        <i class="fas fa-file-invoice-dollar me-1 text-primary"></i>
+                        کل
                     </span>
-                    <span style="font-weight: 600; color: var(--danger);"><?= ($stats['rejected'] ?? 0) ?></span>
-                </div>
-            </div>
-        </div>
-
-        <!-- فیلترهای سریع -->
-        <div class="panel">
-            <div class="panel-header">
-                <div class="panel-title">
-                    <i class="fas fa-filter"></i>
-                    فیلترهای سریع
-                </div>
-            </div>
-            <div class="panel-body">
-                <div class="task-item" onclick="filterByStatus('pending')" style="cursor: pointer;">
-                    <span class="task-text">
-                        <i class="fas fa-clock" style="color: var(--warning); margin-left: var(--space-2);"></i>
-                        فقط در انتظار
-                    </span>
-                </div>
-                
-                <div class="task-item" onclick="filterByPriority('urgent')" style="cursor: pointer;">
-                    <span class="task-text">
-                        <i class="fas fa-exclamation-triangle" style="color: var(--danger); margin-left: var(--space-2);"></i>
-                        فقط فوری‌ها
-                    </span>
-                </div>
-                
-                <div class="task-item" onclick="filterByStatus('completed')" style="cursor: pointer;">
-                    <span class="task-text">
-                        <i class="fas fa-check-circle" style="color: var(--success); margin-left: var(--space-2);"></i>
-                        تکمیل شده‌ها
-                    </span>
-                </div>
-                
-                <div class="task-item" onclick="clearAllFilters()" style="cursor: pointer;">
-                    <span class="task-text">
-                        <i class="fas fa-eraser" style="color: var(--gray-500); margin-left: var(--space-2);"></i>
-                        پاک کردن فیلترها
-                    </span>
+                    <span style="font-weight: 600; color: var(--primary);"><?= safe_number_format($totalRequests) ?></span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- JavaScript for Advanced Search and Filter -->
+<script src="/assets/js/requests-advanced-search.js"></script>
+
 <script>
-// Global functions for request management
-function approveRequest(requestId) {
-    if (confirm('آیا از تایید این درخواست اطمینان دارید؟')) {
-        // Implementation for approve
-        console.log('Approving request:', requestId);
-    }
-}
-
-function rejectRequest(requestId) {
-    if (confirm('آیا از رد این درخواست اطمینان دارید؟')) {
-        // Implementation for reject
-        console.log('Rejecting request:', requestId);
-    }
-}
-
-function deleteRequest(requestId) {
-    if (confirm('آیا از حذف این درخواست اطمینان دارید؟ این عمل غیرقابل برگشت است.')) {
-        // Implementation for delete
-        console.log('Deleting request:', requestId);
-    }
-}
-
-function duplicateRequest(requestId) {
-    // Implementation for duplicate
-    console.log('Duplicating request:', requestId);
-}
-
-function exportRequests() {
-    // Implementation for export
-    console.log('Exporting requests...');
-}
-
-function refreshRequestList() {
-    location.reload();
-}
-
-function showBulkActions() {
-    // Implementation for bulk actions
-    console.log('Showing bulk actions...');
-}
-
-function filterByStatus(status) {
-    // Implementation for status filter
-    console.log('Filtering by status:', status);
-}
-
-function filterByPriority(priority) {
-    // Implementation for priority filter
-    console.log('Filtering by priority:', priority);
-}
-
-function clearAllFilters() {
-    // Implementation for clear filters
-    console.log('Clearing all filters...');
-    location.href = '/?route=requests';
-}
-
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Requests Page loaded with Professional UI/UX Standards');
+// Additional helper functions that are specific to this page
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('✅ Requests List Page Loaded Successfully');
+    console.log('📊 Total Requests:', <?= count($requests_data['data'] ?? []) ?>);
+    console.log('🔍 Advanced Search System Ready');
 });
+
+// Page-specific initialization
+window.addEventListener('load', () => {
+    // Auto-focus search if URL has search parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('search') && window.requestsSearch) {
+        document.getElementById('searchInput')?.focus();
+    }
+    
+    // Show welcome message for first-time users
+    if (<?= $totalRequests ?> === 0) {
+        console.log('💡 No requests found - showing onboarding experience');
+    }
+});
+
+// Export functionality
+function exportRequests() {
+    // Create export URL with current filters
+    const searchParams = new URLSearchParams();
+    
+    if (window.requestsSearch) {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const priorityFilter = document.getElementById('priorityFilter');
+        
+        if (searchInput?.value.trim()) {
+            searchParams.set('search', searchInput.value.trim());
+        }
+        if (statusFilter?.value) {
+            searchParams.set('status', statusFilter.value);
+        }
+        if (priorityFilter?.value) {
+            searchParams.set('priority', priorityFilter.value);
+        }
+    }
+    
+    searchParams.set('export', 'excel');
+    
+    // Create download link
+    const exportUrl = `/?route=requests&action=export&${searchParams.toString()}`;
+    
+    // Show loading indicator
+    const originalText = event.target.innerHTML;
+    event.target.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>در حال تهیه...';
+    event.target.disabled = true;
+    
+    // Create hidden download link
+    const link = document.createElement('a');
+    link.href = exportUrl;
+    link.download = `requests-${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Reset button
+    setTimeout(() => {
+        event.target.innerHTML = originalText;
+        event.target.disabled = false;
+    }, 2000);
+}
+
+// Approval functionality with enhanced UX
+function approveRequest(requestId) {
+    // Create custom modal for approval
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تایید درخواست #${requestId}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>آیا از تایید این درخواست اطمینان دارید؟</p>
+                    <textarea class="form-control mt-3" placeholder="توضیحات (اختیاری)" 
+                              id="approvalNotes" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">لغو</button>
+                    <button type="button" class="btn btn-success" onclick="confirmApproval(${requestId})">
+                        <i class="fas fa-check me-2"></i>تایید نهایی
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Show modal (assuming Bootstrap is available)
+    if (window.bootstrap) {
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        // Remove modal from DOM when hidden
+        modal.addEventListener('hidden.bs.modal', () => {
+            document.body.removeChild(modal);
+        });
+    } else {
+        // Fallback to simple confirm
+        if (confirm('آیا از تایید این درخواست اطمینان دارید؟')) {
+            confirmApproval(requestId);
+        }
+        document.body.removeChild(modal);
+    }
+}
+
+function confirmApproval(requestId) {
+    const notes = document.getElementById('approvalNotes')?.value || '';
+    
+    // Show loading state
+    const approveBtn = event.target;
+    const originalText = approveBtn.innerHTML;
+    approveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>در حال پردازش...';
+    approveBtn.disabled = true;
+    
+    // API call for approval
+    fetch('/?route=requests&action=approve', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            request_id: requestId,
+            notes: notes
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            if (window.requestsSearch && window.requestsSearch.showToast) {
+                window.requestsSearch.showToast('درخواست با موفقیت تایید شد', 'success');
+            }
+            
+            // Refresh the list
+            if (window.requestsSearch) {
+                window.requestsSearch.performSearch();
+            } else {
+                location.reload();
+            }
+            
+            // Close modal if open
+            const modal = document.querySelector('.modal.show');
+            if (modal && window.bootstrap) {
+                bootstrap.Modal.getInstance(modal).hide();
+            }
+        } else {
+            throw new Error(data.message || 'خطا در تایید درخواست');
+        }
+    })
+    .catch(error => {
+        console.error('Approval error:', error);
+        if (window.requestsSearch && window.requestsSearch.showToast) {
+            window.requestsSearch.showToast(error.message || 'خطا در تایید درخواست', 'error');
+        } else {
+            alert(error.message || 'خطا در تایید درخواست');
+        }
+    })
+    .finally(() => {
+        // Reset button
+        approveBtn.innerHTML = originalText;
+        approveBtn.disabled = false;
+    });
+}
+
+// Quick filter functions for external use
+function quickFilterStatus(status) {
+    if (window.requestsSearch) {
+        document.getElementById('statusFilter').value = status;
+        window.requestsSearch.currentPage = 1;
+        window.requestsSearch.performSearch();
+    }
+}
+
+function quickFilterPriority(priority) {
+    if (window.requestsSearch) {
+        document.getElementById('priorityFilter').value = priority;
+        window.requestsSearch.currentPage = 1;
+        window.requestsSearch.performSearch();
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // Alt + N for new request
+    if (e.altKey && e.key === 'n') {
+        e.preventDefault();
+        location.href = '/?route=requests&action=create';
+    }
+    
+    // Alt + R for refresh
+    if (e.altKey && e.key === 'r') {
+        e.preventDefault();
+        refreshRequestList();
+    }
+    
+    // Alt + E for export
+    if (e.altKey && e.key === 'e') {
+        e.preventDefault();
+        exportRequests();
+    }
+});
+
+// Performance monitoring
+if (window.performance) {
+    window.addEventListener('load', () => {
+        const loadTime = window.performance.now();
+        console.log(`📈 Page Load Time: ${Math.round(loadTime)}ms`);
+        
+        // Report slow loads
+        if (loadTime > 3000) {
+            console.warn('⚠️ Slow page load detected');
+        }
+    });
+}
 </script>

@@ -4,10 +4,24 @@
  * مسیر فایل: /app/views/requests/index.php  
  * توضیح: صفحه مدیریت درخواست‌ها - طراحی حرفه‌ای
  * تاریخ بازطراحی: 1404/10/31
- * نسخه: 5.0 Enterprise Grade - مطابق استانداردهای UI/UX
+ * نسخه: 5.1 Enterprise Grade - مطابق استانداردهای UI/UX + PHP 8+ Compatible
  */
 
-// Helper functions از Utilities.php استفاده می‌شوند
+// Helper functions برای جلوگیری از PHP 8+ deprecated warnings
+function safe_htmlspecialchars($string, $flags = ENT_QUOTES, $encoding = 'UTF-8') {
+    return htmlspecialchars((string)($string ?? ''), $flags, $encoding);
+}
+
+function safe_number_format($number, $decimals = 0, $decimal_separator = '.', $thousands_separator = ',') {
+    return number_format((float)($number ?? 0), $decimals, $decimal_separator, $thousands_separator);
+}
+
+function safe_substr($string, $start, $length = null) {
+    if ($string === null || $string === '') {
+        return '';
+    }
+    return $length !== null ? substr((string)$string, $start, $length) : substr((string)$string, $start);
+}
 
 // Load main layout
 require_once(APP_PATH . 'views/layouts/main.php');
@@ -23,7 +37,7 @@ $completedRequests = $stats['completed'] ?? 0;
 <div class="stats-row">
     <div class="stat-card-pro">
         <div class="stat-label">کل درخواست‌ها</div>
-        <div class="stat-value"><?= number_format($totalRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($totalRequests) ?></div>
         <div class="stat-change positive">
             <i class="fas fa-file-invoice-dollar"></i>
             <span>همه موارد</span>
@@ -32,7 +46,7 @@ $completedRequests = $stats['completed'] ?? 0;
     
     <div class="stat-card-pro">
         <div class="stat-label">در انتظار</div>
-        <div class="stat-value"><?= number_format($pendingRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($pendingRequests) ?></div>
         <div class="stat-change">
             <i class="fas fa-clock"></i>
             <span>بررسی نشده</span>
@@ -41,7 +55,7 @@ $completedRequests = $stats['completed'] ?? 0;
     
     <div class="stat-card-pro">
         <div class="stat-label">در حال بررسی</div>
-        <div class="stat-value"><?= number_format($processingRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($processingRequests) ?></div>
         <div class="stat-change">
             <i class="fas fa-sync-alt"></i>
             <span>در جریان</span>
@@ -50,7 +64,7 @@ $completedRequests = $stats['completed'] ?? 0;
     
     <div class="stat-card-pro">
         <div class="stat-label">تکمیل شده</div>
-        <div class="stat-value"><?= number_format($completedRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($completedRequests) ?></div>
         <div class="stat-change positive">
             <i class="fas fa-check-circle"></i>
             <span>موفق</span>
@@ -176,7 +190,7 @@ $completedRequests = $stats['completed'] ?? 0;
                                 <div>
                                     <div class="fw-semibold">
                                         <a href="/?route=requests&action=show&id=<?= $request['id'] ?>" class="text-decoration-none">
-                                            <?= htmlspecialchars($request['reference_number'] ?? 'REQ' . str_pad($request['id'], 3, '0', STR_PAD_LEFT)) ?>
+                                            <?= safe_htmlspecialchars($request['reference_number'] ?? 'REQ' . str_pad($request['id'], 3, '0', STR_PAD_LEFT)) ?>
                                         </a>
                                     </div>
                                     <?php if ($request['is_urgent'] ?? false): ?>
@@ -187,10 +201,10 @@ $completedRequests = $stats['completed'] ?? 0;
                         </td>
                         <td>
                             <div>
-                                <div class="fw-medium"><?= htmlspecialchars($request['title'] ?? 'بدون عنوان') ?></div>
+                                <div class="fw-medium"><?= safe_htmlspecialchars($request['title'] ?? 'بدون عنوان') ?></div>
                                 <?php if (!empty($request['description'])): ?>
                                     <div class="text-muted small">
-                                        <?= htmlspecialchars(mb_substr($request['description'], 0, 50)) ?>
+                                        <?= safe_htmlspecialchars(safe_substr($request['description'], 0, 50)) ?>
                                         <?= mb_strlen($request['description']) > 50 ? '...' : '' ?>
                                     </div>
                                 <?php endif; ?>
@@ -199,7 +213,7 @@ $completedRequests = $stats['completed'] ?? 0;
                         <td>
                             <?php if (!empty($request['amount'])): ?>
                                 <span class="fw-bold text-success">
-                                    <?= number_format($request['amount']) ?> ریال
+                                    <?= safe_number_format($request['amount']) ?> ریال
                                 </span>
                             <?php else: ?>
                                 <span class="text-muted">
@@ -211,9 +225,9 @@ $completedRequests = $stats['completed'] ?? 0;
                         <td>
                             <?php if (!empty($request['account_holder'])): ?>
                                 <div>
-                                    <div class="fw-medium"><?= htmlspecialchars($request['account_holder']) ?></div>
+                                    <div class="fw-medium"><?= safe_htmlspecialchars($request['account_holder']) ?></div>
                                     <?php if (!empty($request['bank_name'])): ?>
-                                        <div class="text-muted small"><?= htmlspecialchars($request['bank_name']) ?></div>
+                                        <div class="text-muted small"><?= safe_htmlspecialchars($request['bank_name']) ?></div>
                                     <?php endif; ?>
                                 </div>
                             <?php else: ?>
@@ -296,7 +310,7 @@ $completedRequests = $stats['completed'] ?? 0;
                 <div class="mobile-list-item">
                     <div class="mobile-item-main">
                         <div class="mobile-item-title">
-                            <?= htmlspecialchars($request['reference_number'] ?? 'REQ' . str_pad($request['id'], 3, '0', STR_PAD_LEFT)) ?>
+                            <?= safe_htmlspecialchars($request['reference_number'] ?? 'REQ' . str_pad($request['id'], 3, '0', STR_PAD_LEFT)) ?>
                             <?php if ($request['is_urgent'] ?? false): ?>
                                 <span class="badge bg-danger ms-1">فوری</span>
                             <?php endif; ?>
@@ -305,10 +319,10 @@ $completedRequests = $stats['completed'] ?? 0;
                             <span class="badge bg-<?= getStatusColor($request['status'] ?? 'pending') ?>"><?= getStatusLabel($request['status'] ?? 'pending') ?></span>
                             • <span class="badge bg-<?= getPriorityColor($request['priority'] ?? 'normal') ?>"><?= getPriorityLabel($request['priority'] ?? 'normal') ?></span>
                             <?php if (!empty($request['amount'])): ?>
-                                • <span class="text-success fw-bold"><?= number_format($request['amount']) ?> ریال</span>
+                                • <span class="text-success fw-bold"><?= safe_number_format($request['amount']) ?> ریال</span>
                             <?php endif; ?>
                         </div>
-                        <div class="mobile-item-date"><?= htmlspecialchars($request['title'] ?? 'بدون عنوان') ?></div>
+                        <div class="mobile-item-date"><?= safe_htmlspecialchars($request['title'] ?? 'بدون عنوان') ?></div>
                     </div>
                     <div class="mobile-item-actions">
                         <a href="/?route=requests&action=show&id=<?= $request['id'] ?>" class="btn-icon" title="مشاهده">
@@ -396,7 +410,7 @@ $completedRequests = $stats['completed'] ?? 0;
                         <i class="fas fa-check-circle me-1 text-success"></i>
                         تکمیل شده
                     </span>
-                    <span style="font-weight: 600; color: var(--success);"><?= $completedRequests ?></span>
+                    <span style="font-weight: 600; color: var(--success);"><?= safe_number_format($completedRequests) ?></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-100);">
@@ -404,7 +418,7 @@ $completedRequests = $stats['completed'] ?? 0;
                         <i class="fas fa-clock me-1 text-warning"></i>
                         در انتظار
                     </span>
-                    <span style="font-weight: 600; color: var(--warning);"><?= $pendingRequests ?></span>
+                    <span style="font-weight: 600; color: var(--warning);"><?= safe_number_format($pendingRequests) ?></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-100);">
@@ -412,7 +426,7 @@ $completedRequests = $stats['completed'] ?? 0;
                         <i class="fas fa-sync-alt me-1 text-info"></i>
                         در حال بررسی
                     </span>
-                    <span style="font-weight: 600; color: var(--info);"><?= $processingRequests ?></span>
+                    <span style="font-weight: 600; color: var(--info);"><?= safe_number_format($processingRequests) ?></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0;">
@@ -420,7 +434,7 @@ $completedRequests = $stats['completed'] ?? 0;
                         <i class="fas fa-times-circle me-1 text-danger"></i>
                         رد شده
                     </span>
-                    <span style="font-weight: 600; color: var(--danger);"><?= ($stats['rejected'] ?? 0) ?></span>
+                    <span style="font-weight: 600; color: var(--danger);"><?= safe_number_format($stats['rejected'] ?? 0) ?></span>
                 </div>
             </div>
         </div>

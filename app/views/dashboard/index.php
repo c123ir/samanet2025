@@ -1,12 +1,19 @@
 <?php
 /**
  * SAMANET DASHBOARD VIEW - ENTERPRISE GRADE with REAL DATA
- * نسخه: 4.0 کامل با داده‌های واقعی
+ * نسخه: 4.1 کامل با داده‌های واقعی + PHP 8+ Compatible
  * تاریخ: 1404/10/31
  * مطابق: استانداردهای MANDATORY Dashboard Design
  */
 
-// Helper functions از Utilities.php استفاده می‌شوند
+// Helper functions برای جلوگیری از PHP 8+ deprecated warnings
+function safe_htmlspecialchars($string, $flags = ENT_QUOTES, $encoding = 'UTF-8') {
+    return htmlspecialchars((string)($string ?? ''), $flags, $encoding);
+}
+
+function safe_number_format($number, $decimals = 0, $decimal_separator = '.', $thousands_separator = ',') {
+    return number_format((float)($number ?? 0), $decimals, $decimal_separator, $thousands_separator);
+}
 
 // استخراج داده‌ها از متغیرهای کنترلر
 $totalUsers = $stats['totalUsers'] ?? 0;
@@ -31,7 +38,7 @@ $urgentCount = count($urgent_requests ?? []);
     
     <div class="stat-card-pro">
         <div class="stat-label">کل درخواست‌ها</div>
-        <div class="stat-value"><?= number_format($totalRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($totalRequests) ?></div>
         <div class="stat-change neutral">
             <i class="fas fa-file-alt"></i>
             <span>در سیستم</span>
@@ -40,7 +47,7 @@ $urgentCount = count($urgent_requests ?? []);
     
     <div class="stat-card-pro">
         <div class="stat-label">تکمیل شده</div>
-        <div class="stat-value"><?= number_format($completedRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($completedRequests) ?></div>
         <div class="stat-change positive">
             <i class="fas fa-check-circle"></i>
             <span>موفق</span>
@@ -49,7 +56,7 @@ $urgentCount = count($urgent_requests ?? []);
     
     <div class="stat-card-pro">
         <div class="stat-label">در انتظار بررسی</div>
-        <div class="stat-value"><?= number_format($pendingRequests) ?></div>
+        <div class="stat-value"><?= safe_number_format($pendingRequests) ?></div>
         <div class="stat-change <?= $pendingRequests > 0 ? 'negative' : 'positive' ?>">
             <i class="fas fa-<?= $pendingRequests > 0 ? 'clock' : 'check' ?>"></i>
             <span><?= $pendingRequests > 0 ? 'نیاز به بررسی' : 'همه بررسی شده' ?></span>
@@ -96,15 +103,15 @@ $urgentCount = count($urgent_requests ?? []);
                     <tr>
                         <td>
                             <code style="background: var(--gray-100); padding: 2px 6px; border-radius: 4px; font-size: 11px;">
-                                <?= htmlspecialchars($request['reference_number'] ?? $request['id']) ?>
+                                <?= safe_htmlspecialchars($request['reference_number'] ?? $request['id']) ?>
                             </code>
                         </td>
                         <td>
-                            <div style="font-weight: 500;"><?= htmlspecialchars($request['title']) ?></div>
-                            <small style="color: var(--gray-500);">توسط <?= htmlspecialchars($request['created_by_name'] ?? 'نامشخص') ?></small>
+                            <div style="font-weight: 500;"><?= safe_htmlspecialchars($request['title']) ?></div>
+                            <small style="color: var(--gray-500);">توسط <?= safe_htmlspecialchars($request['created_by_name'] ?? 'نامشخص') ?></small>
                         </td>
                         <td style="text-align: left; font-family: var(--font-mono);">
-                            <?= isset($request['amount']) && $request['amount'] > 0 ? number_format($request['amount']) . ' ریال' : '-' ?>
+                            <?= isset($request['amount']) && $request['amount'] > 0 ? safe_number_format($request['amount']) . ' ریال' : '-' ?>
                         </td>
                         <td>
                             <span class="<?= getBadgeClass($request['status']) ?>" style="font-weight: 500;">
@@ -138,10 +145,10 @@ $urgentCount = count($urgent_requests ?? []);
                 <?php foreach ($recent_requests as $request): ?>
                 <div class="mobile-list-item">
                     <div class="mobile-item-main">
-                        <div class="mobile-item-title"><?= htmlspecialchars($request['title']) ?></div>
+                        <div class="mobile-item-title"><?= safe_htmlspecialchars($request['title']) ?></div>
                         <div class="mobile-item-meta">
                             <code style="background: var(--gray-100); padding: 2px 4px; border-radius: 2px; font-size: 10px;">
-                                <?= htmlspecialchars($request['reference_number'] ?? $request['id']) ?>
+                                <?= safe_htmlspecialchars($request['reference_number'] ?? $request['id']) ?>
                             </code>
                             •
                             <span class="<?= getBadgeClass($request['status']) ?>" style="font-weight: 500; font-size: 11px;">
@@ -154,7 +161,7 @@ $urgentCount = count($urgent_requests ?? []);
                         </div>
                         <?php if (isset($request['amount']) && $request['amount'] > 0): ?>
                         <div style="font-weight: 600; color: var(--primary); font-size: 12px; margin-top: 4px;">
-                            <?= number_format($request['amount']) ?> ریال
+                            <?= safe_number_format($request['amount']) ?> ریال
                         </div>
                         <?php endif; ?>
                     </div>
@@ -191,7 +198,7 @@ $urgentCount = count($urgent_requests ?? []);
                     درخواست‌های فوری
                 </div>
                 <span class="panel-badge" style="background: <?= $urgentCount > 0 ? 'var(--danger)' : 'var(--success)' ?>; color: white;">
-                    <?= $urgentCount ?>
+                    <?= safe_number_format($urgentCount) ?>
                 </span>
             </div>
             <div class="panel-body">
@@ -204,7 +211,7 @@ $urgentCount = count($urgent_requests ?? []);
                 <?php foreach ($urgent_requests as $urgentRequest): ?>
                 <div class="task-item" onclick="location.href='/?route=requests&action=show&id=<?= $urgentRequest['id'] ?>'" style="cursor: pointer;">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <span class="task-text" style="flex: 1;"><?= htmlspecialchars($urgentRequest['title']) ?></span>
+                        <span class="task-text" style="flex: 1;"><?= safe_htmlspecialchars($urgentRequest['title']) ?></span>
                         <span style="background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-right: var(--space-2);">فوری</span>
                     </div>
                 </div>
@@ -237,8 +244,8 @@ $urgentCount = count($urgent_requests ?? []);
                         align-items: center;
                         gap: 4px;
                     ">
-                        <?= htmlspecialchars($tag['title']) ?>
-                        <small style="opacity: 0.8;"><?= $tag['usage_count'] ?></small>
+                        <?= safe_htmlspecialchars($tag['title']) ?>
+                        <small style="opacity: 0.8;"><?= safe_number_format($tag['usage_count']) ?></small>
                     </span>
                     <?php endforeach; ?>
                 </div>
@@ -296,17 +303,17 @@ $urgentCount = count($urgent_requests ?? []);
             <div class="panel-body">
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-100);">
                     <span style="font-size: 12px; color: var(--gray-600);">درخواست‌های جدید</span>
-                    <span style="font-weight: 600; color: var(--primary);"><?= $todayRequests ?></span>
+                    <span style="font-weight: 600; color: var(--primary);"><?= safe_number_format($todayRequests) ?></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid var(--gray-100);">
                     <span style="font-size: 12px; color: var(--gray-600);">تکمیل شده</span>
-                    <span style="font-weight: 600; color: var(--success);"><?= $stats['todayCompleted'] ?? 0 ?></span>
+                    <span style="font-weight: 600; color: var(--success);"><?= safe_number_format($stats['todayCompleted'] ?? 0) ?></span>
                 </div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0;">
                     <span style="font-size: 12px; color: var(--gray-600);">در انتظار</span>
-                    <span style="font-weight: 600; color: var(--warning);"><?= $pendingRequests ?></span>
+                    <span style="font-weight: 600; color: var(--warning);"><?= safe_number_format($pendingRequests) ?></span>
                 </div>
             </div>
         </div>

@@ -384,88 +384,255 @@ class PaymentRequest extends Database
     }
 
     /**
-     * جستجوی پیشرفته درخواست‌ها با فیلتر - سازگار با AdvancedSearch Component
+     * جستجوی پیشرفته درخواست‌ها با فیلترها
      */
-    public function searchWithFilters($searchTerm = '', $groupId = null, $filters = [])
+    public function searchWithFilters($searchTerm, $groupFilter = null, $filters = [])
     {
         try {
-            require_once APP_PATH . 'helpers/AdvancedSearch.php';
-            
-            // فیلدهای قابل جستجو
-            $searchFields = [
-                'title',
-                'description', 
-                'reference_number',
-                'account_holder',
-                'bank_name',
-                'tags'
-            ];
-            
-            // آماده کردن فیلترهای اضافی
-            $additionalFilters = [];
+            $conditions = ['deleted_at IS NULL'];
+            $params = [];
             
             // فیلتر گروه
-            if ($groupId) {
-                $additionalFilters['group_id'] = $groupId;
+            if ($groupFilter) {
+                $conditions[] = 'group_id = ?';
+                $params[] = $groupFilter;
+            }
+            
+            // جستجوی متنی
+            if (!empty($searchTerm)) {
+                $searchConditions = [
+                    'title LIKE ?',
+                    'description LIKE ?',
+                    'reference_number LIKE ?',
+                    'account_holder LIKE ?',
+                    'account_number LIKE ?',
+                    'bank_name LIKE ?'
+                ];
+                
+                $searchPattern = '%' . $searchTerm . '%';
+                $conditions[] = '(' . implode(' OR ', $searchConditions) . ')';
+                
+                // اضافه کردن پارامتر جستجو برای هر فیلد
+                for ($i = 0; $i < count($searchConditions); $i++) {
+                    $params[] = $searchPattern;
+                }
             }
             
             // فیلتر وضعیت
             if (!empty($filters['status'])) {
-                $additionalFilters['status'] = $filters['status'];
+                $conditions[] = 'status = ?';
+                $params[] = $filters['status'];
             }
             
             // فیلتر اولویت
             if (!empty($filters['priority'])) {
-                $additionalFilters['priority'] = $filters['priority'];
+                $conditions[] = 'priority = ?';
+                $params[] = $filters['priority'];
             }
             
-            // اجرای جستجو
-            $results = AdvancedSearch::performSearch(
-                $this,                                           // Model object
-                $this->table,                                   // Table name
-                $searchTerm,                                    // Search term
-                $searchFields,                                  // Search fields
-                $additionalFilters,                             // Additional filters
-                [],                                             // Joins (empty for now)
-                'created_at',                                   // Order by
-                'DESC'                                          // Order direction
-            );
-            
-            // پردازش نتایج با highlighting
-            $processedResults = AdvancedSearch::processSearchResults(
-                $results,
-                $searchTerm,
-                ['title', 'description', 'account_holder']
-            );
-            
-            // اضافه کردن اطلاعات تکمیلی
-            $enrichedResults = [];
-            foreach ($processedResults as $request) {
-                $enrichedResults[] = $this->enrichRequestData($request);
+            // فیلتر تاریخ
+            if (!empty($filters['date_from'])) {
+                $conditions[] = 'DATE(created_at) >= ?';
+                $params[] = $this->convertPersianToGregorian($filters['date_from']);
             }
             
-            // تبدیل به فرمت مناسب برای صفحه‌بندی
-            $page = $filters['page'] ?? 1;
-            $perPage = $filters['per_page'] ?? 20;
-            $total = count($enrichedResults);
+            if (!empty($filters['date_to'])) {
+                $conditions[] = 'DATE(created_at) <= ?';
+                $params[] = $this->convertPersianToGregorian($filters['date_to']);
+            }
             
-            $paginatedResults = array_slice(
-                $enrichedResults, 
-                ($page - 1) * $perPage, 
-                $perPage
-            );
+            // ساخت کوئری اصلی
+            $whereClause = implode(' AND ', $conditions);
+            $orderBy = 'ORDER BY created_at DESC, id DESC';
             
-            return [
-                'data' => $paginatedResults,
-                'total' => $total,
-                'current_page' => $page,
-                'last_page' => ceil($total / $perPage),
-                'from' => ($page - 1) * $perPage + 1,
-                'to' => min($page * $perPage, $total)
-            ];
+            // صفحه‌بندی
+            $page = max(1, (int)($filters['page'] ?? 1));
+            $perPage = min(max(1, (int)($filters['per_page'] ?? 20)), 50);
+            
+            // اجرای کوئری با صفحه‌بندی
+            $results = $this->paginate($page, $perPage, [
+                'condition' => $whereClause,
+                'params' => $params,
+                'order' => $orderBy
+            ]);
+            
+            // اضافه کردن اطلاعات کاربران و غنی‌سازی داده‌ها
+            if ($results && isset($results['data'])) {
+                foreach ($results['data'] as &$request) {
+                    $request = $this->enrichRequestData($request);
+                    
+                    // اضافه کردن highlight برای کلمات جستجو
+                    if (!empty($searchTerm)) {
+                        $request = $this->highlightSearchTerms($request, $searchTerm);
+                    }
+                }
+            }
+            
+            return $results;
             
         } catch (Exception $e) {
             writeLog("خطا در جستجوی پیشرفته درخواست‌ها: " . $e->getMessage(), 'ERROR');
+            return false;
+        }
+    }
+    
+    /**
+     * غنی‌سازی داده‌های درخواست
+     */
+    private function enrichRequestData($request)
+    {
+        // تبدیل تاریخ به شمسی
+        if (!empty($request['created_at'])) {
+            $request['created_at_jalali'] = $this->toJalali($request['created_at']);
+        }
+        
+        // اضافه کردن label های وضعیت و اولویت
+        $request['status_label'] = $this->getStatusLabel($request['status'] ?? 'pending');
+        $request['priority_label'] = $this->getPriorityLabel($request['priority'] ?? 'normal');
+        
+        // فرمت کردن مبلغ
+        if (!empty($request['amount'])) {
+            $request['amount_formatted'] = number_format((float)($request['amount'] ?? 0));
+        }
+        
+        // تولید شماره مرجع در صورت عدم وجود
+        if (empty($request['reference_number'])) {
+            $request['reference_number'] = 'REQ' . str_pad($request['id'], 6, '0', STR_PAD_LEFT);
+        }
+        
+        // بررسی فوری بودن
+        $request['is_urgent'] = ($request['priority'] ?? '') === 'urgent';
+        
+        return $request;
+    }
+    
+    /**
+     * هایلایت کلمات جستجو در نتایج
+     */
+    private function highlightSearchTerms($request, $searchTerm)
+    {
+        $searchFields = ['title', 'description', 'account_holder', 'reference_number'];
+        
+        foreach ($searchFields as $field) {
+            if (!empty($request[$field])) {
+                $request[$field . '_highlighted'] = $this->highlightText($request[$field], $searchTerm);
+            }
+        }
+        
+        return $request;
+    }
+    
+    /**
+     * هایلایت متن با کلمه جستجو
+     */
+    private function highlightText($text, $searchTerm)
+    {
+        if (empty($searchTerm) || empty($text)) {
+            return $text;
+        }
+        
+        // جستجوی غیرحساس به حروف بزرگ/کوچک
+        $pattern = '/' . preg_quote($searchTerm, '/') . '/ui';
+        return preg_replace($pattern, '<mark>$0</mark>', $text);
+    }
+    
+    /**
+     * تبدیل تاریخ شمسی به میلادی
+     */
+    private function convertPersianToGregorian($persianDate)
+    {
+        // اگر تابع jdate موجود است از آن استفاده کنیم
+        if (function_exists('jdate')) {
+            return jdate('Y-m-d', $persianDate, false, false, 'en');
+        }
+        
+        // در غیر این صورت فرض می‌کنیم که تاریخ قبلاً میلادی است
+        return $persianDate;
+    }
+    
+    /**
+     * تبدیل تاریخ میلادی به شمسی
+     */
+    private function toJalali($gregorianDate)
+    {
+        if (function_exists('jdate')) {
+            return jdate('Y/m/d H:i', strtotime($gregorianDate));
+        }
+        
+        return date('Y/m/d H:i', strtotime($gregorianDate));
+    }
+    
+    /**
+     * دریافت label وضعیت
+     */
+    private function getStatusLabel($status)
+    {
+        $labels = [
+            'pending' => 'در انتظار',
+            'processing' => 'در حال بررسی',
+            'completed' => 'تکمیل شده',
+            'rejected' => 'رد شده'
+        ];
+        
+        return $labels[$status] ?? 'نامشخص';
+    }
+    
+    /**
+     * دریافت label اولویت
+     */
+    private function getPriorityLabel($priority)
+    {
+        $labels = [
+            'urgent' => 'فوری',
+            'high' => 'بالا',
+            'normal' => 'معمولی',
+            'low' => 'پایین'
+        ];
+        
+        return $labels[$priority] ?? 'معمولی';
+    }
+    
+    /**
+     * بهبود متد paginate برای پشتیبانی از order by
+     */
+    public function paginate($page = 1, $perPage = 20, $options = [])
+    {
+        try {
+            $condition = $options['condition'] ?? '1=1';
+            $params = $options['params'] ?? [];
+            $orderBy = $options['order'] ?? 'ORDER BY id DESC';
+            
+            // محاسبه offset
+            $offset = ($page - 1) * $perPage;
+            
+            // شمارش کل رکوردها
+            $countSql = "SELECT COUNT(*) as total FROM {$this->table} WHERE {$condition}";
+            $stmt = $this->db->prepare($countSql);
+            $stmt->execute($params);
+            $total = $stmt->fetch()['total'] ?? 0;
+            
+            // محاسبه تعداد صفحات
+            $lastPage = max(1, ceil($total / $perPage));
+            
+            // دریافت داده‌ها
+            $dataSql = "SELECT * FROM {$this->table} WHERE {$condition} {$orderBy} LIMIT {$perPage} OFFSET {$offset}";
+            $stmt = $this->db->prepare($dataSql);
+            $stmt->execute($params);
+            $data = $stmt->fetchAll();
+            
+            return [
+                'data' => $data,
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => $lastPage,
+                'from' => $total > 0 ? $offset + 1 : 0,
+                'to' => min($offset + $perPage, $total),
+                'has_more' => $page < $lastPage
+            ];
+            
+        } catch (Exception $e) {
+            writeLog("خطا در صفحه‌بندی: " . $e->getMessage(), 'ERROR');
             return false;
         }
     }
@@ -725,23 +892,6 @@ class PaymentRequest extends Database
     }
 
     /**
-     * تشخیص لیبل وضعیت
-     */
-    private function getStatusLabel($status) 
-    {
-        $labels = [
-            self::STATUS_PENDING => 'در انتظار',
-            self::STATUS_PROCESSING => 'در حال پردازش',
-            self::STATUS_APPROVED => 'تایید شده',
-            self::STATUS_COMPLETED => 'تکمیل شده',
-            self::STATUS_REJECTED => 'رد شده',
-            self::STATUS_CANCELLED => 'لغو شده'
-        ];
-
-        return $labels[$status] ?? $status;
-    }
-
-    /**
      * بررسی مجوز ویرایش درخواست
      */
     private function canEditRequest($request, $userId) 
@@ -761,44 +911,6 @@ class PaymentRequest extends Database
         return Security::checkPermission('accountant') ||
                Security::checkPermission('manager') ||
                Security::checkPermission('admin');
-    }
-
-    /**
-     * غنی‌سازی داده‌های درخواست
-     */
-    private function enrichRequestData($request) 
-    {
-        try {
-            // تبدیل تگ‌ها از JSON - بررسی null بودن
-            $request['tags'] = (!empty($request['tags']) && $request['tags'] !== null) 
-                ? json_decode($request['tags'], true) ?: [] 
-                : [];
-
-            // اضافه کردن لیبل‌ها
-            $request['status_label'] = $this->getStatusLabel($request['status']);
-            $request['priority_label'] = self::REQUEST_PRIORITIES[$request['priority']] ?? $request['priority'];
-            $request['category_label'] = self::CATEGORIES[$request['category']] ?? $request['category'];
-
-            // فرمت کردن مبلغ - رفع مشکل null
-            $request['amount_formatted'] = $request['amount'] !== null ? number_format($request['amount']) : 'مشخص نشده';
-
-            // فرمت کردن تاریخ‌ها
-            $request['created_at_jalali'] = date('Y/m/d H:i', strtotime($request['created_at']));
-            if ($request['due_date']) {
-                $request['due_date_jalali'] = date('Y/m/d', strtotime($request['due_date']));
-            }
-
-            // اضافه کردن اطلاعات درخواست‌کننده
-            require_once APP_PATH . 'models/User.php';
-            $userModel = new User();
-            $requester = $userModel->find($request['requester_id']);
-            $request['requester_name'] = $requester ? $requester['full_name'] : 'نامشخص';
-
-            return $request;
-
-        } catch (Exception $e) {
-            return $request;
-        }
     }
 
     /**
@@ -1231,7 +1343,7 @@ class PaymentRequest extends Database
                 $csvData[] = [
                     $request['reference_number'],
                     $request['title'],
-                    $request['amount'] !== null ? number_format($request['amount']) : 'مشخص نشده',
+                    $request['amount'] !== null ? number_format((float)($request['amount'] ?? 0)) : 'مشخص نشده',
                     $request['account_holder'],
                     $request['account_number'],
                     $request['bank_name'],

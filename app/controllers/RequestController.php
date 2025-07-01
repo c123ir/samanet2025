@@ -44,28 +44,29 @@ class RequestController extends BaseController
             $user = $this->getCurrentUser();
             $groupId = $user['group_id'];
             
-            // دریافت پارامترهای جستجو
-            $search = $this->input('search', '');
-            $page = (int)($this->input('page', 1));
-            $perPage = min((int)($this->input('per_page', 20)), 50); // حداکثر 50 آیتم
+            // دریافت پارامترهای جستجو از درخواست POST JSON
+            $inputData = json_decode(file_get_contents('php://input'), true);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception('فرمت داده نامعتبر است');
+            }
+            
+            $search = trim($inputData['search'] ?? '');
+            $page = max(1, (int)($inputData['page'] ?? 1));
+            $perPage = min(max(1, (int)($inputData['per_page'] ?? 20)), 50); // حداکثر 50 آیتم
             
             // فیلترهای اضافی
             $filters = [
-                'status' => $this->input('status', ''),
-                'priority' => $this->input('priority', ''),
-                'date_from' => $this->input('date_from', ''),
-                'date_to' => $this->input('date_to', ''),
+                'status' => $inputData['status'] ?? '',
+                'priority' => $inputData['priority'] ?? '',
+                'date_from' => $inputData['date_from'] ?? '',
+                'date_to' => $inputData['date_to'] ?? '',
                 'page' => $page,
                 'per_page' => $perPage
             ];
             
             // اعتبارسنجی ورودی
-            require_once APP_PATH . 'helpers/AdvancedSearch.php';
-            $validation = AdvancedSearch::validateSearchParams(
-                $search,
-                ['status', 'priority', 'date_from', 'date_to', 'page', 'per_page'],
-                $filters
-            );
+            $validation = $this->validateSearchParams($search, $filters);
             
             if (!$validation['valid']) {
                 echo json_encode([
@@ -77,7 +78,7 @@ class RequestController extends BaseController
             }
             
             // اجرای جستجو
-            if (!empty($search)) {
+            if (!empty($search) || !empty(array_filter($filters, function($v) { return !empty($v) && !is_numeric($v); }))) {
                 $results = $this->paymentRequestModel->searchWithFilters($search, $groupId, $filters);
             } else {
                 $results = $this->paymentRequestModel->getGroupRequests($groupId, $filters);
@@ -85,7 +86,7 @@ class RequestController extends BaseController
             
             // تولید پاسخ API
             if ($results) {
-                $response = AdvancedSearch::generateApiResponse(
+                $response = $this->generateApiResponse(
                     $results['data'] ?? [],
                     $search,
                     [
@@ -96,7 +97,7 @@ class RequestController extends BaseController
                         'from' => $results['from'] ?? 0,
                         'to' => $results['to'] ?? 0,
                         'has_search' => !empty($search),
-                        'filters_applied' => array_filter($filters, function($v) { return !empty($v); })
+                        'filters_applied' => array_filter($filters, function($v) { return !empty($v) && !is_numeric($v); })
                     ]
                 );
             } else {
@@ -104,7 +105,11 @@ class RequestController extends BaseController
                     'success' => false,
                     'message' => 'خطا در دریافت داده‌ها',
                     'data' => [],
-                    'total' => 0
+                    'meta' => [
+                        'total' => 0,
+                        'page' => $page,
+                        'per_page' => $perPage
+                    ]
                 ];
             }
             
@@ -119,10 +124,103 @@ class RequestController extends BaseController
                 'success' => false,
                 'message' => 'خطای سیستمی در جستجو',
                 'data' => [],
-                'total' => 0
+                'meta' => [
+                    'total' => 0,
+                    'error_code' => 500
+                ]
             ]);
             exit;
         }
+    }
+
+    /**
+     * اعتبارسنجی پارامترهای جستجو
+     */
+    private function validateSearchParams($search, $filters)
+    {
+        $errors = [];
+        
+        // اعتبارسنجی طول کلمه جستجو
+        if (!empty($search) && mb_strlen($search) < 2) {
+            $errors[] = 'کلمه جستجو باید حداقل 2 کاراکتر باشد';
+        }
+        
+        if (!empty($search) && mb_strlen($search) > 100) {
+            $errors[] = 'کلمه جستجو نباید بیش از 100 کاراکتر باشد';
+        }
+        
+        // اعتبارسنجی وضعیت
+        $validStatuses = ['pending', 'processing', 'completed', 'rejected'];
+        if (!empty($filters['status']) && !in_array($filters['status'], $validStatuses)) {
+            $errors[] = 'وضعیت انتخاب شده نامعتبر است';
+        }
+        
+        // اعتبارسنجی اولویت
+        $validPriorities = ['urgent', 'high', 'normal', 'low'];
+        if (!empty($filters['priority']) && !in_array($filters['priority'], $validPriorities)) {
+            $errors[] = 'اولویت انتخاب شده نامعتبر است';
+        }
+        
+        // اعتبارسنجی تاریخ
+        if (!empty($filters['date_from']) && !$this->isValidDate($filters['date_from'])) {
+            $errors[] = 'تاریخ شروع نامعتبر است';
+        }
+        
+        if (!empty($filters['date_to']) && !$this->isValidDate($filters['date_to'])) {
+            $errors[] = 'تاریخ پایان نامعتبر است';
+        }
+        
+        // اعتبارسنجی صفحه‌بندی
+        if ($filters['page'] < 1) {
+            $errors[] = 'شماره صفحه نامعتبر است';
+        }
+        
+        if ($filters['per_page'] < 1 || $filters['per_page'] > 50) {
+            $errors[] = 'تعداد آیتم در هر صفحه باید بین 1 تا 50 باشد';
+        }
+        
+        return [
+            'valid' => empty($errors),
+            'errors' => $errors
+        ];
+    }
+    
+    /**
+     * تولید پاسخ استاندارد API
+     */
+    private function generateApiResponse($data, $search, $meta)
+    {
+        return [
+            'success' => true,
+            'message' => 'نتایج با موفقیت دریافت شد',
+            'data' => $data,
+            'meta' => array_merge([
+                'timestamp' => date('Y-m-d H:i:s'),
+                'search_term' => $search,
+                'has_search' => !empty($search),
+                'version' => '2.1'
+            ], $meta)
+        ];
+    }
+    
+    /**
+     * بررسی معتبر بودن تاریخ
+     */
+    private function isValidDate($date)
+    {
+        // بررسی فرمت تاریخ شمسی (1403/12/01 یا 1403-12-01)
+        $pattern = '/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/';
+        if (preg_match($pattern, $date, $matches)) {
+            $year = (int)$matches[1];
+            $month = (int)$matches[2];
+            $day = (int)$matches[3];
+            
+            return $year >= 1300 && $year <= 1500 && 
+                   $month >= 1 && $month <= 12 && 
+                   $day >= 1 && $day <= 31;
+        }
+        
+        return false;
     }
 
     /**
